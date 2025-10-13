@@ -1,42 +1,143 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+html, body {
+  height: 100%;
+ overflow-x: hidden;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background-color: #fff;
+  color: #0077B5;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+
+/* HomePage Css */
+ .header{
+  width: 100%;
+  height: 50px;
+  border: 1px solid black;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+ }
+
+.container {
+  display: grid;
+  grid-template-columns: 200px 1fr 200px; /* Left | Feed | Right */
+  gap: 20px;
+  width: 100%;
+  height: calc(100vh - 50px); /* minus header height */
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* Left Sidebar */
+.left-sidebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* push profile button to bottom */
+  padding: 15px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0px 5px 10px rgba(0,0,0,0.1);
+  height: 100%; /* full container height */
 }
 
-.card {
-  padding: 2em;
+/* Feed - scrollable if content overflows */
+.feed {
+  background: #fff;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  height: 100%;
+  overflow-y: auto; /* scroll only feed */
 }
 
-.read-the-docs {
-  color: #888;
+/* Right Sidebar */
+.right-sidebar {
+  background: #fff;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  height: 100%;
+}
+
+
+
+.logobox{
+  width:200px;
+  height:100%;
+  border: 1px solid sienna ;
+  font-size: larger;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Sidebar container */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Push profile button to bottom */
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 10px;
+  min-height: 100vh;
+  width: 200px;
+  box-shadow: 0px 5px 10px rgba(0,0,0,0.1);
+}
+
+/* Navigation links container */
+.nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* spacing between nav items */
+}
+
+/* Individual nav item */
+.nav-links .div-1 a {
+  text-decoration: none;
+  color: #0077B5; /* LinkedIn-style blue */
+  font-weight: 500;
+  padding: 10px 15px;
+  display: block;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.nav-links .div-1 a:hover {
+  background-color: gainsboro;
+  transform: scale(1.05);
+}
+
+.nav-links .div-1 a.active {
+  background-color: #0077B5;
+  color: white;
+}
+
+/* Profile button container */
+.profile-button {
+  margin-top: 20px; /* gap from nav links */
+}
+
+/* Profile button itself */
+.profile-button a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 50px;
+  height: 50px;
+  background-color: #0077B5;
+  color: white;
+  border-radius: 50%;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.profile-button a:hover {
+  background-color: #005f8d;
+  transform: scale(1.1);
 }
