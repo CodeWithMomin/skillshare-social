@@ -2,7 +2,7 @@ import React from 'react'
 // import './App.css'
 import '../App.css'
 import Logo from '../components/Logo'
-import SearchBar from '../components/SearchBar'
+import CustomSearchBar from '../components/CustomSearchBar'
 import ChatLauncher from '../components/ChatLauncher'
 import SideBar from './SideBar'
 import { Outlet } from 'react-router-dom'
@@ -11,7 +11,7 @@ const HomePage = () => {
     <>
     <div className="header">
       <Logo/>
-      <SearchBar/>
+      <CustomSearchBar/>
       <ChatLauncher/>
       
      </div>
