@@ -1,13 +1,17 @@
 import React from "react";
 
+import '../App.css'
 const ChatLauncher = () => {
   return (
-    <div>
-      <img
-        src="C:\Code\SSS\skillshare-social\client\src\assets\chatting.png"
+   <>
+   <div className="chatdiv">
+    <img
+        src="src\assets\chatting.png"
         alt=""
       />
-    </div>
+   </div>
+
+   </>
   );
 };
 
