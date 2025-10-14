@@ -29,7 +29,8 @@ const CustomSearchBar = () => {
           disableUnderline: true,
           sx: {
             fontSize: "0.9rem",    // smaller font
-            padding: "4px 0",      // reduce padding inside TextField
+            padding: "4px 0", 
+            color:"black"     // reduce padding inside TextField
           },
         }}
         sx={{
