@@ -6,6 +6,7 @@ import CustomSearchBar from '../components/CustomSearchBar'
 import ChatLauncher from '../components/ChatLauncher'
 import SideBar from './SideBar'
 import { Outlet } from 'react-router-dom'
+import RightSideBar from './RightSideBar'
 const HomePage = () => {
   return (
     <>
@@ -20,7 +21,7 @@ const HomePage = () => {
       <div className="feed">
         <Outlet/>
       </div>
-      <div className="right-sidebar">right</div>
+      <div className="right-sidebar"><RightSideBar/></div>
      </div>
     </>
   )
