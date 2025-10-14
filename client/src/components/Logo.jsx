@@ -4,10 +4,7 @@ const Logo = () => {
   return (
     <>
       <div className="logobox">
-        <img
-          src="C:\Code\SSS\skillshare-social\client\src\assets\letter-s.png"
-          alt=""
-        />
+        <img src="src\assets\letter-s.png" alt="" />
       </div>
     </>
   );
