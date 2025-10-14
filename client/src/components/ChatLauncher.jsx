@@ -1,9 +1,14 @@
-import React from 'react'
+import React from "react";
 
 const ChatLauncher = () => {
   return (
-    <div>ChatLauncher</div>
-  )
-}
+    <div>
+      <img
+        src="C:\Code\SSS\skillshare-social\client\src\assets\chatting.png"
+        alt=""
+      />
+    </div>
+  );
+};
 
-export default ChatLauncher
+export default ChatLauncher;
