@@ -5,7 +5,6 @@ import Notifications from "./pages/Notifications";
 import AiFeatures from "./pages/AiFeatures";
 import Projects from "./pages/Projects";
 import Profile from "./pages/Profile";
-
 const router = createBrowserRouter([
   {
     path: "/",
@@ -16,8 +15,7 @@ const router = createBrowserRouter([
       { path: "notifications", element: <Notifications /> },
       { path: "aifeatures", element: <AiFeatures /> },
       { path: "projects", element: <Projects /> },
-      { path: "profile", element: <Profile/> },
-
+      { path: "profile", element: <Profile /> },
     ],
   },
 ]);
