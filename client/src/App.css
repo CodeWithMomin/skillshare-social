@@ -11,7 +11,6 @@ html,
 body {
   height: 100%;
   overflow-x: hidden;
-  overflow-y: hidden;
   font-family: "poppins", Arial, sans-serif;
   background-color: #f5f5f5;
   color: #0077B5;
@@ -39,7 +38,7 @@ body {
 
 .container {
   display: grid;
-  grid-template-columns: 200px 1fr 350px;
+  grid-template-columns: 200px 1fr 250px;
   /* Left | Feed | Right */
   gap: 10px;
   width: 100%;
@@ -73,7 +72,7 @@ body {
 
 
 .logobox {
-  width: 300px;
+  width: 200px;
   height: 100%;
   font-size: larger;
   display: flex;
@@ -172,17 +171,14 @@ img {
 .chatdiv:hover img {
   scale: 1.1;
 }
-
-.r-box {
+.r-box{
   /* border: 1px solid rgb(242, 14, 14); */
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap:20px;
   /* height: 100%; */
 }
-
-.topdiv,
-.bottomdiv {
+.topdiv, .bottomdiv{
   height: 250px;
   /* border: 1px solid; */
   background-color: rgb(234, 231, 231);
