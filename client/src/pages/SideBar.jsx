@@ -59,7 +59,7 @@ const SideBar = () => {
               transition: "all 0.2s ease",
             }}
           >
-            {React.cloneElement(item.icon, { fontSize: "small" })}
+            {React.cloneElement(item.icon, { fontSize: "small",  sx: { color: "#1976d2" }, })}
             <span>{item.label}</span>
           </Link>
         ))}
