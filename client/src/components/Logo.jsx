@@ -3,7 +3,12 @@ import "../App.css";
 const Logo = () => {
   return (
     <>
-      <div className="logobox">SkillShare Social</div>
+      <div className="logobox">
+        <img
+          src="src\assets\letter-s.png"
+          alt=""
+        />
+      </div>
     </>
   );
 };
