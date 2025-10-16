@@ -10,13 +10,13 @@ import { Explore, Hub, NetworkWifi, People } from "@mui/icons-material";
 
 const navItems = [
   { label: "Feed", icon: <FeedIcon />, path: "/feed" },
-  {label:"Explore",icon:<Explore/>,path:"/explore"},
+  { label: "Explore", icon: <Explore />, path: "/explore" },
   { label: "Projects", icon: <FolderIcon />, path: "/projects" },
-  {label:"Network",icon:<Hub/>,path:"/mynetwork"},
+  { label: "Network", icon: <Hub />, path: "/mynetwork" },
   // { label: "Notifications", icon: <NotificationsIcon />, path: "/notifications" },
-  {label:"Alumni Connect",icon:<People/>,path:"/alumniconnect"},
+  { label: "Alumni Connect", icon: <People />, path: "/alumniconnect" },
   { label: "AI Features", icon: <SmartToyIcon />, path: "/aifeatures" },
- 
+
   // { label: "Settings", icon: <SettingsIcon />, path: "/settings" },
 ];
 
@@ -29,31 +29,37 @@ const SideBar = () => {
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        p: 2,
+        p: 1,
+        mt: 1,
+        ml: 1,
+        mb: 1,
+        mr: 1,
         bgcolor: "#fff",
         borderRadius: 2,
-        minHeight: "calc(100vh - 60px)",
-        width: 200,
+        minHeight: "calc(100vh - 85px)",
+        width: 205,
         boxShadow: "0px 5px 10px rgba(0,0,0,0.1)",
       }}
     >
       {/* Navigation Links */}
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        {navItems.map((item) => (
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+        {navItems.map(item => (
           <Link
             key={item.label}
             to={item.path}
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "10px",
+              gap: "8px",
               textDecoration: "none",
               padding: "10px 15px",
-              borderRadius: "8px",
+              borderRadius: "80px",
               fontWeight: 500,
-              fontSize:"1rem",
-              color: location.pathname === item.path ? "#0077b5ff" : "black",
-              backgroundColor: location.pathname === item.path ? "#ebedeeff" : "transparent",
+              fontSize: "1rem",
+              color:
+                location.pathname === item.path ? "#0077b5ff" : "#0077b5ff",
+              backgroundColor:
+                location.pathname === item.path ? "#ebedeeff" : "transparent",
               transition: "all 0.2s ease",
             }}
           >
@@ -64,7 +70,15 @@ const SideBar = () => {
       </Box>
 
       {/* Profile Button */}
-      <Box sx={{ mt: 2, textAlign: "center",display:"flex",justifyContent:"center",alignItems:"center",padding:"10px" }}>
+      <Box
+        sx={{
+          mt: 2,
+          textAlign: "center",
+          display: "flex",
+          alignItems: "center",
+          padding: "10px",
+        }}
+      >
         <Link
           to="/profile"
           style={{

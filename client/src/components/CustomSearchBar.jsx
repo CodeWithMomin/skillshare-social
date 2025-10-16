@@ -14,12 +14,14 @@ const CustomSearchBar = () => {
       sx={{
         display: "flex",
         alignItems: "center",
-        backgroundColor: "#feffffff",
+        backgroundColor: "#fff",
         borderRadius: "50px",
-        padding: "2px 8px",  // smaller vertical padding
-        width: "600px",
-        my: 2,               // margin-top and margin-bottom
-        height: "40px",      // total height of search bar
+        border: 2.4,
+        borderColor: "#808080",
+        padding: "1px 10px", // smaller vertical padding
+        width: "500px",
+        my: 2, // margin-top and margin-bottom
+        height: "40px", // total height of search bar
       }}
     >
       <TextField
@@ -28,17 +30,17 @@ const CustomSearchBar = () => {
         InputProps={{
           disableUnderline: true,
           sx: {
-            fontSize: "0.9rem",    // smaller font
-            padding: "4px 0", 
-            color:"black"     // reduce padding inside TextField
+            fontSize: "0.9rem", // smaller font
+            padding: "4px 4px",
+            color: "black", // reduce padding inside TextField
           },
         }}
         sx={{
           flex: 1,
-          height: "100%",           // match Box height
+          height: "100%", // match Box height
         }}
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={e => setQuery(e.target.value)}
       />
       <IconButton onClick={handleSearch} sx={{ p: "6px" }}>
         <SearchIcon fontSize="small" />
