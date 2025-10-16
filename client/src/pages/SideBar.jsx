@@ -28,17 +28,19 @@ const SideBar = () => {
       sx={{
         display: "flex",
         flexDirection: "column",
+        ml:1,
+        
         justifyContent: "space-between",
-        p: 2,
+        p: 1,
         bgcolor: "#fff",
         borderRadius: 2,
-        minHeight: "calc(100vh - 60px)",
-        width: 200,
+        minHeight: "calc(100vh - 85px)",
+        width: 230,
         boxShadow: "0px 5px 10px rgba(0,0,0,0.1)",
       }}
     >
       {/* Navigation Links */}
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
         {navItems.map((item) => (
           <Link
             key={item.label}
@@ -46,7 +48,7 @@ const SideBar = () => {
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "10px",
+              gap: "5px",
               textDecoration: "none",
               padding: "10px 15px",
               borderRadius: "8px",
