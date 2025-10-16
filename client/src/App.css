@@ -43,13 +43,13 @@ body {
 }
 .container {
   display: grid;
-  grid-template-columns: 240px 1fr 255px;
-  /* Left | Feed | Right */
+  grid-template-columns: 280px minmax(0, 1fr) 280px; /* feed won't overflow */
   gap: 10px;
   width: 100%;
   height: calc(100vh - 60px);
-  /* minus header height */
 }
+
+
 
 
 
@@ -72,7 +72,7 @@ body {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   
   height: calc(100vh - 85px);
-  width: 240px;
+  width: 270px;
 }
 
 
