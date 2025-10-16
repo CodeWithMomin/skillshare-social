@@ -14,7 +14,7 @@ const CustomSearchBar = () => {
       sx={{
         display: "flex",
         alignItems: "center",
-        backgroundColor: "#c4c7c8ff",
+        backgroundColor: "#feffffff",
         borderRadius: "50px",
         padding: "2px 8px",  // smaller vertical padding
         width: "600px",

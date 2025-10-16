@@ -8,6 +8,13 @@ import Profile from "./pages/Profile";
 import Login from "./pages/Login"; // public
 import ProtectedRoute from "./components/ProtectedRoute";
 
+import UserChat from "./pages/UserChat";
+import CompleteProfile from "./pages/CompleteProfile";
+import Settings from "./pages/Settings";
+import Explore from "./pages/Explore";
+import MyNetwork from "./pages/MyNetwork";
+import AlumniConnect from "./pages/AlumniConnect";
+
 function App() {
   const isAuthenticated = !!localStorage.getItem("token");
 
@@ -47,6 +54,30 @@ function App() {
         {
           path: "profile",
           element: <Profile />,
+        },
+        {
+          path: "chat",
+          element:<UserChat/>,
+        },
+        {
+          path:"complete-profile",
+          element:<CompleteProfile/>
+        },
+         {
+          path:"settings",
+          element:<Settings/>
+        },
+        {
+          path:"explore",
+          element:<Explore/>
+        },
+         {
+          path:"mynetwork",
+          element:<MyNetwork/>
+        },
+         {
+          path:"alumniconnect",
+          element:<AlumniConnect/>
         },
       ],
     },
