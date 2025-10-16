@@ -1,11 +1,12 @@
-import React from 'react'
-import '../App.css'
+import React from "react";
+import "../App.css";
 const RightSideBar = () => {
   return (
-    <div>
-        
-    </div>
-  )
-}
+    <>
+      <div className="recommend">Recommendations</div>
+      <div className="people">People You May Know</div>
+    </>
+  );
+};
 
-export default RightSideBar
+export default RightSideBar;
