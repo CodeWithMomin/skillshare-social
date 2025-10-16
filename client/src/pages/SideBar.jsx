@@ -28,6 +28,8 @@ const SideBar = () => {
       sx={{
         display: "flex",
         flexDirection: "column",
+        ml: 1,
+
         justifyContent: "space-between",
         p: 1,
         mt: 1,
@@ -63,7 +65,10 @@ const SideBar = () => {
               transition: "all 0.2s ease",
             }}
           >
-            {React.cloneElement(item.icon, { fontSize: "small" })}
+            {React.cloneElement(item.icon, {
+              fontSize: "small",
+              sx: { color: "#1976d2" },
+            })}
             <span>{item.label}</span>
           </Link>
         ))}
