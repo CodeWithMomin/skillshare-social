@@ -31,11 +31,11 @@ const SideBar = () => {
         ml:1,
         
         justifyContent: "space-between",
-        p: 4,
+        p: 2,
         bgcolor: "#fff",
         borderRadius: 2,
         minHeight: "calc(100vh - 85px)",
-        width: 270,
+        width: 220,
         boxShadow: "0px 5px 10px rgba(0,0,0,0.1)",
       }}
     >
