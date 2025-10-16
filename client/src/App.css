@@ -44,13 +44,13 @@ body {
 
 .container {
   display: grid;
-  grid-template-columns: 210px 1fr 350px;
-  /* Left | Feed | Right */
+  grid-template-columns: 280px minmax(0, 1fr) 280px; /* feed won't overflow */
   gap: 10px;
   width: 100%;
-  height: calc(100vh - 70px);
-  /* minus header height */
+  height: calc(100vh - 60px);
 }
+
+
 
 
 
@@ -69,8 +69,9 @@ body {
   margin-top: .5rem;
   border-radius: 10px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  height: calc(100vh - 50vh - 70px);
-  width: 97%;
+  
+  height: calc(100vh - 85px);
+  width: 270px;
 }
 
 .people {

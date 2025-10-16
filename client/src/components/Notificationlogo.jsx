@@ -1,6 +1,11 @@
 import React from 'react'
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import { useNavigate } from 'react-router-dom';
 const Notificationlogo = () => {
+    const navigate=useNavigate()
+    const handleNotificationClick=()=>{
+        navigate('/notifications')
+    }
   return (
    <NotificationsIcon
   sx={{
@@ -14,6 +19,7 @@ const Notificationlogo = () => {
       transform: "translateY(-2px)",
     },
   }}
+  onClick={handleNotificationClick}
 />
   )
 }
