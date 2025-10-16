@@ -6,7 +6,7 @@ import "../App.css";
 const ChatLauncher = () => {
   const navigate = useNavigate();
 
-  const handleClick = () => {
+  const handleChatClick = () => {
     navigate("/chat"); // navigates to the chat page
   };
 
@@ -17,7 +17,9 @@ const ChatLauncher = () => {
       scale:1.1,
       textShadow: "0 0 10px rgba(25, 118, 210, 0.7)",
       
-    }, }} />
+    }, }}
+    onClick={handleChatClick}
+    />
     
   );
 };
