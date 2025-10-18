@@ -24,7 +24,7 @@ import AlumniProtectedRoutes from "./components/AlumniComponents/AlumniProtected
 function App() {
   const isAuthenticated = !!localStorage.getItem("token");
   const isAlumniAuthenticated=!!localStorage.getItem("alumni-token");
-  // console.log(isAlumniAuthenticated)
+   console.log(isAlumniAuthenticated)
   const router = createBrowserRouter([
     // 🔓 Public route (login only)
     {

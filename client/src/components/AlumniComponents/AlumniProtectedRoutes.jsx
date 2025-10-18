@@ -2,14 +2,12 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 
-const AlumniProtectedRoutes = ({ element, isAlumniAuthenticated }) => {
-  console.log(isAlumniAuthenticated);
-  if (!isAlumniAuthenticated) {
-   
-    
+const AlumniProtectedRoutes = ({ element }) => {
+  const isAuthenticated = !!localStorage.getItem("alumni-token"); // ✅ reads live
+
+  if (!isAuthenticated) {
     return <Navigate to="/alumni-auth" replace />;
   }
-   // If logged in → render the protected component
   return element;
 };
 
