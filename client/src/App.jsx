@@ -13,16 +13,27 @@ import CompleteProfile from "./pages/CompleteProfile";
 import Settings from "./pages/Settings";
 import Explore from "./pages/Explore";
 import MyNetwork from "./pages/MyNetwork";
-import AlumniConnect from "./pages/AlumniConnect";
+import AlumniDirectory from "./pages/AlumniConnect/AlumniDirectory";
 
+import AlmuniAuth from "./pages/AlumniConnect/AlmuniAuth";
+import AlumniConnect from "./pages/AlumniConnect/AlumniConnect";
+import AlumniProfile from "./pages/AlumniConnect/AlumniProfile";
+// import AlumniProfile from "./pages/AlumniConnect/AlumniProfile";
+import AboutUs from "./pages/AlumniConnect/AboutUs";
+import AlumniProtectedRoutes from "./components/AlumniComponents/AlumniProtectedRoutes";
 function App() {
   const isAuthenticated = !!localStorage.getItem("token");
-
+  const isAlumniAuthenticated=!!localStorage.getItem("alumni-token");
+  // console.log(isAlumniAuthenticated)
   const router = createBrowserRouter([
     // 🔓 Public route (login only)
     {
       path: "/login",
       element: <Login />,
+    },
+    {
+      path: "/alumni-auth",
+      element: <AlmuniAuth />
     },
 
     // 🔒 Entire HomePage (and its nested routes) protected
@@ -75,12 +86,36 @@ function App() {
           path:"mynetwork",
           element:<MyNetwork/>
         },
-         {
-          path:"alumniconnect",
-          element:<AlumniConnect/>
-        },
+         
       ],
+      
     },
+    {
+  path: "/alumniconnect",
+  element: (
+    <AlumniProtectedRoutes
+      element={<AlumniConnect />}
+      isAlumniAuthenticated={isAlumniAuthenticated}
+    />
+  ),
+  children: [
+   
+    {
+      path: "profile",
+      element: <AlumniProfile />,
+    },
+    {
+      path: "aboutus",
+      element: <AboutUs/>,
+    },
+    
+    {
+      path:"alumni-directory",
+      element:<AlumniDirectory/>
+    },
+  ],
+}
+    
   ]);
 
   return <RouterProvider router={router} />;

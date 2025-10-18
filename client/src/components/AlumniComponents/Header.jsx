@@ -21,11 +21,11 @@ const Header = () => {
         
     </div>
      <div className="alumni-navlinks">
-        <Link>Dashboard</Link>
-        <Link>Profile</Link>
-        <Link>Directory</Link>
-        <Link>Contact Us</Link>
-        <Link>About Us</Link>
+        <Link to="/alumniconnect">Dashboard</Link>
+        <Link to="/alumniconnect/profile">Profile</Link>
+        <Link to="/alumniconnect/alumni-directory">Directory</Link>
+        
+        <Link to="/alumniconnect/aboutus">About Us</Link>
     </div>
     <div className="alumni-body">
         <Outlet/>
