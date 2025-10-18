@@ -24,7 +24,7 @@ const Header = () => {
         <Link to="/alumniconnect">Dashboard</Link>
         <Link to="/alumniconnect/profile">Profile</Link>
         <Link to="/alumniconnect/alumni-directory">Directory</Link>
-        
+        <Link to="/">SKilShare Social</Link>
         <Link to="/alumniconnect/aboutus">About Us</Link>
     </div>
     <div className="alumni-body">
