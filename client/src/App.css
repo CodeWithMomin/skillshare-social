@@ -20,8 +20,9 @@ body {
 
 /* HomePage Css */
 .header {
+  background-color: #fff;
   width: 100%;
-  height: 60px;
+  height: 70px;
   /* border: 1px solid black; */
   display: flex;
   justify-content: space-between;
@@ -35,18 +36,21 @@ body {
   z-index: 999;
   /* stays above other elements */
 }
-.noti-chat{
+
+.noti-chat {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px;
 }
+
 .container {
   display: grid;
-  grid-template-columns: 230px minmax(0, 1fr) 350px; /* feed won't overflow */
+  grid-template-columns: 230px minmax(0, 1fr) 350px;
+  /* feed won't overflow */
   gap: 10px;
   width: 100%;
-  height: calc(100vh - 60px);
+  height: calc(100vh - 70px);
 }
 
 
@@ -65,22 +69,40 @@ body {
 }
 
 /* Right Sidebar */
-.right-sidebar {
+/* .right-sidebar {
   background-color: #fff;
   padding: 15px;
   border-radius: 10px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  
+
   height: calc(100vh - 85px);
+  width: 340px;
+} */
+
+.recommend {
+  background-color: #fff;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  height: 45%;
   width: 340px;
 }
 
-
+.people {
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  height: 45vh;
+  width: 340px;
+}
 
 .logobox {
-  width: 200px;
+  width: 250px;
   height: 100%;
-  font-size: larger;
+  font-weight: bold;
+  font-size: 1.5rem;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -168,15 +190,102 @@ body {
   overflow: hidden;
 }
 
-img {
-  width: 30px;
-  height: 30px;
+/* Profile */
+.profile-container {
+  height: 200px;
+  background: linear-gradient(90deg, rgba(0, 119, 181, 1) 0%, rgba(76, 146, 197, 1) 50%);
+  border: 2px solid #ddd;
+  display: flex;
+  flex-direction: left;
+  align-items: center;
+  border-radius: 10px;
+  color: #fff;
+}
+
+.profile-container .icon {
+  height: 100%;
+  width: 200px;
+  padding: 20px;
+}
+
+.profile-container .info {
+  height: 100%;
+  width: 100%;
+  padding: 20px;
+}
+
+.info .naming {
+  font-size: 1.7rem;
+  font-weight: bold;
+}
+
+.info .naming .position {
+  font-size: 1.7rem;
+  font-weight: 600;
+}
+
+.info .intro {
+  padding-top: 10px;
+  font-size: 1rem;
+  font-weight: 500;
+  padding-bottom: 10px;
+}
+
+.info .skills {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.follow-container {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  column-gap: 20px;
+}
+
+.follow-container .follower {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px 25px;
+  font-size: 1.2rem;
+  background: linear-gradient(90deg, rgba(0, 119, 181, 1) 0%, rgba(76, 146, 197, 1) 50%);
+  color: #fff;
+  font-weight: 600;
+}
+
+.project-container {
+  margin-top: 20px;
+  height: 400px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  column-gap: 20px;
+  row-gap: 20px;
+}
+
+.project-head {
+  margin-top: 30px;
+  font-size: 1.2rem;
+  color: #000;
+  font-weight: 600;
+  text-align: center;
 }
 
 
-.chatdiv:hover img {
-  scale: 1.1;
+.project-container .project-showcase {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px 25px;
+  font-size: 1.2rem;
+  background: #f5f5f5;
+  color: #000;
+  font-weight: 600;
 }
+
+.project-container .project-showcase .project-details {
+  font-size: 1rem;
+}
+
+
 
 
 /* Background container */
@@ -209,7 +318,8 @@ img {
 /* Heading */
 .auth-box h2 {
   margin-bottom: 25px;
-  color: #0a66c2; /* LinkedIn-style blue */
+  color: #0a66c2;
+  /* LinkedIn-style blue */
   font-size: 24px;
   font-weight: 600;
 }
@@ -253,7 +363,8 @@ img {
 }
 
 .gender-selection input[type="radio"] {
-  accent-color: #0a66c2; /* modern blue for radio */
+  accent-color: #0a66c2;
+  /* modern blue for radio */
 }
 
 /* Button */
@@ -297,7 +408,8 @@ img {
 
 .upload-post-container {
   width: 100%;
-  max-width: 420px; /* smaller width */
+  max-width: 420px;
+  /* smaller width */
   margin: 15px auto;
   font-family: "Segoe UI", Arial, sans-serif;
 }
@@ -321,7 +433,8 @@ img {
 /* Textarea */
 .upload-box textarea {
   width: 100%;
-  height: 70px; /* smaller height */
+  height: 70px;
+  /* smaller height */
   border: 1px solid #ccc;
   border-radius: 8px;
   padding: 8px;
@@ -417,42 +530,44 @@ img {
   font-size: 14px;
 }
 
-.feedcontainer{
+.feedcontainer {
   display: flex;
   flex-direction: column;
-  
+
   gap: 1rem;
 }
-.postdiv{
 
-}
+
 /* ALumni Connect */
-.Alumni-container{
+.Alumni-container {
 
-height: 100px;
+  height: 100px;
 
-/* padding: 10px; */
+  /* padding: 10px; */
 }
-.alumni-header{
+
+.alumni-header {
   width: 100%;
   height: 100px;
   display: flex;
- 
- 
-  
+
+
+
 }
-.alumni-logo{
+
+.alumni-logo {
 
   width: 300px;
   height: 100px;
   height: 99px;
   /* border: 1px solid green; */
-   display: flex;
+  display: flex;
   justify-content: center;
   align-items: center;
 }
-.alumni-logo div{
-  width:45px;
+
+.alumni-logo div {
+  width: 45px;
   height: 45px;
   margin-inline: 8px;
   display: flex;
@@ -464,60 +579,82 @@ height: 100px;
   background-color: #ee9917;
   color: #222221;
 }
+
 .header-text {
   width: 210px;
-  height: inherit; /* takes height of parent */
-  
+  height: inherit;
+  /* takes height of parent */
+
 
   display: flex;
-  flex-direction: column;  /* stack spans vertically */
-  justify-content: center; /* center vertically inside div */
-  align-items: flex-start; /* align to left (start) horizontally */
-  padding-left: 5px;       /* optional, some inner spacing */
-  gap: 5px;                /* space between lines */
+  flex-direction: column;
+  /* stack spans vertically */
+  justify-content: center;
+  /* center vertically inside div */
+  align-items: flex-start;
+  /* align to left (start) horizontally */
+  padding-left: 5px;
+  /* optional, some inner spacing */
+  gap: 5px;
+  /* space between lines */
 }
 
 .header-text span {
   font-size: 30px;
-  font-weight:bolder;
+  font-weight: bolder;
   font-family: sans-serif;
   color: #222221;
 }
 
 .alumni-navlinks {
- background-color: #f89807;
+  background-color: #f89807;
 
-  display: flex;    
-  justify-content: center;          /* horizontal row */
- height: 50px;
-  gap: 20px;                  /* space between links */
-  align-items: center;        /* vertically center */
-  padding: 10px;            /* top & bottom padding */
- 
+  display: flex;
+  justify-content: center;
+  /* horizontal row */
+  height: 50px;
+  gap: 20px;
+  /* space between links */
+  align-items: center;
+  /* vertically center */
+  padding: 10px;
+  /* top & bottom padding */
+
 }
 
 .alumni-navlinks a {
-  text-decoration: none;      /* remove underline */
-  color: #ffffff;             /* link color */
+  text-decoration: none;
+  /* remove underline */
+  color: #ffffff;
+  /* link color */
   font-weight: bold;
   font-size: 16px;
   font-family: sans-serif;
   transition: color 0.3s, border-bottom 0.3s;
-  padding-bottom: 2px;        /* for hover border effect */
+  padding-bottom: 2px;
+  /* for hover border effect */
 }
 
 .alumni-navlinks a:hover {
-  color: #222221;             /* hover color */
- 
+  color: #222221;
+  /* hover color */
+
   cursor: pointer;
 }
+
 .alumni-body {
-  padding: 20px;          /* inner spacing */
-  margin-top: 10px;       /* spacing below header/nav */
-  min-height: calc(100vh - 120px); /* full height minus header */
-  background-color: #ffffff; /* optional background */
+  padding: 20px;
+  /* inner spacing */
+  margin-top: 10px;
+  /* spacing below header/nav */
+  min-height: calc(100vh - 120px);
+  /* full height minus header */
+  background-color: #ffffff;
+  /* optional background */
   display: flex;
-  flex-direction: column; /* stack child components vertically */
-  gap: 15px;              /* space between child components */
-  
+  flex-direction: column;
+  /* stack child components vertically */
+  gap: 15px;
+  /* space between child components */
+
 }
