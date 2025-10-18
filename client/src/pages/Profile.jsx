@@ -25,11 +25,11 @@ const Profile = () => {
 
   const handleProfilePictureClick = () => fileInputRef.current.click();
 
-  const handleProfilePictureChange = (e) => {
+  const handleProfilePictureChange = e => {
     const file = e.target.files[0];
     if (file) {
       const imageURL = URL.createObjectURL(file);
-      setUser((prev) => ({ ...prev, profilePicture: imageURL }));
+      setUser(prev => ({ ...prev, profilePicture: imageURL }));
       localStorage.setItem(
         "userProfile",
         JSON.stringify({ ...user, profilePicture: imageURL })
@@ -38,86 +38,65 @@ const Profile = () => {
   };
 
   return (
-    <Box
-  sx={{
-    display: "flex",
-    justifyContent: "center", // horizontal centering
-    mt: 5, // margin-top to move it down from top
-  }}
->
+    <div>
+      <div className="profile-container">
+        <div className="icon">
+          <Box sx={{ position: "relative" }}>
+            <Avatar
+              src={user.profilePicture}
+              sx={{ width: 150, height: 150, border: 5, borderColor: "#fff" }}
+            />
+          </Box>
+        </div>
 
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          p: 2,
-          width: 260,
-          border: "1px solid #ddd",
-          borderRadius: 3, // smoother corners
-          boxShadow: "0 3px 10px rgba(0,0,0,0.15)",
-          bgcolor: "#fff",
-        }}
-      >
-        <Box sx={{ position: "relative" }}>
-          <Avatar
-            src={user.profilePicture}
-            sx={{ width: 80, height: 80 }}
-          />
-          <IconButton
-            sx={{
-              position: "absolute",
-              bottom: 0,
-              right: 0,
-              bgcolor: "#fff",
-              "&:hover": { bgcolor: "#eee" },
-              width: 24,
-              height: 24,
-            }}
-            onClick={handleProfilePictureClick}
-          >
-            <EditIcon sx={{ fontSize: 16 }} />
-          </IconButton>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            style={{ display: "none" }}
-            onChange={handleProfilePictureChange}
-          />
-        </Box>
+        <div className="info">
+          <div className="naming">
+            John Doe <span className="position"> | Frontend Developer</span>
+          </div>
+          <div className="intro">
+            Pasionate developer with a lot of experience in Frontend Development
+            and Backend Development as well
+          </div>
+          <div className="skills">
+            Skills : React &bull; JavaScript &bull; CSS
+          </div>
+        </div>
+      </div>
 
-        <Typography
-          variant="subtitle1"
-          sx={{ mt: 1, fontWeight: "bold", textAlign: "center" }}
-        >
-          {user.fullName}
-        </Typography>
-        <Typography variant="body2" sx={{ textAlign: "center" }}>
-          {user.headline}
-        </Typography>
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{ textAlign: "center" }}
-        >
-          {user.location}
-        </Typography>
+      <div className="follow-container">
+        <div className="follower">
+          Followers <p>289</p>
+        </div>
+        <div className="follower following">
+          Following <p>29</p>
+        </div>
+        <div className="follower projects">
+          Projects <p>19</p>
+        </div>
+      </div>
 
-        <Typography variant="caption" sx={{ mt: 1, textAlign: "center" }}>
-          Skills: {user.skills.length ? user.skills.join(", ") : "None"}
-        </Typography>
-
-        <Button
-          variant="contained"
-          color="primary"
-          sx={{ mt: 2, py: 0.5, px: 2, fontSize: "0.75rem", borderRadius: 2 }}
-          onClick={handleCompleteProfile}
-        >
-          Complete Profile
-        </Button>
-      </Box>
-    </Box>
+      <div className="project-head">My Projects</div>
+      <div className="project-container">
+        <div className="project-showcase">
+          Project 1 <p className="project-details">React Node</p>
+        </div>
+        <div className="project-showcase">
+          Project 1 <p className="project-details">React Node</p>
+        </div>
+        <div className="project-showcase">
+          Project 1 <p className="project-details">React Node</p>
+        </div>
+        <div className="project-showcase">
+          Project 1 <p className="project-details">React Node</p>
+        </div>
+        <div className="project-showcase">
+          Project 1 <p className="project-details">React Node</p>
+        </div>
+        <div className="project-showcase">
+          Project 1 <p className="project-details">React Node</p>
+        </div>
+      </div>
+    </div>
   );
 };
 
