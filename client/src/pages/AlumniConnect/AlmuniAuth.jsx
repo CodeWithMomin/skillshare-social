@@ -16,14 +16,38 @@ const AlumniAuth = () => {
 
   const toggleForm = () => setIsSignUp(!isSignUp);
 
- const handleSubmit = (e) => {
-    e.preventDefault();
-    // Simulate login/signup
-    localStorage.setItem("alumni-token", "dummy_token");
-    navigate("/alumniconnect"); // redirect to alumni dashboard
-  };
-    
+  const [formData, setFormData] = useState({
+    fullname: "",
+    email: "",
+    password: "",
+    graduation_year: "",
+    department: "",
+    company: "",
+    job: "",
+    location: "",
+  });
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value, // update only the changed field
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (isSignUp) {
+      console.log("Signing up with data:", formData);
+      // localStorage.setItem("alumni-token", "dummy_signup_token");
+    } else {
+      console.log("Signing in with data:", formData);
+      localStorage.setItem("alumni-token", "dummy_signin_token");
+    }
+
+    navigate("/alumniconnect");
+  };
 
   return (
     <Box
@@ -68,7 +92,6 @@ const AlumniAuth = () => {
           }}
         >
           <CardContent sx={{ p: isSignUp ? 2.5 : 3.5 }}>
-            {/* Heading */}
             <Typography
               variant="h6"
               sx={{
@@ -81,43 +104,97 @@ const AlumniAuth = () => {
               {isSignUp ? "Create Alumni Account" : "Welcome Back Alumni"}
             </Typography>
 
-            {/* Form */}
             <Box
               component="form"
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 1.2,
-              }}
-              onSubmit={handleSubmit} // use onSubmit
+              onSubmit={handleSubmit}
+              sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}
             >
               {isSignUp && (
                 <>
-                  <TextField label="Full Name" variant="outlined" fullWidth size="small" />
-                  <TextField label="Graduation Year" variant="outlined" fullWidth size="small" />
-                  <TextField label="Department / Major" variant="outlined" fullWidth size="small" />
+                  <TextField
+                    label="Full Name"
+                    name="fullname"
+                    value={formData.fullname}
+                    variant="outlined"
+                    fullWidth
+                    size="small"
+                    onChange={handleChange}
+                  />
+                  <TextField
+                    label="Graduation Year"
+                    name="graduation_year"
+                    value={formData.graduation_year}
+                    variant="outlined"
+                    fullWidth
+                    size="small"
+                    onChange={handleChange}
+                  />
+                  <TextField
+                    label="Department / Major"
+                    name="department"
+                    value={formData.department}
+                    variant="outlined"
+                    fullWidth
+                    size="small"
+                    onChange={handleChange}
+                  />
                 </>
               )}
 
-              <TextField label="Email" variant="outlined" fullWidth size="small" />
+              <TextField
+                label="Email"
+                name="email"
+                variant="outlined"
+                fullWidth
+                size="small"
+                value={formData.email}
+                onChange={handleChange}
+              />
               <TextField
                 label="Password"
+                name="password"
                 type="password"
                 variant="outlined"
                 fullWidth
                 size="small"
+                value={formData.password}
+                onChange={handleChange}
               />
 
               {isSignUp && (
                 <>
-                  <TextField label="Company / Organization" variant="outlined" fullWidth size="small" />
-                  <TextField label="Job Title / Role" variant="outlined" fullWidth size="small" />
-                  <TextField label="Location" variant="outlined" fullWidth size="small" />
+                  <TextField
+                    label="Company / Organization"
+                    name="company"
+                    variant="outlined"
+                    fullWidth
+                    size="small"
+                    value={formData.company}
+                    onChange={handleChange}
+                  />
+                  <TextField
+                    label="Job Title / Role"
+                    name="job"
+                    variant="outlined"
+                    fullWidth
+                    size="small"
+                    value={formData.job}
+                    onChange={handleChange}
+                  />
+                  <TextField
+                    label="Location"
+                    name="location"
+                    variant="outlined"
+                    fullWidth
+                    size="small"
+                    value={formData.location}
+                    onChange={handleChange}
+                  />
                 </>
               )}
 
               <Button
-                type="submit" // important!
+                type="submit"
                 variant="contained"
                 fullWidth
                 sx={{
@@ -133,7 +210,6 @@ const AlumniAuth = () => {
               </Button>
             </Box>
 
-            {/* Only for Sign In */}
             {!isSignUp && (
               <>
                 <Divider sx={{ my: 2 }}>OR</Divider>
@@ -141,21 +217,33 @@ const AlumniAuth = () => {
                   <Button
                     variant="contained"
                     fullWidth
-                    sx={{ backgroundColor: "#1877f2", textTransform: "none", "&:hover": { backgroundColor: "#145db2" } }}
+                    sx={{
+                      backgroundColor: "#1877f2",
+                      textTransform: "none",
+                      "&:hover": { backgroundColor: "#145db2" },
+                    }}
                   >
                     Connect with Facebook
                   </Button>
                   <Button
                     variant="contained"
                     fullWidth
-                    sx={{ backgroundColor: "#db4437", textTransform: "none", "&:hover": { backgroundColor: "#b93227" } }}
+                    sx={{
+                      backgroundColor: "#db4437",
+                      textTransform: "none",
+                      "&:hover": { backgroundColor: "#b93227" },
+                    }}
                   >
                     Connect with Google
                   </Button>
                   <Button
                     variant="contained"
                     fullWidth
-                    sx={{ backgroundColor: "#0a66c2", textTransform: "none", "&:hover": { backgroundColor: "#004182" } }}
+                    sx={{
+                      backgroundColor: "#0a66c2",
+                      textTransform: "none",
+                      "&:hover": { backgroundColor: "#004182" },
+                    }}
                   >
                     Connect with LinkedIn
                   </Button>
@@ -163,7 +251,6 @@ const AlumniAuth = () => {
               </>
             )}
 
-            {/* Toggle */}
             <Typography
               sx={{
                 textAlign: "center",
@@ -175,7 +262,11 @@ const AlumniAuth = () => {
               {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
               <Typography
                 component="span"
-                sx={{ color: "#e65100", fontWeight: "bold", cursor: "pointer" }}
+                sx={{
+                  color: "#e65100",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                }}
                 onClick={toggleForm}
               >
                 {isSignUp ? "Sign In" : "Sign Up"}

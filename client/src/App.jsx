@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import Feed from "./pages/Feed";
 import Notifications from "./pages/Notifications";
@@ -25,6 +25,7 @@ function App() {
   const isAuthenticated = !!localStorage.getItem("token");
   const isAlumniAuthenticated=!!localStorage.getItem("alumni-token");
    console.log(isAlumniAuthenticated)
+  
   const router = createBrowserRouter([
     // 🔓 Public route (login only)
     {
@@ -46,6 +47,10 @@ function App() {
         />
       ),
       children: [
+         {
+      index: true,
+      element: <Navigate to="/feed" replace />,
+    },
         {
           path: "feed",
           element: <Feed />,
