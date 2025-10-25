@@ -7,6 +7,7 @@ import {
   Card,
   CardContent,
   Divider,
+  MenuItem,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
@@ -17,21 +18,16 @@ const AlumniAuth = () => {
   const toggleForm = () => setIsSignUp(!isSignUp);
 
   const [formData, setFormData] = useState({
-    fullname: "",
     email: "",
     password: "",
-    graduation_year: "",
-    department: "",
-    company: "",
-    job: "",
-    location: "",
+    userType: "", // Student / Alumni
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value, // update only the changed field
+      [name]: value,
     }));
   };
 
@@ -39,20 +35,24 @@ const AlumniAuth = () => {
     e.preventDefault();
 
     if (isSignUp) {
-      console.log("Signing up with data:", formData);
-      // localStorage.setItem("alumni-token", "dummy_signup_token");
+      console.log("Signing up with minimal data:", formData);
+      localStorage.setItem("alumni-token", "dummy_signup_token");
+
+      // Redirect to Complete Profile page
+      navigate("/alumniconnect/profile");
     } else {
       console.log("Signing in with data:", formData);
       localStorage.setItem("alumni-token", "dummy_signin_token");
-    }
 
-    navigate("/alumniconnect");
+      // Redirect to alumni network after sign in
+      navigate("/alumniconnect");
+    }
   };
 
   return (
     <Box
       sx={{
-        minHeight: "95vh",
+        minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
         backgroundColor: "#f5f5f5",
@@ -73,25 +73,25 @@ const AlumniAuth = () => {
         IUST Alumni Association
       </Box>
 
-      {/* Main Card */}
+      {/* Auth Card */}
       <Box
         sx={{
           flexGrow: 1,
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
+          p: 2,
         }}
       >
         <Card
           sx={{
-            width: isSignUp ? 320 : 380,
+            width: 360,
             borderRadius: 3,
-            boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+            boxShadow: "0 4px 15px rgba(0,0,0,0.1)",
             backgroundColor: "#fff",
-            transition: "width 0.3s ease",
           }}
         >
-          <CardContent sx={{ p: isSignUp ? 2.5 : 3.5 }}>
+          <CardContent sx={{ p: 3 }}>
             <Typography
               variant="h6"
               sx={{
@@ -101,104 +101,56 @@ const AlumniAuth = () => {
                 mb: 2,
               }}
             >
-              {isSignUp ? "Create Alumni Account" : "Welcome Back Alumni"}
+              {isSignUp ? "Create Account" : "Welcome Back"}
             </Typography>
 
             <Box
               component="form"
               onSubmit={handleSubmit}
-              sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}
+              sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}
             >
-              {isSignUp && (
-                <>
-                  <TextField
-                    label="Full Name"
-                    name="fullname"
-                    value={formData.fullname}
-                    variant="outlined"
-                    fullWidth
-                    size="small"
-                    onChange={handleChange}
-                  />
-                  <TextField
-                    label="Graduation Year"
-                    name="graduation_year"
-                    value={formData.graduation_year}
-                    variant="outlined"
-                    fullWidth
-                    size="small"
-                    onChange={handleChange}
-                  />
-                  <TextField
-                    label="Department / Major"
-                    name="department"
-                    value={formData.department}
-                    variant="outlined"
-                    fullWidth
-                    size="small"
-                    onChange={handleChange}
-                  />
-                </>
-              )}
-
+              {/* Email */}
               <TextField
                 label="Email"
                 name="email"
                 variant="outlined"
-                fullWidth
                 size="small"
                 value={formData.email}
                 onChange={handleChange}
               />
+
+              {/* Password */}
               <TextField
                 label="Password"
                 name="password"
                 type="password"
                 variant="outlined"
-                fullWidth
                 size="small"
                 value={formData.password}
                 onChange={handleChange}
               />
 
-              {isSignUp && (
-                <>
-                  <TextField
-                    label="Company / Organization"
-                    name="company"
-                    variant="outlined"
-                    fullWidth
-                    size="small"
-                    value={formData.company}
-                    onChange={handleChange}
-                  />
-                  <TextField
-                    label="Job Title / Role"
-                    name="job"
-                    variant="outlined"
-                    fullWidth
-                    size="small"
-                    value={formData.job}
-                    onChange={handleChange}
-                  />
-                  <TextField
-                    label="Location"
-                    name="location"
-                    variant="outlined"
-                    fullWidth
-                    size="small"
-                    value={formData.location}
-                    onChange={handleChange}
-                  />
-                </>
-              )}
+              {/* User Type Dropdown */}
+              <TextField
+                select
+                label="User Type"
+                name="userType"
+                value={formData.userType}
+                onChange={handleChange}
+                size="small"
+                fullWidth
+              >
+                <MenuItem value="Student">Student</MenuItem>
+                <MenuItem value="Alumni">Alumni</MenuItem>
+              </TextField>
 
+              {/* Submit Button */}
               <Button
                 type="submit"
                 variant="contained"
                 fullWidth
                 sx={{
-                  mt: 1.2,
+                  mt: 2,
                   py: 0.9,
                   backgroundColor: "#e65100",
                   textTransform: "none",
@@ -210,6 +162,7 @@ const AlumniAuth = () => {
               </Button>
             </Box>
 
+            {/* Social login for Sign In only */}
             {!isSignUp && (
               <>
                 <Divider sx={{ my: 2 }}>OR</Divider>
@@ -251,6 +204,7 @@ const AlumniAuth = () => {
               </>
             )}
 
+            {/* Toggle Sign In / Sign Up */}
             <Typography
               sx={{
                 textAlign: "center",
@@ -259,7 +213,9 @@ const AlumniAuth = () => {
                 color: "text.secondary",
               }}
             >
-              {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
+              {isSignUp
+                ? "Already have an account?"
+                : "Don't have an account?"}{" "}
               <Typography
                 component="span"
                 sx={{

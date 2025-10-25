@@ -1,0 +1,264 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'poppins', sans-serif;
+}
+
+html,
+body {
+  height: 100%;
+    overflow-x:hidden ;
+  overflow-y: auto;
+  font-family: "poppins", Arial, sans-serif;
+  background-color: #f5f5f5;
+  color: #0077B5;
+  scrollbar-width:thin;
+            
+}
+body::-webkit-scrollbar-thumb{
+    border: none;
+    background-clip: padding-box;
+}
+
+/* body:hover {
+  scrollbar-width: thin;
+} */
+
+
+/* ALumni Connect */
+.Alumni-container {
+
+  height: auto;
+  border: 1px solid;
+ 
+  /* padding: 10px; */
+}
+.header-body{
+    top: 0;
+    position: sticky;
+    z-index: 1000;
+}
+.alumni-header {
+  width: 100%;
+  height: 100px;
+ background-color: white;
+  display: flex;
+ 
+
+
+}
+
+.alumni-logo {
+
+  width: 300px;
+  height: 100px;
+  height: 99px;
+  /* border: 1px solid green; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.alumni-logo div {
+  width: 45px;
+  height: 45px;
+  margin-inline: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  font-size: 35px;
+  font-family: sans-serif;
+  background-color: #ee9917;
+  color: #222221;
+}
+
+.header-text {
+  width: 210px;
+  height: inherit;
+  /* takes height of parent */
+
+
+  display: flex;
+  flex-direction: column;
+  /* stack spans vertically */
+  justify-content: center;
+  /* center vertically inside div */
+  align-items: flex-start;
+  /* align to left (start) horizontally */
+  padding-left: 5px;
+  /* optional, some inner spacing */
+  gap: 5px;
+  /* space between lines */
+}
+
+.header-text span {
+  font-size: 30px;
+  font-weight: bolder;
+  font-family: sans-serif;
+  color: #222221;
+}
+
+.alumni-navlinks {
+  background-color: #f89807;
+
+  display: flex;
+  justify-content: center;
+  /* horizontal row */
+  height: 50px;
+  gap: 20px;
+  /* space between links */
+  align-items: center;
+  /* vertically center */
+  padding: 10px;
+  /* top & bottom padding */
+
+}
+
+.alumni-navlinks a {
+  text-decoration: none;
+  /* remove underline */
+  color: #ffffff;
+  /* link color */
+  font-weight: bold;
+  font-size: 16px;
+  font-family: sans-serif;
+  transition: color 0.3s, border-bottom 0.3s;
+  padding-bottom: 2px;
+  /* for hover border effect */
+}
+
+.alumni-navlinks a:hover {
+  color: #222221;
+  /* hover color */
+
+  cursor: pointer;
+}
+
+.alumni-body {
+  padding: 40px;
+  /* inner spacing */
+  margin-top: 10px;
+  /* spacing below header/nav */
+  min-height: calc(100vh - 120px);
+  /* full height minus header */
+  background-color: #ffffff;
+  
+
+ 
+}
+.dashboard_container{
+     margin-top: 10px;
+  /* spacing below header/nav */
+  min-height: calc(100vh - 120px);
+  /* full height minus header */
+  background-color: #ffffff;
+  /* optional background */
+  display: flex;
+  flex-direction:row;
+  /* stack child components vertically */
+  gap: 25px;
+  /* space between child components */
+}
+
+.dashboard_container .profile {
+  width: 290px;
+  height: 230px;
+  border: 1px solid gray;
+  border-radius: 15px;
+  padding:40px 20px;
+  /* Background settings */
+  background-color:#9c5b2f; /* better opacity control */
+  background-image: url('../../assets/378_1466079494_1.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-blend-mode: overlay; /* ✅ blends color + image beautifully */
+}
+.profile{
+    color: white;
+    font-family: 'Courier New', Courier, monospace;
+}
+.profile p{
+    font-size: 13px;
+}
+
+.profile button:hover{
+    cursor: pointer;
+     transition: all 0.3s ease;
+     background-color: whitesmoke;
+}
+.alumni-directory{
+    width: 290px;
+  height: 230px;
+  border: 1px solid gray;
+  border-radius: 15px;
+  padding:40px 20px;
+  color: white;
+  font-family: 'Courier New', Courier, monospace;
+  background-color:#494545; /* better opacity control */
+  background-image: url('../../assets/post1328_t1513785733_5iHoMR6DRG.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-blend-mode: overlay;
+}
+.alumni-directory p{
+    font-size: 13px;
+}
+.alumni-city{
+  width: 290px;
+  height: 230px;
+  border: 1px solid gray;
+  border-radius: 15px;
+  padding:40px 20px;
+  color: white;
+  font-family: 'Courier New', Courier, monospace;
+  background-color:#9c5b2f; /* better opacity control */
+  background-image: url('../../assets/post1372_t1515410383_ALaMbKYyPy.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-blend-mode: overlay;
+}
+.alumni-city p{
+    font-size: 13px;
+}
+.alumni-batchmates{
+  width: 290px;
+  height: 230px;
+  border: 1px solid gray;
+  border-radius: 15px;
+  padding:40px 20px;
+  color: white;
+  font-family: 'Courier New', Courier, monospace;
+  background-color:#454444; /* better opacity control */
+  background-image: url('../../assets/1590474494227.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-blend-mode: overlay;
+}
+.alumni-batchmates p{
+    font-size: 13px;
+}
+
+.dashboard-button{
+    width: 100px;
+    height: 35px;
+    background-color: white;
+    color:#ee9917;
+    border: none;
+    margin-top: 15px;
+    border-radius: 5px;
+     /* position: absolute;
+     bottom: 0; */
+}
+
+.dashboard-button:hover{
+    cursor: pointer;
+     transition: all 0.3s ease;
+     background-color: whitesmoke;
+    
+}
