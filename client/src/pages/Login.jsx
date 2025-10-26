@@ -1,103 +1,187 @@
 import React, { useState } from "react";
-import "../App.css"; // Import your CSS
+import { useAuth } from "../context/authContext";
+import { useNavigate } from "react-router-dom";
+import { TextField, Button, Typography, Box, Link } from "@mui/material";
 
 const Login = () => {
   const [isSignup, setIsSignup] = useState(false);
-  const [gender, setGender] = useState(""); // new state for gender
+  const { user,isAuthenticated,register,login} = useAuth();
+  const navigate = useNavigate();
 
-  const handleToggle = () => {
-    setIsSignup(!isSignup);
+  // Separate states for login and register forms
+  const [loginData, setLoginData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const [registerData, setRegisterData] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const toggleMode = () => {
+    setError("");
+    setIsSignup((prev) => !prev);
   };
 
-  const handleSubmit = (e) => {
+  const handleLoginChange = (e) => {
+    setLoginData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setError("");
+  };
+
+  const handleRegisterChange = (e) => {
+    setRegisterData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setError("");
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+
     if (isSignup) {
-      console.log("Signup form submitted", { gender });
-      // handle signup logic here
+      if (registerData.password !== registerData.confirmPassword) {
+        setError("Passwords do not match");
+        return;
+      }
+      setLoading(true);
+      const { success, error } = await register(registerData);
+      setLoading(false);
+      console.log(success);
+      
+      if (success) {
+        navigate("/");
+      } else {
+        setError(error || "Registration failed");
+      }
     } else {
-      console.log("Login form submitted");
-      // handle login logic here
+      setLoading(true);
+      const result = await login(loginData);
+      setLoading(false);
+      console.log(result);
+      console.log(result.success);
+      
+      
+      if (result.success) {
+        navigate("/");
+      } else {
+        setError(result.error || "Login failed");
+      }
     }
-    localStorage.setItem("token", "dummy_token");
-    window.location.href = "/";
-
-
-
-
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-box">
-        <h2>{isSignup ? "Create Account" : "Welcome Back"}</h2>
+    <Box
+      sx={{
+        width: 400,
+        margin: "auto",
+        padding: 4,
+        marginTop: 8,
+        boxShadow: 3,
+        borderRadius: 2,
+      }}
+    >
+      <Typography variant="h4" component="h1" gutterBottom>
+        {isSignup ? "Create Account" : "Welcome Back"}
+      </Typography>
 
-        <form onSubmit={handleSubmit}>
-          {isSignup && <input type="text" placeholder="Full Name" required />}
+      <form onSubmit={handleSubmit} noValidate>
+        {isSignup ? (
+          <>
+            <TextField
+              label="Full Name"
+              name="fullName"
+              value={registerData.fullName}
+              onChange={handleRegisterChange}
+              fullWidth
+              margin="normal"
+              required
+            />
+            <TextField
+              label="Email"
+              name="email"
+              value={registerData.email}
+              onChange={handleRegisterChange}
+              fullWidth
+              margin="normal"
+              type="email"
+              required
+            />
+            <TextField
+              label="Password"
+              name="password"
+              value={registerData.password}
+              onChange={handleRegisterChange}
+              fullWidth
+              margin="normal"
+              type="password"
+              required
+            />
+            <TextField
+              label="Confirm Password"
+              name="confirmPassword"
+              value={registerData.confirmPassword}
+              onChange={handleRegisterChange}
+              fullWidth
+              margin="normal"
+              type="password"
+              required
+            />
+          </>
+        ) : (
+          <>
+            <TextField
+              label="Email"
+              name="email"
+              value={loginData.email}
+              onChange={handleLoginChange}
+              fullWidth
+              margin="normal"
+              type="email"
+              required
+            />
+            <TextField
+              label="Password"
+              name="password"
+              value={loginData.password}
+              onChange={handleLoginChange}
+              fullWidth
+              margin="normal"
+              type="password"
+              required
+            />
+          </>
+        )}
 
-          <input type="email" placeholder="Email" required />
-          <input type="password" placeholder="Password" required />
+        {error && (
+          <Typography color="error" variant="body2" sx={{ mt: 1 }}>
+            {error}
+          </Typography>
+        )}
 
-          {isSignup && <input type="password" placeholder="Confirm Password" required />}
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          fullWidth
+          sx={{ mt: 3, mb: 2 }}
+          disabled={loading}
+        >
+          {loading ? (isSignup ? "Signing up..." : "Logging in...") : isSignup ? "Sign Up" : "Login"}
+        </Button>
+      </form>
 
-          {/* Gender selection */}
-          {isSignup && (
-            <div className="gender-selection">
-              <label>
-                <input
-                  type="radio"
-                  name="gender"
-                  value="Male"
-                  checked={gender === "Male"}
-                  onChange={(e) => setGender(e.target.value)}
-                  required
-                />
-                Male
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="gender"
-                  value="Female"
-                  checked={gender === "Female"}
-                  onChange={(e) => setGender(e.target.value)}
-                  required
-                />
-                Female
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="gender"
-                  value="Other"
-                  checked={gender === "Other"}
-                  onChange={(e) => setGender(e.target.value)}
-                  required
-                />
-                Other
-              </label>
-            </div>
-          )}
-
-          <button type="submit">{isSignup ? "Sign Up" : "Login"}</button>
-        </form>
-
-        <p>
-          {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
-          <span onClick={handleToggle}>{isSignup ? "Login" : "Sign Up"}</span>
-        </p>
-      </div>
-
-
-
-
-
-
-
-
-
-
-
-    </div>
+      <Typography variant="body2" align="center">
+        {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
+        <Link component="button" variant="body2" onClick={toggleMode} sx={{ cursor: "pointer" }}>
+          {isSignup ? "Login" : "Sign Up"}
+        </Link>
+      </Typography>
+    </Box>
   );
 };
 

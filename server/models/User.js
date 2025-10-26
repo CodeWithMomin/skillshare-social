@@ -15,7 +15,12 @@ const userSchema = new mongoose.Schema(
       required: true,
       minlength: 6
     },
-
+   
+    phone: { 
+    type: String, 
+    default: "",
+    match: [/^\+?\d{10,15}$/, 'Please fill a valid phone number'] 
+     },
     // Profile Information
     fullName: {
       type: String,
@@ -62,7 +67,7 @@ const userSchema = new mongoose.Schema(
         startDate: { type: String },
         endDate: { type: String },
         grade: { type: String },
-        activities: { type: String }
+        
       }
     ],
 
