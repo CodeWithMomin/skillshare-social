@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { useAuth } from "../context/authContext";
+import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { TextField, Button, Typography, Box, Link } from "@mui/material";
 
 const Login = () => {
   const [isSignup, setIsSignup] = useState(false);
-  const { user,isAuthenticated,register,login} = useAuth();
+  const { user,isAuthenticated,register,login,} = useAuth();
   const navigate = useNavigate();
 
   // Separate states for login and register forms

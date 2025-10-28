@@ -1,102 +1,136 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { Box, Avatar, Typography, Button, IconButton } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
+import React, { useEffect, useState } from 'react';
+import {
+  Avatar, Box, Chip, Container, Grid, IconButton, Paper, Tooltip, Typography, Divider,
+} from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import { useAuth } from '../context/AuthContext';
+const COVER_GRADIENT = "linear-gradient(90deg, #fa709a 0%, #fee140 100%)";
 
 const Profile = () => {
-  const navigate = useNavigate();
-  const fileInputRef = useRef(null);
-
-  const [user, setUser] = useState({
-    fullName: "John Doe",
-    email: "johndoe@example.com",
-    headline: "Frontend Developer",
-    location: "New York, USA",
-    skills: ["React", "JavaScript", "CSS"],
-    profilePicture: null,
-  });
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const {getUserProfile}=useAuth();
+  // Assume token is stored in localStorage after login
+  const token = localStorage.getItem('authToken'); 
 
   useEffect(() => {
-    const savedUser = JSON.parse(localStorage.getItem("userProfile"));
-    if (savedUser) setUser(savedUser);
-  }, []);
-
-  const handleCompleteProfile = () => navigate("/complete-profile");
-
-  const handleProfilePictureClick = () => fileInputRef.current.click();
-
-  const handleProfilePictureChange = e => {
-    const file = e.target.files[0];
-    if (file) {
-      const imageURL = URL.createObjectURL(file);
-      setUser(prev => ({ ...prev, profilePicture: imageURL }));
-      localStorage.setItem(
-        "userProfile",
-        JSON.stringify({ ...user, profilePicture: imageURL })
-      );
+    const fetchUserProfile = async () => {
+      try {
+      const data = await getUserProfile(); // data is already JSON here
+      // console.log(data);
+      // console.log(token);
+      console.log("Profile Data",data);
+      
+      setUser(data);
+      
+      
+    } catch (error) {
+      console.error(error.message);
+    } finally {
+      setLoading(false);
     }
-  };
+    };
+ fetchUserProfile();
+    
+  }, [token]);
+
+  if (loading) {
+    return (
+      <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
+        <Typography variant="h6" align="center">Loading user data...</Typography>
+      </Container>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
+        <Typography variant="h6" align="center">
+          User not found or please login
+        </Typography>
+      </Container>
+    );
+  }
+
+  const isProfileComplete = () =>
+    user.fullName &&
+    user.email &&
+    user.education?.length > 0 &&
+    user.experience?.length > 0;
+
+  const profileComplete = isProfileComplete();
 
   return (
-    <div>
-      <div className="profile-container">
-        <div className="icon">
-          <Box sx={{ position: "relative" }}>
-            <Avatar
-              src={user.profilePicture}
-              sx={{ width: 150, height: 150, border: 5, borderColor: "#fff" }}
-            />
+    <Container maxWidth="md" sx={{ mt: 5, mb: 8 }}>
+      {/* Your full profile page JSX here, same as before */}
+      <Paper elevation={3} sx={{ borderRadius: 2, overflow: 'hidden', pb: 2 }}>
+        {/* Cover/Banner */}
+        <Box sx={{
+          background: COVER_GRADIENT,
+          height: 170,
+          position: 'relative'
+        }} />
+
+        {/* Profile content overlay */}
+        <Box sx={{
+          position: 'relative',
+          mt: -10,
+          px: 4,
+          display: 'flex',
+          alignItems: 'center'
+        }}>
+          <Avatar
+            src={user.photo || ''}
+            alt={user.fullName}
+            sx={{
+              width: 120,
+              height: 120,
+              border: '4px solid #fff',
+              boxShadow: 2,
+              position: 'relative',
+              zIndex: 2,
+            }}
+          />
+          <Box sx={{ ml: 4, flex: 1 }}>
+            <Typography variant="h4" sx={{ fontWeight: 700 }}>
+              {user.fullName || 'Name not set'}
+            </Typography>
+            <Typography variant="subtitle1" color="primary" mt={0.5}>
+              {user.headline || 'No headline set'}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" mt={0.5}>
+              {user.location || 'Location not set'}
+            </Typography>
+            <Box mt={1.5}>
+              <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>
+                {user.bio || 'No bio available.'}
+              </Typography>
+            </Box>
           </Box>
-        </div>
-
-        <div className="info">
-          <div className="naming">
-            John Doe <span className="position"> | Frontend Developer</span>
-          </div>
-          <div className="intro">
-            Pasionate developer with a lot of experience in Frontend Development
-            and Backend Development as well
-          </div>
-          <div className="skills">
-            Skills : React &bull; JavaScript &bull; CSS
-          </div>
-        </div>
-      </div>
-
-      <div className="follow-container">
-        <div className="follower">
-          Followers <p>289</p>
-        </div>
-        <div className="follower following">
-          Following <p>29</p>
-        </div>
-        <div className="follower projects">
-          Projects <p>19</p>
-        </div>
-      </div>
-
-      <div className="project-head">My Projects</div>
-      <div className="project-container">
-        <div className="project-showcase">
-          Project 1 <p className="project-details">React Node</p>
-        </div>
-        <div className="project-showcase">
-          Project 1 <p className="project-details">React Node</p>
-        </div>
-        <div className="project-showcase">
-          Project 1 <p className="project-details">React Node</p>
-        </div>
-        <div className="project-showcase">
-          Project 1 <p className="project-details">React Node</p>
-        </div>
-        <div className="project-showcase">
-          Project 1 <p className="project-details">React Node</p>
-        </div>
-        <div className="project-showcase">
-          Project 1 <p className="project-details">React Node</p>
-        </div>
-      </div>
-    </div>
+          <Box>
+            <Tooltip title={profileComplete ? 'Edit Your Profile' : 'Complete Your Profile'}>
+              <IconButton
+                color={profileComplete ? 'success' : 'primary'}
+                onClick={() => {
+                  window.location.href = profileComplete ? '/edit-profile' : '/complete-profile';
+                }}
+                sx={{
+                  borderRadius: 2,
+                  background: '#fff',
+                  boxShadow: 1,
+                  '&:hover': {
+                    background: '#f5f5f5'
+                  }
+                }}
+              >
+                <AddIcon fontSize="large" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </Box>
+        {/* Render other sections like languages, education, experience ... */}
+      </Paper>
+    </Container>
   );
 };
 

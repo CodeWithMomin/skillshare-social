@@ -1,3 +1,4 @@
+
 import api from "./api";
 
 const authService={   
@@ -37,7 +38,18 @@ const authService={
     getUser: ()=>{
         const user=localStorage.getItem('user')
         return user? JSON.parse(user):null;
-    }
+    },
+
+   getUserProfile: async () => {
+  try {
+    const response = await api.get('/users/profile');
+    return response.user;  // Adjust based on response shape
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    return null;
+  }
+}
+
 }
 
 

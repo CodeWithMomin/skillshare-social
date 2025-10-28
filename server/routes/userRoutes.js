@@ -6,6 +6,7 @@ const {
     loginUser,
     getUserProfile,
     completeProfile,
+    getEducation,
     addEducation,
     updateEducation,
     deleteEducation,
@@ -25,7 +26,8 @@ router.get('/profile', protect, getUserProfile);
 router.put('/profile/complete', protect, completeProfile);
 
 // Protected routes - Education
-router.post('/education', protect, addEducation);
+router.get('/education/:id',protect,getEducation)
+router.post('/education/:id', protect, addEducation);
 router.put('/education/:id', protect, updateEducation);
 router.delete('/education/:id', protect, deleteEducation);
 

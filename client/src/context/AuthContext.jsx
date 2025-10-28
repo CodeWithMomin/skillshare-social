@@ -33,7 +33,8 @@ export const AuthProvider=({children})=>{
 
             const login = async (credentials) => {
               const res = await authService.login(credentials);
-              console.log("Login response:", res);
+              //  console.log("Login response:", res);
+              
             
               if (res.success) {
                 const userData = res.response.user;  // extract user object
@@ -48,14 +49,18 @@ export const AuthProvider=({children})=>{
             };
             
             
-    
+  const getUserProfile=async ()=>{
+              const res=await authService.getUserProfile()
+              // console.log("User INfo",res);
+              return res
+            }
     const logout=()=>{
         authService.logout();
         setUser(null)
         setIsAuthenticated(false)
     }
     return (
-        <AuthContext.Provider value={{user,isAuthenticated,register,login,logout}}>
+        <AuthContext.Provider value={{user,isAuthenticated,register,login,logout,getUserProfile}}>
             {children}
         </AuthContext.Provider>
     )

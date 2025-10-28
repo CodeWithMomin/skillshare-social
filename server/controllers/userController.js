@@ -104,6 +104,8 @@ const loginUser= async (req,res)=>{
 const getUserProfile=async (req,res)=>{
     try{
         const user=await User.findById(req.user.id).select('-password')
+        
+        
         if (user) {
       res.json({
         success: true,
@@ -161,7 +163,26 @@ const completeProfile = async (req, res) => {
         });
     }
 };
+//   get education pendging
+const getEducation = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
 
+    // Return the education array
+    res.json({
+      success: true,
+      education: user.education
+    });
+        } catch (error) {
+    res.status(500).json({
+      message: 'Server error',
+      error: error.message
+    });
+  }
+};
 
 const addEducation = async (req, res) => {
     try {
@@ -190,7 +211,7 @@ const addEducation = async (req, res) => {
         res.json({
             success: true,
             message: 'Education added successfully',
-            education: user.education
+            education: user.education[0]
         });
 
     } catch (error) {
@@ -451,6 +472,7 @@ module.exports = {
     loginUser,
     getUserProfile,
     completeProfile,
+    getEducation,
     addEducation,
     updateEducation,
     deleteEducation,
