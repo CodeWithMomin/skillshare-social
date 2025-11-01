@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { TextField, Button, Typography, Box, Link } from "@mui/material";
+import toast from "react-hot-toast";
 
 const Login = () => {
   const [isSignup, setIsSignup] = useState(false);
@@ -46,6 +47,7 @@ const Login = () => {
     if (isSignup) {
       if (registerData.password !== registerData.confirmPassword) {
         setError("Passwords do not match");
+         toast("Passwords Does Not Match");
         return;
       }
       setLoading(true);
@@ -54,22 +56,31 @@ const Login = () => {
       console.log(success);
       
       if (success) {
+        toast.success("Registration Successfull.",{
+          duration:1000,
+          position:"top-center"
+        })
         navigate("/");
       } else {
         setError(error || "Registration failed");
+         toast("Registration Failed.");
       }
     } else {
       setLoading(true);
       const result = await login(loginData);
       setLoading(false);
-      console.log(result);
-      console.log(result.success);
       
+      console.log(result.success);
+      toast.success("Login  Successfull.",{
+          duration:1000,
+          position:"top-center"
+        })
       
       if (result.success) {
         navigate("/");
       } else {
         setError(result.error || "Login failed");
+        toast("Login Failed.")
       }
     }
   };

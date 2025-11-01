@@ -32,6 +32,7 @@ const EducationContext=createContext()
         // Handle API error, such as showing an alert or storing error in local state
         console.error(result.error || "Failed to add education data.");
       }
+      return result
     } catch (error) {
       // Handle unexpected errors
       console.error("Unexpected error:", error.message);
@@ -52,6 +53,7 @@ const updateEducation = async (eduId, educationData) => {
       } else {
         console.error(result.error || 'Failed to update education data.');
       }
+      return result
     } catch (error) {
       console.error('Unexpected error:', error.message);
     }
@@ -68,6 +70,7 @@ const deleteEducation = async (eduId) => {
       } else {
         console.error(result.error || 'Failed to delete education data.');
       }
+      return result
     } catch (error) {
       console.error('Unexpected error:', error.message);
     }
@@ -75,7 +78,7 @@ const deleteEducation = async (eduId) => {
 };
 
 return (
-    <EducationContext.Provider value={{getEducation,addEducation,updateEducation,deleteEducation}}>
+    <EducationContext.Provider value={{education,getEducation,addEducation,updateEducation,deleteEducation}}>
         {children}
     </EducationContext.Provider>
 )

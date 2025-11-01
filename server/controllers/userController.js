@@ -123,7 +123,22 @@ const getUserProfile=async (req,res)=>{
   }
 };
 
+exports.uploadProfilePhoto= async (req,res)=>{
+    try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+// Construct image URL for serving static files
+    const imageUrl = `/uploads/${req.file.filename}`;
 
+    // Here, save imageURL to user profile in DB as needed (pseudo code):
+    await User.findByIdAndUpdate(req.user.id, { photo: imageUrl });
+
+    res.status(200).json({ message: 'Upload successful', imageUrl });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error during file upload' });
+  }
+};
 
 const completeProfile = async (req, res) => {
     try {
@@ -211,7 +226,7 @@ const addEducation = async (req, res) => {
         res.json({
             success: true,
             message: 'Education added successfully',
-            education: user.education[0]
+            data: user.education[0]
         });
 
     } catch (error) {
@@ -266,31 +281,35 @@ const updateEducation = async (req, res) => {
 
 
 const deleteEducation = async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id);
+  try {
+    const user = await User.findById(req.user.id); // or req.params.id, depending on auth middleware
 
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        user.education = user.education.filter(
-            edu => edu._id.toString() !== req.params.id
-        );
-
-        await user.save();
-
-        res.json({
-            success: true,
-            message: 'Education deleted successfully',
-            education: user.education
-        });
-
-    } catch (error) {
-        res.status(500).json({
-            message: 'Server error',
-            error: error.message
-        });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
+
+    user.education = user.education.filter(
+      edu => edu._id.toString() !== req.params.eduId
+    );
+    console.log("User ID in request param:", req.params.id);
+console.log("User ID in token:", req.user.id);
+console.log("Education ID to delete:", req.params.eduId);
+console.log("Current education IDs:", user.education.map(e => e._id.toString()));
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Education deleted successfully',
+      education: user.education
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error',
+      error: error.message
+    });
+  }
 };
 
 

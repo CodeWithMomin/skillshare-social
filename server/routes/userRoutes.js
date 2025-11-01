@@ -1,4 +1,5 @@
 const express = require('express');
+const {upload}=require('../middleware/uploadMiddleware')
 
 const router = express.Router();
 const {
@@ -14,7 +15,8 @@ const {
     updateExperience,
     deleteExperience,
     addSkill,
-    deleteSkill
+    deleteSkill,
+    uploadProfilePhoto,
 } = require('../controllers/userController');
 const {protect}=require('../middleware/authMiddleware')
 // Public routes
@@ -23,13 +25,15 @@ router.post('/login', loginUser);
 
 // Protected routes - Profile
 router.get('/profile', protect, getUserProfile);
+// Upload route, single file with key 'photo'
+// router.post('/upload-profile-photo', upload.single('photo'), uploadProfilePhoto);
 router.put('/profile/complete', protect, completeProfile);
 
 // Protected routes - Education
-router.get('/education/:id',protect,getEducation)
-router.post('/education/:id', protect, addEducation);
-router.put('/education/:id', protect, updateEducation);
-router.delete('/education/:id', protect, deleteEducation);
+router.get('/:id/education', protect, getEducation);
+router.post('/:id/education', protect, addEducation);
+router.put('/:id/education/:eduId', protect, updateEducation);
+router.delete('/:id/education/:eduId', protect, deleteEducation);
 
 // Protected routes - Experience
 router.post('/experience', protect, addExperience);

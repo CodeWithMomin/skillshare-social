@@ -7,7 +7,7 @@ import Projects from "./pages/Projects";
 import Profile from "./pages/Profile";
 import Login from "./pages/Login"; // public
 import ProtectedRoute from "./components/ProtectedRoute";
-
+import { Toaster } from 'react-hot-toast';
 import UserChat from "./pages/UserChat";
 import CompleteProfile from "./pages/CompleteProfile";
 import Settings from "./pages/Settings";
@@ -22,7 +22,8 @@ import AlumniProfile from "./pages/AlumniConnect/AlumniProfile";
 import AboutUs from "./pages/AlumniConnect/AboutUs";
 import AlumniProtectedRoutes from "./components/AlumniComponents/AlumniProtectedRoutes";
 import Dashboard from "./pages/AlumniConnect/Dashboard";
-import { useAuth } from "./context/authContext";
+import { useAuth } from "./context/AuthContext";
+
 function App() {
   // const isAuthenticated = !!localStorage.getItem("authToken");
   const {isAuthenticated}=useAuth()
@@ -134,7 +135,10 @@ function App() {
     
   ]);
 
-  return <RouterProvider router={router} />;
+  return <>
+  <RouterProvider router={router} />
+  <Toaster/>
+  </>;
 }
 
 export default App;

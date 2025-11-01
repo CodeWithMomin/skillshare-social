@@ -15,9 +15,12 @@
     "@mkyy/mui-search-bar": "^0.5.2",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
+    "@mui/x-date-pickers": "^8.15.0",
     "axios": "^1.12.2",
+    "dayjs": "^1.11.18",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.9.3",
     "react-scrollbars-custom": "^4.1.1"
   },

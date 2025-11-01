@@ -4,14 +4,21 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+
+
 const COVER_GRADIENT = "linear-gradient(90deg, #fa709a 0%, #fee140 100%)";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const {getUserProfile}=useAuth();
+  const [preview, setPreview] = useState(null); 
   // Assume token is stored in localStorage after login
   const token = localStorage.getItem('authToken'); 
+  const navigate=useNavigate()
+ 
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -19,13 +26,14 @@ const Profile = () => {
       const data = await getUserProfile(); // data is already JSON here
       // console.log(data);
       // console.log(token);
-      console.log("Profile Data",data);
+      // console.log("Profile Data",data);
       
       setUser(data);
       
       
     } catch (error) {
       console.error(error.message);
+       toast("error:", error);
     } finally {
       setLoading(false);
     }
@@ -33,15 +41,28 @@ const Profile = () => {
  fetchUserProfile();
     
   }, [token]);
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
+    // ✅ Preview the selected image without API
+    const imageUrl = URL.createObjectURL(file);
+    setPreview(imageUrl);
+
+   
+  };
+
+  ;
   if (loading) {
     return (
       <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
-        <Typography variant="h6" align="center">Loading user data...</Typography>
+        {/* <Typography variant="h6" align="center">Loading user data...</Typography> */}
+       {/* { toast.loading('Loading user data...')} */}
       </Container>
     );
-  }
-
+  }else{
+    toast.dismiss()
+}
   if (!user) {
     return (
       <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
@@ -79,18 +100,32 @@ const Profile = () => {
           display: 'flex',
           alignItems: 'center'
         }}>
-          <Avatar
-            src={user.photo || ''}
-            alt={user.fullName}
-            sx={{
-              width: 120,
-              height: 120,
-              border: '4px solid #fff',
-              boxShadow: 2,
-              position: 'relative',
-              zIndex: 2,
-            }}
+            <input
+            accept="image/*"
+            id="upload-photo"
+            type="file"
+            style={{ display: "none" }}
+            onChange={handleImageChange}
           />
+                   <label htmlFor="upload-photo">
+            <Avatar
+              src={preview || user.photo || ""}
+              alt={user.fullName}
+              sx={{
+                width: 120,
+                height: 120,
+                border: "4px solid #fff",
+                boxShadow: 2,
+                position: "relative",
+                zIndex: 2,
+                cursor: "pointer", // 👈 makes it look clickable
+                "&:hover": {
+                  opacity: 0.8,
+                },
+              }}
+            />
+          </label>
+
           <Box sx={{ ml: 4, flex: 1 }}>
             <Typography variant="h4" sx={{ fontWeight: 700 }}>
               {user.fullName || 'Name not set'}
@@ -112,7 +147,7 @@ const Profile = () => {
               <IconButton
                 color={profileComplete ? 'success' : 'primary'}
                 onClick={() => {
-                  window.location.href = profileComplete ? '/edit-profile' : '/complete-profile';
+                  navigate('/complete-profile')
                 }}
                 sx={{
                   borderRadius: 2,
