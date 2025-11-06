@@ -11,6 +11,7 @@ const {
     addEducation,
     updateEducation,
     deleteEducation,
+    getExperience,
     addExperience,
     updateExperience,
     deleteExperience,
@@ -36,7 +37,8 @@ router.put('/:id/education/:eduId', protect, updateEducation);
 router.delete('/:id/education/:eduId', protect, deleteEducation);
 
 // Protected routes - Experience
-router.post('/experience', protect, addExperience);
+router.get('/:id/experience', protect, getExperience);
+router.post('/:id/experience', protect, addExperience);
 router.put('/experience/:id', protect, updateExperience);
 router.delete('/experience/:id', protect, deleteExperience);
 

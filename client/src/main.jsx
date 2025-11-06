@@ -4,14 +4,17 @@ import './index.css';
 import App from './App.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { EduContextProvider } from './context/EducationContext.jsx';
+import { ExpContextProvider } from './context/ExpContext.jsx';
 
 
 createRoot(document.getElementById('root')).render(
  
     <AuthProvider>
-      <EduContextProvider>
+      <ExpContextProvider>
+        <EduContextProvider>
         <App />
       </EduContextProvider>
+      </ExpContextProvider>
     </AuthProvider>
  
 );

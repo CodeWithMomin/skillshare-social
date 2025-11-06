@@ -80,10 +80,10 @@ function App() {
           path: "chat",
           element:<UserChat/>,
         },
-        {
-          path:"complete-profile",
-          element:<CompleteProfile/>
-        },
+        // {
+        //   path:"complete-profile",
+        //   element:<CompleteProfile/>
+        // },
          {
           path:"settings",
           element:<Settings/>
@@ -99,6 +99,13 @@ function App() {
          
       ],
       
+    },
+    {
+      path:"/complete-profile",
+      element:(
+        <AlumniProtectedRoutes element={<CompleteProfile/>}
+        isAlumniAuthenticated={isAlumniAuthenticated}/>
+      )
     },
     {
   path: "/alumniconnect",

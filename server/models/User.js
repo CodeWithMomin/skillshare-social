@@ -15,12 +15,17 @@ const userSchema = new mongoose.Schema(
       required: true,
       minlength: 6
     },
-   
-    phone: { 
-    type: String, 
-    default: "",
-    match: [/^\+?\d{10,15}$/, 'Please fill a valid phone number'] 
-     },
+   phone: {
+  type: String,
+  required: false,  // or set to true only if you always ensure value exists
+  validate: {
+    validator: function(v) {
+      return !v || /^\d{10}$/.test(v);  // allow empty or valid phone format
+    },
+    message: 'Please fill a valid phone number'
+  }
+},
+
     // Profile Information
     fullName: {
       type: String,
@@ -83,7 +88,6 @@ const userSchema = new mongoose.Schema(
         location: { type: String },
         startDate: { type: String },
         endDate: { type: String },
-        currentlyWorking: { type: Boolean, default: false },
         description: { type: String }
       }
     ],

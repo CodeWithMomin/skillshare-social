@@ -6,7 +6,7 @@ import { useAuth } from './AuthContext'
 const EducationContext=createContext()
 
  export const  EduContextProvider=({children})=>{
-      const [education,setEducation]=useState([])
+      // const [education,setEducation]=useState([])
      const { user, isAuthenticated } = useAuth(); 
 
 
@@ -14,7 +14,7 @@ const EducationContext=createContext()
         if(isAuthenticated && user?._id){
             const result=await educationService.getEducation(user._id)
             if(result.success){
-                setEducation(result.data)
+                // setEducation(result.data)
             }
             
             
@@ -27,7 +27,7 @@ const EducationContext=createContext()
     try {
       const result = await educationService.addEducation(user._id, educationData);
       if (result.success) {
-        setEducation(result.data);
+        // setEducation(result.data);
       } else {
         // Handle API error, such as showing an alert or storing error in local state
         console.error(result.error || "Failed to add education data.");
@@ -45,11 +45,11 @@ const updateEducation = async (eduId, educationData) => {
       const result = await educationService.updateEducation(user._id, eduId, educationData);
       if (result.success) {
         // Update local education state array with the updated entry
-        setEducation((prevEducation) =>
-          prevEducation.map((edu) =>
-            edu._id === eduId ? result.data : edu
-          )
-        );
+        // // setEducation((prevEducation) =>
+        //   prevEducation.map((edu) =>
+        //     edu._id === eduId ? result.data : edu
+        //   )
+        // );
       } else {
         console.error(result.error || 'Failed to update education data.');
       }
@@ -64,9 +64,9 @@ const deleteEducation = async (eduId) => {
     try {
       const result = await educationService.deleteEducation(user._id, eduId);
       if (result.success) {
-        setEducation((prevEducation) =>
-          prevEducation.filter((edu) => edu._id !== eduId)
-        );
+        // setEducation((prevEducation) =>
+        //   prevEducation.filter((edu) => edu._id !== eduId)
+        // );
       } else {
         console.error(result.error || 'Failed to delete education data.');
       }
@@ -78,7 +78,7 @@ const deleteEducation = async (eduId) => {
 };
 
 return (
-    <EducationContext.Provider value={{education,getEducation,addEducation,updateEducation,deleteEducation}}>
+    <EducationContext.Provider value={{getEducation,addEducation,updateEducation,deleteEducation}}>
         {children}
     </EducationContext.Provider>
 )

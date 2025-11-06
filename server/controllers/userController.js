@@ -201,17 +201,18 @@ const getEducation = async (req, res) => {
 
 const addEducation = async (req, res) => {
     try {
+       
+        
         const user = await User.findById(req.user.id);
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
-        }
-
+        }   
+        console.log("body",req.body);
+        
         const { school, degree, fieldOfStudy, startDate, endDate } = req.body;
 
-        if (!school) {
-            return res.status(400).json({ message: 'School name is required' });
-        }
+        
 
         user.education.unshift({
             school,
@@ -312,46 +313,65 @@ console.log("Current education IDs:", user.education.map(e => e._id.toString()))
   }
 };
 
+const getExperience = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Return the education array
+    res.json({
+      success: true,
+      experience: user.experience
+    });
+        } catch (error) {
+    res.status(500).json({
+      message: 'Server error',
+      error: error.message
+    });
+  }
+};
+      
+
 
 const addExperience = async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id);
+  try {
+    const {
+      company, title, employmentType, location, startDate, endDate, description,
+    } = req.body;
 
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        const { company, title, employmentType, location, startDate, endDate, currentlyWorking, description } = req.body;
-
-        if (!company || !title) {
-            return res.status(400).json({ message: 'Company and title are required' });
-        }
-
-        user.experience.unshift({
-            company,
-            title,
-            employmentType,
-            location,
-            startDate,
-            endDate,
-            currentlyWorking,
-            description
-        });
-
-        await user.save();
-
-        res.json({
-            success: true,
-            message: 'Experience added successfully',
-            experience: user.experience
-        });
-
-    } catch (error) {
-        res.status(500).json({
-            message: 'Server error',
-            error: error.message
-        });
+    if (!company || !title) {
+      return res.status(400).json({ message: 'Company and title are required' });
     }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      {
+        $push: {
+          experience: {
+            company, title, employmentType, location, startDate, endDate, description,
+          },
+        },
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({
+      success: true,
+      message: 'Experience added successfully',
+      experience: updatedUser.experience,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error Momin',
+      error: error.message,
+    });
+  }
 };
 
 
@@ -495,6 +515,7 @@ module.exports = {
     addEducation,
     updateEducation,
     deleteEducation,
+    getExperience,
     addExperience,
     updateExperience,
     deleteExperience,

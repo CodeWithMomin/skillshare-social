@@ -1,78 +1,370 @@
-import React, { useState,useEffect } from "react";
-import "../App.css"; // Make sure to use the css below
-import { useEdu } from "../context/EducationContext";
+import React, { useState ,useEffect} from "react";
+import "../pages/CompleteProfile.css";
+import EditIcon from '@mui/icons-material/Edit';
 import toast from "react-hot-toast";
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { useAuth } from "../context/AuthContext";
+import { useEdu } from "../context/EducationContext";
+import { useNavigate } from "react-router-dom";
+import { useExp } from "../context/ExpContext";
+const CompleteProfile = () => {
+const [userData,setUserData]=useState(null)
+ const {getUserProfile}=useAuth();
+ const navigate=useNavigate()
+  const {addEducation,updateEducation,deleteEducation}=useEdu()
+  const {addExperience,updateExperience,deleteExperience
+  }=useExp()
+  const sections = [
+    { id: "basic", name: "Basic Info" },
+    { id: "language", name: "Language" },
+    { id: "education", name: "Education" },
+    { id: "internships", name: "Internships" },
+    { id: "experience", name: "Experience" },
+    { id: "skills", name: "Skills" },
+    { id: "current", name: "Current Position" },
+    { id: "contact", name: "Contact" },
+  ];
+ 
+  const [activeSection, setActiveSection] = useState("basic");
+  // Skills state
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // --- Skill Management States ---
+  const [skills, setSkills] = useState([]);
+  const [skillInput, setSkillInput] = useState({ name: "", level: "Beginner" });
 
-const defaultProfile = {
-  basic: {
-    fullName: "",
-    email: "",
-    phone: "",
-    headline: "",
-    bio: "",
-    location: "",
-    photo: ""
-  },
-  languages: [],
-  education: [],
-  experience: [],
-  internships: [],
-  skills: [],
-  current: {
-    company: "",
-    title: "",
-    start: "",
-    type: ""
-  },
-  contact: {
-    email: "",
-    phone: "",
-    links: ""
+  // For editing existing skills
+  const [editIndex, setEditIndex] = useState(null);
+  const [editSkill, setEditSkill] = useState({ name: "", level: "Beginner" });
+
+  // --- Handlers ---
+
+  // Add a new skill
+  const handleAddSkill = () => {
+    if (!skillInput.name.trim()) return;
+    setSkills([...skills, skillInput]);
+    setSkillInput({ name: "", level: "Beginner" });
+  };
+
+  // Remove a skill
+  const handleRemoveSkill = index => {
+    const updatedSkills = skills.filter((_, i) => i !== index);
+    setSkills(updatedSkills);
+  };
+
+  // Start editing a skill
+  const handleEditSkill = index => {
+    setEditIndex(index);
+    setEditSkill(skills[index]);
+  };
+
+  // Save an edited skill
+  const handleSaveSkill = index => {
+    if (!editSkill.name.trim()) return;
+    const updatedSkills = [...skills];
+    updatedSkills[index] = editSkill;
+    setSkills(updatedSkills);
+    setEditIndex(null);
+  };
+
+  // Cancel editing
+  const handleCancelEdit = () => {
+    setEditIndex(null);
+    setEditSkill({ name: "", level: "Beginner" });
+  };
+
+  // --- Experience States ---
+  const [experiences, setExperiences] = useState([]);
+  const [experienceInput, setExperienceInput] = useState({
+  company: "",
+  title: "",
+  employmentType: "",
+  location: "",
+  startDate: "",
+  endDate: "",
+  currentlyWorking: false,
+  description: "",
+  });
+
+  // --- Handlers ---
+
+  // Add new experience
+ const handleAddExperience = async () => {
+ setExperiences([experienceInput]);
+  setTimeout(() => {
+    console.log("Latest Experience:", experienceInput);
+  }, 0);
+ const userId = userData?._id;  // or however you store the logged-in user ID
+
+  try {
+const { success, error, data } = await addExperience(experienceInput);
+    if (success) {
+      setUserData(prev => ({
+        ...prev,                                 // keep all other fields 
+        experience: [...prev.experience, data],  // append latest experience
+      }));
+
+      toast.success("Experience added successfully.");
+    } else {
+      toast.error("API failed.");
+    }
+  } catch (error) {
+    console.error("API Error:", error);
+  }
+   //setExperienceInput({
+  //   company: "",
+  //   role: "",
+  //   duration: "",
+  //   description: "",
+  // });
+
+};
+
+
+
+  // Remove experience
+  const handleRemoveExperience = index => {
+    const updatedExperiences = experiences.filter((_, i) => i !== index);
+    setExperiences(updatedExperiences);
+  };
+
+  // --- Education States ---
+  const [education, setEducation] = useState([]);
+  const [educationInput, setEducationInput] = useState({
+    school: "",
+    degree: "",
+    fieldOfStudy:"",
+    startDate:"",
+    endDate:"",
+    details: "",
+  });
+  const [educationEditingIndex, setEducationEditingIndex] = useState(null);
+
+  // --- Handlers ---
+
+  // Add education entry
+  const handleAddEducation = async () => {
+  if (!educationInput.school.trim() || !educationInput.degree.trim()) return;
+  const userId = userData?._id;
+
+ setEducation(prev => (Array.isArray(prev) ? [...prev, educationInput] : [educationInput]));
+
+  setEducationInput({
+    school: "",
+    degree: "",
+    fieldOfStudy: "",
+    startDate: "",
+    endDate: "",
+    details: "",
+  });
+
+  try {
+    const { success, error, data } = await addEducation( educationInput); // send only the single object
+    if (success) {
+      // console.log("Education saved successfully:", data);
+      setUserData(prev => ({ ...prev, education: [...prev.education, data] })); // append new returned data
+      toast.success("Education Added Successfully.", {
+        duration: 1000,
+        position: "top-center",
+      });
+    } else {
+      toast.error("API failed.");
+    }
+  } catch (error) {
+    console.error("Save Education API error:", error);
+    toast("API error:", error);
   }
 };
 
-const CompleteProfile = () => {
-  const {addEducation,updateEducation,deleteEducation}=useEdu()
-  const {getUserProfile}=useAuth()
-  // State
-  const [basic, setBasic] = useState({ ...defaultProfile.basic });
-  const [languages, setLanguages] = useState([]);
-  const [education, setEducation] = useState([]);
-  const [experience, setExperience] = useState([]);
-  const [internships, setInternships] = useState([]);
-  const [skills, setSkills] = useState([]);
-  const [current, setCurrent] = useState({ ...defaultProfile.current });
-  const [contact, setContact] = useState({ ...defaultProfile.contact });
+  const handleEditEducation=(index)=>{
+    const selectedEducation=education[index]
+    // console.log("Selected Education",selectedEducation);
+    setEducationInput({
+    school: selectedEducation.school,
+    degree: selectedEducation.degree,
+    fieldOfStudy: selectedEducation.fieldOfStudy,
+    startDate: selectedEducation.startDate,
+    endDate: selectedEducation.endDate,
+    details: selectedEducation.details,
+  });
+  setEducationEditingIndex(index)
+    
+  }
+const handleSaveEducationChanges=()=>{
+  if(educationEditingIndex==null) return;
+   const updatedEducation = [...education];
+  updatedEducation[educationEditingIndex] = educationInput; // update item
+  setEducation(updatedEducation);
+  setEducationEditingIndex(null);
+  setEducationInput({
+    school: "",
+    degree: "",
+    fieldOfStudy: "",
+    startDate: "",
+    endDate: "",
+    details: "",
+  });
+}
 
-  const [editSection, setEditSection] = useState({
-    basic: false, languages: false, education: false, experience: false,
-    internships: false, skills: false, current: false, contact: false
+
+  // Remove education entry
+  const handleRemoveEducation = async (index, eduId) => {
+  const userId = userData?._id;
+
+  if (userId && eduId != null) {
+    try {
+      const { success, error } = await deleteEducation(eduId);
+      if (success) {
+        toast.success("Education Removed Successfully.", {
+          duration: 1000,
+          position: "top-center",
+        });
+
+        // ✅ Remove from both education and userData.education safely
+        setEducation(prev => prev.filter((_, i) => i !== index));
+        setUserData(prev => ({
+          ...prev,
+          education: prev.education.filter((_, i) => i !== index),
+        }));
+      } else {
+        toast.error(error || "Failed to remove education.");
+      }
+    } catch (error) {
+      console.error("Remove Education API error:", error);
+      toast.error("API error while removing education.");
+    }
+  } else {
+    console.error("Missing user ID or education ID");
+  }
+};
+
+
+  // --- Internship States ---
+  const [internships, setInternships] = useState([]);
+  const [internshipInput, setInternshipInput] = useState({
+    organization: "",
+    role: "",
+    duration: "",
+    description: "",
   });
 
-  // Error states
-  const [basicErrors, setBasicErrors] = useState({});
-  const [langErrors, setLangErrors] = useState({});
-  const [eduErrors, setEduErrors] = useState({});
-  const [expErrors, setExpErrors] = useState({});
-  const [internErrors, setInternErrors] = useState({});
-  const [skillErrors, setSkillErrors] = useState({});
-  const [currentErrors, setCurrentErrors] = useState({});
-  const [contactErrors, setContactErrors] = useState({});
-  const [userData,setUserData]=useState([])
-   useEffect(() => {
+  // --- Handlers ---
+
+  // Add internship
+  const handleAddInternship = () => {
+    if (!internshipInput.organization.trim() || !internshipInput.role.trim())
+      return;
+    setInternships([...internships, internshipInput]);
+    setInternshipInput({
+      organization: "",
+      role: "",
+      duration: "",
+      description: "",
+    });
+  };
+
+  // Remove internship
+  const handleRemoveInternship = index => {
+    const updatedInternships = internships.filter((_, i) => i !== index);
+    setInternships(updatedInternships);
+  };
+
+  // --- Language States ---
+  const [languages, setLanguages] = useState([]);
+  const [languageInput, setLanguageInput] = useState({
+    name: "",
+    level: "Beginner",
+  });
+
+  // Edit states
+  const [editLangIndex, setEditLangIndex] = useState(null);
+  const [editLanguage, setEditLanguage] = useState({
+    name: "",
+    level: "Beginner",
+  });
+
+  // --- Handlers ---
+
+  // Add a language
+  const handleAddLanguage = () => {
+    if (!languageInput.name.trim()) return;
+    setLanguages([...languages, languageInput]);
+    setLanguageInput({ name: "", level: "Beginner" });
+  };
+
+  // Remove a language
+  const handleRemoveLanguage = index => {
+    const updatedLanguages = languages.filter((_, i) => i !== index);
+    setLanguages(updatedLanguages);
+  };
+
+  // Edit language
+  const handleEditLanguage = index => {
+    setEditLangIndex(index);
+    setEditLanguage(languages[index]);
+  };
+
+  // Save edited language
+  const handleSaveLanguage = index => {
+    if (!editLanguage.name.trim()) return;
+    const updatedLanguages = [...languages];
+    updatedLanguages[index] = editLanguage;
+    setLanguages(updatedLanguages);
+    setEditLangIndex(null);
+  };
+
+const [basicInfo, setBasicInfo] = useState({
+  fullName: "",
+  phoneNo: "",
+  location: "",
+  bio: "",
+});
+
+ 
+  // const [educationEditingIndex, setEducationEditingIndex] = useState(null);
+
+
+  const handleChangeBasic = (e) => {
+    const { name, value } = e.target;
+    setBasicInfo((prev) => ({ ...prev, [name]: value }));
+  };
+const handleBasicInfoSave=()=>{
+console.log(basicInfo);
+
+}
+useEffect(() => {
       const fetchUserProfile = async () => {
+        
+        
         try {
         const data = await getUserProfile(); // data is already JSON here
-        // console.log(data);
-        // console.log(token);
-        // console.log("Profile Data",data);
+        
+        console.log("Profile Data",data);
         
         setUserData(data);
-        console.log((data));
-        
+        setBasicInfo({
+            fullName: data.fullName || "",
+            email: data.email || "",
+            phoneNo: data.phone || "",
+            location: data.location || "",
+            bio: data.bio || "",
+          });
+        setExperienceInput({
+          company:data.experience.company || " ",
+          title:data.experience.title || "",
+          employmentType:data.experience.employmentType || "",
+          location:data.experience.location || "",
+          startDate:data.experience.startDate || "",
+          endDate:data.experience.endDate || "",
+          description:data.experience.description || ""
+        })
+        setEducation({
+          school: data.education.school,
+    degree: data.education.degree,
+    fieldOfStudy:data.education.fieldOfStudy,
+    startDate:data.education.startDate,
+    endDate: data.education.endDate,
+    details: data.education.details
+        })
         
       } catch (error) {
         console.error(error.message);
@@ -83,625 +375,832 @@ const CompleteProfile = () => {
       
     }, []);
 
-    useEffect(() => {
-  if (userData && userData.education) {
-    setEducation(userData.education); // sync local editable state
-  }
-}, [userData.education]);
-
-  // Validators
-  function validateBasic(val) {
-    let err = {};
-    if (!val.fullName) err.fullName = "Full name required.";
-    // if (!val.email || !emailRegex.test(val.email)) err.email = "Valid email required.";
-    if (val.phone && !/^[\d\+\-]+$/.test(val.phone)) err.phone = "Phone: digits or + - only.";
-    return err;
-  }
-  function validateLang(list) {
-    let out = {};
-    list.forEach((x, i) => { if (!x.language) out[i] = "Language required."; });
-    return out;
-  }
-  function validateEdu(list) {
-    let out = {};
-    list.forEach((x, i) => {
-      if (!x.school) out[i + 'school'] = "School required.";
-      if (!x.degree) out[i + 'degree'] = "Degree required.";
-    });
-    return out;
-  }
-  function validateExp(list) {
-    let out = {};
-    list.forEach((x, i) => {
-      if (!x.company) out[i + 'company'] = "Company required.";
-      if (!x.title) out[i + 'title'] = "Title required.";
-    });
-    return out;
-  }
-  function validateIntern(list) {
-    let out = {};
-    list.forEach((x, i) => {
-      if (!x.company) out[i + 'company'] = "Company required.";
-      if (!x.role) out[i + 'role'] = "Role required.";
-    });
-    return out;
-  }
-  function validateSkill(list) {
-    let out = {};
-    list.forEach((x, i) => {
-      if (!x.name) out[i + 'name'] = "Skill required.";
-    });
-    return out;
-  }
-  function validateCurrent(val) {
-    let err = {};
-    if (!val.company) err.company = "Company required.";
-    if (!val.title) err.title = "Title required.";
-    return err;
-  }
-  function validateContact(val) {
-    let err = {};
-    if (!val.email || !emailRegex.test(val.email)) err.email = "Valid email required.";
-    if (val.phone && !/^[\d\+\-]+$/.test(val.phone)) err.phone = "Digits or + - only.";
-    return err;
-  }
-
-  // --- Change/Save/Edit/Cancel for all sections
-  // Basic
-  function handleBasicChange(e) { setBasic({ ...basic, [e.target.name]: e.target.value }); setBasicErrors({}); 
-  
-}
-  function editBasic() { setEditSection({ ...editSection, basic: true });
-
- }
-    function saveBasic(e) {
-     e.preventDefault(); 
-     const err = validateBasic(basic); 
-     if (Object.keys(err).length) return setBasicErrors(err);
-      setEditSection({ ...editSection, basic: false });
-    // console.log(basic);
-     
-  }
-  function cancelBasic() { setEditSection({ ...editSection, basic: false }); setBasicErrors({}); }
-
-  // Languages
-  function addLanguage() { setLanguages([...languages, { language: "", proficiency: "Beginner" }]); setEditSection({ ...editSection, languages: true }); }
-  function handleLanguageChange(i, e) { setLanguages(languages.map((x, idx) => idx === i ? { ...x, [e.target.name]: e.target.value } : x)); setLangErrors({}); }
-  function removeLanguage(i) { setLanguages(languages.filter((_, idx) => idx !== i)); setLangErrors({}); }
-  function editLanguages() { setEditSection({ ...editSection, languages: true }); }
-  
-  
- async  function saveLanguages(e) {
-     e.preventDefault();
-      const err = validateLang(languages);
-       if (Object.keys(err).length) return setLangErrors(err); 
-       setEditSection({ ...editSection, languages: false });
-        console.log(languages);
-
-    try {
-  const { success, error, data } = await addLanguage(education[0]);
-  if (success) {
-    console.log("Education saved successfully:", data);
-    setEducation([...defaultProfile.education]);
-    toast.success("Education Added Successfully.",{
-      duration:1000,
-      position:"top-center",
-      style: {
-    
-  }
-    })
-  } else {
-    // console.error("API failed:", error);
-    toast.error("API failed.")
-  }
-} catch (error) {
-  console.error("Save Education API error:", error);
-   toast("API error:", error);
-}
-
-
-
-
-
-   }
-  function cancelLanguages() { setEditSection({ ...editSection, languages: false }); setLangErrors({}); }
-
-  // Education
-  function addeducation() { 
-    setEducation([...education, { school: "", degree: "", fieldOfStudy: "", startDate: "", endDate: "", grade: "" }]);
-     setEditSection({ ...editSection, education: true });
-     }
-  function handleEducationChange(i, e) { setEducation(education.map((x, idx) => idx === i ? { ...x, [e.target.name]: e.target.value } : x)); setEduErrors({}); }
-  async function removeEducation( eduId, idx) { 
-  const userId = userData?._id;
-  console.log(userId,eduId);
-  
-  if (userId && eduId != null) {
-    try {
-      const { success, error, data } = await deleteEducation(eduId);
-      if (success) {
-        toast.success("Education Removed Successfully.", {
-          duration: 1000,
-          position: "top-center",
-        });
-        // Update local state by removing the deleted education entry
-        setUserData(prev => ({
-          ...prev,
-          education: prev.education.filter((_, i) => i !== idx)
-        }));
-        setEducation(prev => prev.filter((_, i) => i !== idx));
-      } else {
-        toast.error(error || "Failed to remove education.");
-      }
-    } catch (error) {
-      console.error("API error: " + error.message);
-      console.error("Remove Education API error:", error);
-    }
-  } else {
-    console.error("Missing user ID or education ID");
-  }
-}
-
-  function editEducation(eduId,idx)
-   { 
-    const userId = userData?._id;
-    // console.log("editing Education",eduData,i);
-    
-    // setEducation(userData.education || []);
-    // setEditSection({ ...editSection, education: true });
-   }
- async function saveEducation(e) {
-   e.preventDefault();
-     const err = validateEdu(education); 
-     if (Object.keys(err).length) return setEduErrors(err);
-      setEducation([]);
-
-      // console.log(education);
-       try {
-  const { success, error, data } = await addEducation(education[0]);
-  if (success) {
-    console.log("Education saved successfully:", data);
-    setUserData(prev => ({ ...prev, education: data }));
-   setEditSection({ ...editSection, education: false });
-    toast.success("Education Added Successfully.",{
-      duration:1000,
-      position:"top-center",
-      style: {
-    
-  }
-    })
-  } else {
-    // console.error("API failed:", error);
-    toast.error("API failed.")
-  }
-} catch (error) {
-  console.error("Save Education API error:", error);
-   toast("API error:", error);
-}
-   }
-  function cancelEducation() { setEditSection({ ...editSection, education: false }); setEduErrors({}); }
-
-  // Experience
-  function addExperience() { setExperience([...experience, { company: "", title: "", employmentType: "Full-time", location: "", startDate: "", endDate: "", currentlyWorking: false, description: "" }]); setEditSection({ ...editSection, experience: true }); }
-  function handleExperienceChange(i, e) {
-    const { name, value, type, checked } = e.target;
-    setExperience(experience.map((x, idx) => idx === i ? { ...x, [name]: type === "checkbox" ? checked : value } : x));
-    setExpErrors({});
-  }
-  function removeExperience(i) { setExperience(experience.filter((_, idx) => idx !== i)); }
-  function editExperience() { setEditSection({ ...editSection, experience: true }); }
-  function saveExperience(e) { e.preventDefault(); const err = validateExp(experience); if (Object.keys(err).length) return setExpErrors(err); setEditSection({ ...editSection, experience: false }); }
-  function cancelExperience() { setEditSection({ ...editSection, experience: false }); setExpErrors({}); }
-
-  // Internships
-  function addInternship() { setInternships([...internships, { company: "", role: "", startDate: "", endDate: "", description: "" }]); setEditSection({ ...editSection, internships: true }); }
-  function handleInternshipChange(i, e) { setInternships(internships.map((x, idx) => idx === i ? { ...x, [e.target.name]: e.target.value } : x)); setInternErrors({}); }
-  function removeInternship(i) { setInternships(internships.filter((_, idx) => idx !== i)); }
-  function editInternships() { setEditSection({ ...editSection, internships: true }); }
-  function saveInternships(e) { e.preventDefault(); const err = validateIntern(internships); if (Object.keys(err).length) return setInternErrors(err); setEditSection({ ...editSection, internships: false }); }
-  function cancelInternships() { setEditSection({ ...editSection, internships: false }); setInternErrors({}); }
-
-  // Skills
-  function addSkill() { setSkills([...skills, { name: "", level: "Beginner" }]); setEditSection({ ...editSection, skills: true }); }
-  function handleSkillChange(i, e) { setSkills(skills.map((x, idx) => idx === i ? { ...x, [e.target.name]: e.target.value } : x)); setSkillErrors({}); }
-  function removeSkill(i) { setSkills(skills.filter((_, idx) => idx !== i)); }
-  function editSkills() { setEditSection({ ...editSection, skills: true }); }
-  function saveSkills(e) { e.preventDefault(); const err = validateSkill(skills); if (Object.keys(err).length) return setSkillErrors(err); setEditSection({ ...editSection, skills: false }); }
-  function cancelSkills() { setEditSection({ ...editSection, skills: false }); setSkillErrors({}); }
-
-  // Current
-  function handleCurrentChange(e) { setCurrent({ ...current, [e.target.name]: e.target.value }); setCurrentErrors({}); }
-  function editCurrent() { setEditSection({ ...editSection, current: true }); }
-  function saveCurrent(e) { e.preventDefault(); const err = validateCurrent(current); if (Object.keys(err).length) return setCurrentErrors(err); setEditSection({ ...editSection, current: false }); }
-  function cancelCurrent() { setEditSection({ ...editSection, current: false }); setCurrentErrors({}); }
-
-  // Contact
-  function handleContactChange(e) { setContact({ ...contact, [e.target.name]: e.target.value }); setContactErrors({}); }
-  function editContact() { setEditSection({ ...editSection, contact: true }); }
-  function saveContact(e) { e.preventDefault(); const err = validateContact(contact); if (Object.keys(err).length) return setContactErrors(err); setEditSection({ ...editSection, contact: false }); }
-  function cancelContact() { setEditSection({ ...editSection, contact: false }); setContactErrors({}); }
-
-  // --------- RENDER ----------
   return (
-    <div className="profile-center-card">
+    <div className="profile-wrapper">
+      
+      {/* ===== Sidebar ===== */}
+      <aside className="sidebar">
+        <h2 className="sidebar-title">Profile Sections</h2>
+        <ul className="sidebar-list">
+          {sections.map(sec => (
+            <li
+              key={sec.id}
+              className={`sidebar-item ${
+                activeSection === sec.id ? "active" : ""
+              }`}
+              onClick={() => setActiveSection(sec.id)}
+            >
+              {sec.name}
+            </li>
+          ))}
+        </ul>
+        <ul>
+          <button  className="save-btn" onClick={(e)=>{
+              e.preventDefault();
+              navigate("/profile")
+          }} >
+            Go Back
+            </button>
+        </ul>
+      </aside>
 
-      {/* Basic */}
-      <div className="profilecard">
-        <h3 className="profilecard-title">Basic Info</h3>
-        {!editSection.basic ? (
-         <div>
-  <div className="profilecard-viewrow"><label>Full Name</label><span>{userData.fullName || ' '}</span></div>
-  <div className="profilecard-viewrow"><label>Email</label><span>{userData.email || ' '}</span></div>
-  <div className="profilecard-viewrow"><label>Phone</label><span>{userData.phone || ' '}</span></div>
-  <div className="profilecard-viewrow"><label>Headline</label><span>{userData.headline || '--'}</span></div>
-  <div className="profilecard-viewrow"><label>Bio</label><span>{userData.bio || ' '}</span></div>
-  <div className="profilecard-viewrow"><label>Location</label><span>{userData.location || ''}</span></div>
-  <div className="profilecard-actions"><button className="edit-btn" onClick={editBasic}>Edit</button></div>
-</div>
+      {/* ===== Form Area ===== */}
+      <div className="form-area">
+        <h2 className="form-title">
+          {sections.find(s => s.id === activeSection)?.name || ""}
+        </h2>
 
-        ) : (
-          <form onSubmit={saveBasic} className="profilecard-form">
-            <div className="profilecard-group">
-              <label>Full Name</label>
-              <input className={basicErrors.fullName && "has-error"} name="fullName" value={basic.fullName} onChange={handleBasicChange} placeholder="Enter full name" />
-              {basicErrors.fullName && <span className="errormsg">{basicErrors.fullName}</span>}
-            </div>
-            <div className="profilecard-group">
-              <label>Email</label>
-              <input className={basicErrors.email && "has-error"} disabled name="email" value={basic.email} onChange={handleBasicChange} placeholder="Email" />
-              {basicErrors.email && <span className="errormsg">{basicErrors.email}</span>}
-            </div>
-            <div className="profilecard-group">
-              <label>Phone</label>
-              <input className={basicErrors.phone && "has-error"} name="phone" value={basic.phone} onChange={handleBasicChange} placeholder="Phone" />
-              {basicErrors.phone && <span className="errormsg">{basicErrors.phone}</span>}
-            </div>
-            <div className="profilecard-group">
-              <label>Headline</label>
-              <input name="headline" value={basic.headline} onChange={handleBasicChange} placeholder="Headline" />
-            </div>
-            <div className="profilecard-group">
-              <label>Bio</label>
-              <textarea name="bio" value={basic.bio} onChange={handleBasicChange} placeholder="Bio"></textarea>
-            </div>
-            <div className="profilecard-group">
-              <label>Location</label>
-              <input name="location" value={basic.location} onChange={handleBasicChange} placeholder="Location" />
-            </div>
-            <div className="profilecard-actions">
-              <button className="save-btn" type="submit">Save</button>
-              <button className="close-btn" type="button" onClick={cancelBasic}>Cancel</button>
-            </div>
-          </form>
-        )}
-      </div>
-
-      {/* Languages */}
-      <div className="profilecard">
-        <h3 className="profilecard-title">Languages</h3>
-        {!editSection.languages ? (
-          <div>
-            {languages.length === 0 ? <p className="profilecard-viewrow">None added</p> :
-              languages.map((lang, idx) => (
-                <div className="profilecard-viewrow" key={idx}>
-                  <label>{lang.language}</label>
-                  <span>{lang.proficiency}</span>
+        <form className="profile-form">
+          {/* === BASIC INFO === */}
+          {activeSection === "basic" && (
+            <>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label>Full Name</label>
+                  <input type="text" placeholder="Enter your full name" name="fullName" value={basicInfo.fullName}  onChange={handleChangeBasic}/>
                 </div>
-              ))}
-            <div className="profilecard-actions"><button className="edit-btn" onClick={editLanguages}>Edit</button></div>
-          </div>
-        ) : (
-          <form onSubmit={saveLanguages} className="profilecard-form">
-            {languages.map((lang, idx) => (
-              <div className="profilecard-group" key={idx}>
-                <label>Language</label>
-                <input className={langErrors[idx] && "has-error"} name="language" value={lang.language} onChange={e => handleLanguageChange(idx, e)} placeholder="Language" />
-                {langErrors[idx] && <span className="errormsg">{langErrors[idx]}</span>}
-                <select name="proficiency" value={lang.proficiency} onChange={e => handleLanguageChange(idx, e)}>
-                  <option value="Beginner">Beginner</option>
-                  <option value="Intermediate">Intermediate</option>
-                  <option value="Advanced">Advanced</option>
-                  <option value="Native">Native</option>
-                </select>
-                <button type="button" onClick={() => removeLanguage(idx)} style={{marginTop: "6px"}}>Remove</button>
-              </div>
-            ))}
-            <button type="button" className="edit-btn" onClick={addLanguage}>Add Language</button>
-            <div className="profilecard-actions">
-              <button className="save-btn" type="submit">Save</button>
-              <button className="close-btn" type="button" onClick={cancelLanguages}>Cancel</button>
-            </div>
-          </form>
-        )}
-      </div>
-
-      {/* Education */}
-      <div className="profilecard">
-        <h3 className="profilecard-title">Education</h3>
-        {!editSection.education ? (
-          <div>
-            {education.length === 0 ? (
-  <p className="profilecard-viewrow">None added</p>
-) : (
-  education.map((edu, idx) => (
-    <div className="profilecard-viewrow" key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-      <div>
-        <label>{edu.school}</label>
-        <span>{edu.degree}</span>
-      </div>
-      <div>
-        <button style={{ marginRight: "8px" }} onClick={() => editEducation(edu._id,idx)}>Edit</button>
-        <button onClick={() => removeEducation(edu._id,idx)}>Delete</button>
-      </div>
-    </div>
-  ))
-)}
-
-            <div className="profilecard-actions"><button className="edit-btn" onClick={editEducation}>Edit</button></div>
-          </div>
-        ) : (
-          <form onSubmit={saveEducation} className="profilecard-form">
-            {education.map((edu, idx) => (
-              <div className="profilecard-group" key={idx}>
-                <label>College/University</label>
-                <input className={eduErrors[idx+'school'] && "has-error"} name="school" value={edu.school} onChange={e => handleEducationChange(idx, e)} placeholder="School" />
-                {eduErrors[idx+'school'] && <span className="errormsg">{eduErrors[idx+'school']}</span>}
-                <label>Degree</label>
-                <input className={eduErrors[idx+'degree'] && "has-error"} name="degree" value={edu.degree} onChange={e => handleEducationChange(idx, e)} placeholder="Degree" />
-                {eduErrors[idx+'degree'] && <span className="errormsg">{eduErrors[idx+'degree']}</span>}
-                <label>Field of Study</label>
-                <input name="fieldOfStudy" value={edu.fieldOfStudy} onChange={e => handleEducationChange(idx, e)} placeholder="Field of Study" />
-                <label>Start Date</label>
-                <input name="startDate" value={edu.startDate} onChange={e => handleEducationChange(idx, e)} placeholder="Start Date" />
-                <label>End Date</label>
-                <input name="endDate" value={edu.endDate} onChange={e => handleEducationChange(idx, e)} placeholder="End Date" />
-                <label>Grade</label>
-                <input name="grade" value={edu.grade} onChange={e => handleEducationChange(idx, e)} placeholder="Grade" />
-                <button type="button" onClick={() => removeEducation(idx)} style={{marginTop: "6px"}}>Remove</button>
-              </div>
-            ))}
-            <button type="button" className="edit-btn" onClick={addeducation}>Add Education</button>
-            <div className="profilecard-actions">
-              <button className="save-btn" type="submit">Save</button>
-              <button className="close-btn" type="button" onClick={cancelEducation}>Cancel</button>
-            </div>
-          </form>
-        )}
-      </div>
-
-      {/* Experience */}
-      <div className="profilecard">
-        <h3 className="profilecard-title">Experience</h3>
-        {!editSection.experience ? (
-          <div>
-            {experience.length === 0 ? <p className="profilecard-viewrow">None added</p> :
-              experience.map((exp, idx) => (
-                <div className="profilecard-viewrow" key={idx}>
-                  <label>{exp.company}</label>
-                  <span>{exp.title}</span>
+                <div className="form-group">
+                  <label>Email</label>
+                  <input type="email" placeholder="Enter your email" name="email" disabled value={basicInfo.email} />
                 </div>
-              ))}
-            <div className="profilecard-actions"><button className="edit-btn" onClick={editExperience}>Edit</button></div>
-          </div>
-        ) : (
-          <form onSubmit={saveExperience} className="profilecard-form">
-            {experience.map((exp, idx) => (
-              <div className="profilecard-group" key={idx}>
-                <label>Company</label>
-                <input className={expErrors[idx+'company'] && "has-error"} name="company" value={exp.company} onChange={e => handleExperienceChange(idx, e)} placeholder="Company" />
-                {expErrors[idx+'company'] && <span className="errormsg">{expErrors[idx+'company']}</span>}
-                <label>Title</label>
-                <input className={expErrors[idx+'title'] && "has-error"} name="title" value={exp.title} onChange={e => handleExperienceChange(idx, e)} placeholder="Title" />
-                {expErrors[idx+'title'] && <span className="errormsg">{expErrors[idx+'title']}</span>}
-                <label>Employment Type</label>
-                <select name="employmentType" value={exp.employmentType} onChange={e => handleExperienceChange(idx, e)}>
-                  <option value="Full-time">Full-time</option>
-                  <option value="Part-time">Part-time</option>
-                  <option value="Self-employed">Self-employed</option>
-                  <option value="Freelance">Freelance</option>
-                  <option value="Contract">Contract</option>
-                  <option value="Internship">Internship</option>
-                </select>
-                <label>Location</label>
-                <input name="location" value={exp.location} onChange={e => handleExperienceChange(idx, e)} placeholder="Location" />
-                <label>Start Date</label>
-                <input name="startDate" value={exp.startDate} onChange={e => handleExperienceChange(idx, e)} placeholder="Start Date" />
-                <label>End Date</label>
-                <input name="endDate" value={exp.endDate} onChange={e => handleExperienceChange(idx, e)} placeholder="End Date" />
-                <label><input name="currentlyWorking" type="checkbox" checked={exp.currentlyWorking} onChange={e => handleExperienceChange(idx, e)} /> Currently Working</label>
-                <label>Description</label>
-                <textarea name="description" value={exp.description} onChange={e => handleExperienceChange(idx, e)} placeholder="Description"></textarea>
-                <button type="button" onClick={() => removeExperience(idx)} style={{marginTop: "6px"}}>Remove</button>
-              </div>
-            ))}
-            <button type="button" className="edit-btn" onClick={addExperience}>Add Experience</button>
-            <div className="profilecard-actions">
-              <button className="save-btn" type="submit">Save</button>
-              <button className="close-btn" type="button" onClick={cancelExperience}>Cancel</button>
-            </div>
-          </form>
-        )}
-      </div>
-
-      {/* Internships */}
-      <div className="profilecard">
-        <h3 className="profilecard-title">Internships</h3>
-        {!editSection.internships ? (
-          <div>
-            {internships.length === 0 ? <p className="profilecard-viewrow">None added</p> :
-              internships.map((intern, idx) => (
-                <div className="profilecard-viewrow" key={idx}>
-                  <label>{intern.company}</label>
-                  <span>{intern.role}</span>
+                <div className="form-group">
+                  <label>Phone</label>
+                  <input type="text" placeholder="Enter your phone number" name="phoneNo" value={basicInfo.phoneNo}   onChange={handleChangeBasic} />
                 </div>
-              ))}
-            <div className="profilecard-actions"><button className="edit-btn" onClick={editInternships}>Edit</button></div>
-          </div>
-        ) : (
-          <form onSubmit={saveInternships} className="profilecard-form">
-            {internships.map((intern, idx) => (
-              <div className="profilecard-group" key={idx}>
-                <label>Company</label>
-                <input className={internErrors[idx+'company'] && "has-error"} name="company" value={intern.company} onChange={e => handleInternshipChange(idx, e)} placeholder="Company" />
-                {internErrors[idx+'company'] && <span className="errormsg">{internErrors[idx+'company']}</span>}
-                <label>Role</label>
-                <input className={internErrors[idx+'role'] && "has-error"} name="role" value={intern.role} onChange={e => handleInternshipChange(idx, e)} placeholder="Role" />
-                {internErrors[idx+'role'] && <span className="errormsg">{internErrors[idx+'role']}</span>}
-                <label>Start Date</label>
-                <input name="startDate" value={intern.startDate} onChange={e => handleInternshipChange(idx, e)} placeholder="Start Date" />
-                <label>End Date</label>
-                <input name="endDate" value={intern.endDate} onChange={e => handleInternshipChange(idx, e)} placeholder="End Date" />
-                <label>Description</label>
-                <textarea name="description" value={intern.description} onChange={e => handleInternshipChange(idx, e)} placeholder="Description"></textarea>
-                <button type="button" onClick={() => removeInternship(idx)} style={{marginTop: "6px"}}>Remove</button>
-              </div>
-            ))}
-            <button type="button" className="edit-btn" onClick={addInternship}>Add Internship</button>
-            <div className="profilecard-actions">
-              <button className="save-btn" type="submit">Save</button>
-              <button className="close-btn" type="button" onClick={cancelInternships}>Cancel</button>
-            </div>
-          </form>
-        )}
-      </div>
-
-      {/* Skills */}
-      <div className="profilecard">
-        <h3 className="profilecard-title">Skills</h3>
-        {!editSection.skills ? (
-          <div>
-            {skills.length === 0 ? (
-              <p className="profilecard-viewrow">None added</p>
-            ) : (
-              skills.map((skill, idx) => (
-                <div className="profilecard-viewrow" key={idx}>
-                  <label>{skill.name}</label>
-                  <span>{skill.level}</span>
+                <div className="form-group">
+                  <label>Location</label>
+                  <input type="text" placeholder="City, Country" value={basicInfo.location}  name="location"  onChange={handleChangeBasic}/>
                 </div>
-              ))
-            )}
-            <div className="profilecard-actions">
-              <button className="edit-btn" onClick={editSkills}>Edit</button>
-            </div>
+              </div>
+              <div className="form-group">
+                <label>Bio</label>
+                <textarea placeholder="Write a short bio..." value={basicInfo.bio} name="bio"  onChange={handleChangeBasic}></textarea>
+              </div>
+              <div className="form-actions">
+            <button  className="save-btn" onClick={handleBasicInfoSave}>
+              Save
+            </button>
+            <button type="reset" className="cancel-btn">
+              Cancel
+            </button>
           </div>
-        ) : (
-          <form onSubmit={saveSkills} className="profilecard-form">
-            {skills.map((skill, idx) => (
-              <div className="profilecard-group" key={idx}>
-                <label>Skill Name</label>
-                <input
-                  className={skillErrors[idx + 'name'] && "has-error"}
-                  name="name"
-                  value={skill.name}
-                  onChange={e => handleSkillChange(idx, e)}
-                  placeholder="Skill name"
-                />
-                {skillErrors[idx + 'name'] && (
-                  <span className="errormsg">{skillErrors[idx + 'name']}</span>
-                )}
-                <select
-                  name="level"
-                  value={skill.level}
-                  onChange={e => handleSkillChange(idx, e)}
+            </>
+          )}
+
+          {/* === LANGUAGE SECTION === */}
+          {activeSection === "language" && (
+            <>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label>Language</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. English, Hindi, Spanish"
+                    value={languageInput.name}
+                    onChange={e =>
+                      setLanguageInput({
+                        ...languageInput,
+                        name: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Proficiency</label>
+                  <select
+                    value={languageInput.level}
+                    onChange={e =>
+                      setLanguageInput({
+                        ...languageInput,
+                        level: e.target.value,
+                      })
+                    }
+                  >
+                    <option>Beginner</option>
+                    <option>Intermediate</option>
+                    <option>Advanced</option>
+                    <option>Fluent</option>
+                    <option>Native</option>
+                  </select>
+                </div>
+              </div>
+
+              <div
+                className="form-actions"
+                style={{ justifyContent: "flex-start" }}
+              >
+                <button
+                  className="add-skill-btn"
+                  onClick={handleAddLanguage}
+                  type="button"
                 >
-                  <option value="Beginner">Beginner</option>
-                  <option value="Intermediate">Intermediate</option>
-                  <option value="Advanced">Advanced</option>
-                  <option value="Expert">Expert</option>
-                </select>
-                <button type="button" onClick={() => removeSkill(idx)} style={{ marginTop: "6px" }}>
-                  Remove
+                  + Add Language
                 </button>
               </div>
-            ))}
-            <button type="button" className="edit-btn" onClick={addSkill}>
-              Add Skill
+
+              {languages.length > 0 && (
+                <div className="skills-list">
+                  {languages.map((lang, index) => (
+                    <div key={index} className="skill-item">
+                      {editLangIndex === index ? (
+                        <>
+                          <input
+                            type="text"
+                            value={editLanguage.name}
+                            onChange={e =>
+                              setEditLanguage({
+                                ...editLanguage,
+                                name: e.target.value,
+                              })
+                            }
+                            style={{ width: "45%", marginRight: "8px" }}
+                          />
+                          <select
+                            value={editLanguage.level}
+                            onChange={e =>
+                              setEditLanguage({
+                                ...editLanguage,
+                                level: e.target.value,
+                              })
+                            }
+                            style={{ width: "30%", marginRight: "8px" }}
+                          >
+                            <option>Beginner</option>
+                            <option>Intermediate</option>
+                            <option>Advanced</option>
+                            <option>Fluent</option>
+                            <option>Native</option>
+                          </select>
+                          <button
+                            className="save-skill"
+                            type="button"
+                            onClick={() => handleSaveLanguage(index)}
+                          >
+                            💾
+                          </button>
+                          <button
+                            className="cancel-edit"
+                            type="button"
+                            onClick={() => setEditLangIndex(null)}
+                          >
+                            ✕
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <span>
+                            {lang.name} — <em>{lang.level}</em>
+                          </span>
+                          <div>
+                            <button
+                              className="edit-skill"
+                              onClick={() => handleEditLanguage(index)}
+                              type="button"
+                              style={{ marginRight: "8px" }}
+                            >
+                              ✎
+                            </button>
+                            <button
+                              className="remove-skill"
+                              onClick={() => handleRemoveLanguage(index)}
+                              type="button"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* === EDUCATION === */}
+          {activeSection === "education" && (
+            <>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label>Institution Name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. IIT Delhi, Harvard University"
+                    value={educationInput.school}
+                    onChange={e =>
+                      setEducationInput({
+                        ...educationInput,
+                        school: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Degree </label>
+                  <input
+                    type="text"
+                    placeholder="B.Tech/M.Tech"
+                    value={educationInput.degree}
+                    onChange={e =>
+                      setEducationInput({
+                        ...educationInput,
+                        degree: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Field Of Study </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. B.Tech in Computer Science"
+                    value={educationInput.fieldOfStudy}
+                    onChange={e =>
+                      setEducationInput({
+                        ...educationInput,
+                        fieldOfStudy: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Start Date</label>
+                  <input
+                    type="Date"
+                    placeholder="e.g. 2020 "
+                    value={educationInput.startDate}
+                    onChange={e =>
+                      setEducationInput({
+                        ...educationInput,
+                        startDate: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="form-group">
+                  <label>End Date</label>
+                  <input
+                    type="Date"
+                    placeholder="e.g. 2024 "
+                    value={educationInput.endDate}
+                    onChange={e =>
+                      setEducationInput({
+                        ...educationInput,
+                        endDate: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div
+                  className="form-group"
+                  style={{ gridColumn: "1 / span 2" }}
+                >
+                  <label>Additional Details</label>
+                  <textarea
+                    placeholder="Achievements, GPA, Major projects, etc."
+                    rows="3"
+                    value={educationInput.details}
+                    onChange={e =>
+                      setEducationInput({
+                        ...educationInput,
+                        details: e.target.value,
+                      })
+                    }
+                  ></textarea>
+                </div>
+              </div>
+
+              <div
+                className="form-actions"
+                style={{ justifyContent: "flex-start" }}
+              >
+                {/* */}
+
+                {educationEditingIndex !== null ? (
+                 <button
+                  className="add-skill-btn"
+                  onClick={handleSaveEducationChanges}
+                  type="button"
+                >
+                  Save Changes
+                </button> 
+                 ) : (
+              <button
+                  className="add-skill-btn"
+                  onClick={handleAddEducation}
+                  type="button"
+                >
+                  + Add Education
+                </button> 
+                )}
+              </div>
+
+              {userData.education.length > 0 && (
+                <div className="skills-list">
+                  {userData.education.map((edu, index) => (
+                    <div key={index} className="skill-item">
+                      <div>
+                        <strong>{edu.degree}</strong> —{" "}
+                        <span>{edu.school}</span>
+                        <br />
+                        <small>{edu.year}</small>
+                        <p style={{ marginTop: "5px", color: "#555" }}>
+                          {edu.details}
+                        </p>
+                      </div>
+                      <button
+                        className="remove-skill"
+                        onClick={() => handleRemoveEducation(index,edu._id)}
+                        type="button"
+                      >
+                        <DeleteOutlineIcon sx={{
+                          color:"#0077B5"
+                        }}/>
+                      </button>
+                      <button
+                        className="remove-skill"
+                        onClick={() => handleEditEducation(index)}
+                        type="button"
+                      >
+                        <EditIcon sx={{
+                          color:"#0077B5"
+                        }}/>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* === INTERNSHIPS === */}
+          {activeSection === "internships" && (
+            <>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label>Organization Name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Microsoft, Deloitte"
+                    value={internshipInput.organization}
+                    onChange={e =>
+                      setInternshipInput({
+                        ...internshipInput,
+                        organization: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Role / Position</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Data Analyst Intern"
+                    value={internshipInput.role}
+                    onChange={e =>
+                      setInternshipInput({
+                        ...internshipInput,
+                        role: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Duration</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. June 2023 - Aug 2023"
+                    value={internshipInput.duration}
+                    onChange={e =>
+                      setInternshipInput({
+                        ...internshipInput,
+                        duration: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div
+                  className="form-group"
+                  style={{ gridColumn: "1 / span 2" }}
+                >
+                  <label>Description</label>
+                  <textarea
+                    placeholder="Describe your work, achievements or projects..."
+                    rows="3"
+                    value={internshipInput.description}
+                    onChange={e =>
+                      setInternshipInput({
+                        ...internshipInput,
+                        description: e.target.value,
+                      })
+                    }
+                  ></textarea>
+                </div>
+              </div>
+
+              <div
+                className="form-actions"
+                style={{ justifyContent: "flex-start" }}
+              >
+                <button
+                  className="add-skill-btn"
+                  onClick={handleAddInternship}
+                  type="button"
+                >
+                  + Add Internship
+                </button>
+              </div>
+
+              {internships.length > 0 && (
+                <div className="skills-list">
+                  {internships.map((intern, index) => (
+                    <div key={index} className="skill-item">
+                      <div>
+                        <strong>{intern.role}</strong> at{" "}
+                        <span>{intern.organization}</span>
+                        <br />
+                        <small>{intern.duration}</small>
+                        <p style={{ marginTop: "5px", color: "#555" }}>
+                          {intern.description}
+                        </p>
+                      </div>
+                      <button
+                        className="remove-skill"
+                        onClick={() => handleRemoveInternship(index)}
+                        type="button"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* === EXPERIENCE === */}
+          {activeSection === "experience" && (
+            <>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label>Company</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Google, Infosys"
+                    value={experienceInput.company}
+                    onChange={e =>
+                      setExperienceInput({
+                        ...experienceInput,
+                        company: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Role / Position</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Software Engineer"
+                    value={experienceInput.role}
+                    onChange={e =>
+                      setExperienceInput({
+                        ...experienceInput,
+                        title: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                    {/* Employment Type */}
+  <div className="form-group">
+    <label>Employment Type</label>
+    <select
+      value={experienceInput.employmentType}
+      onChange={e =>
+        setExperienceInput({
+          ...experienceInput,
+          employmentType: e.target.value,
+        })
+      }
+    >
+      <option value="">Select type</option>
+      <option value="Full-time">Full-time</option>
+      <option value="Part-time">Part-time</option>
+      <option value="Self-employed">Self-employed</option>
+      <option value="Freelance">Freelance</option>
+      <option value="Contract">Contract</option>
+      <option value="Internship">Internship</option>
+    </select>
+  </div>
+
+ {/* Location */}
+  <div className="form-group">
+    <label>Location</label>
+    <input
+      type="text"
+      placeholder="e.g. New York, USA"
+      value={experienceInput.location}
+      onChange={e =>
+        setExperienceInput({ ...experienceInput, 
+          location: e.target.value })
+      }
+    />
+  </div>
+         {/* Start Date */}
+  <div className="form-group">
+    <label>Start Date</label>
+    <input
+      type="date"
+      value={experienceInput.startDate}
+      onChange={e =>
+        setExperienceInput({ ...experienceInput, startDate: e.target.value })
+      }
+    />
+  </div>
+                
+  {/* End Date */}
+  <div className="form-group">
+    <label>End Date</label>
+    <input
+      type="date"
+      value={experienceInput.endDate}
+      onChange={e =>
+        setExperienceInput({ ...experienceInput, endDate: e.target.value })
+      }
+      disabled={experienceInput.currentlyWorking}
+    />
+  </div>
+  
+                <div className="form-group"
+                  style={{ gridColumn: "1 / span 2" }}
+                >
+                  <label>Description</label>
+                  <textarea
+                    placeholder="Briefly describe your work or projects..."
+                    rows="3"
+                    value={experienceInput.description}
+                    onChange={e =>
+                      setExperienceInput({
+                        ...experienceInput,
+                        description: e.target.value,
+                      })
+                    }
+                  ></textarea>
+                </div>
+              </div>
+                    
+              <div
+                className="form-actions"
+                style={{ justifyContent: "flex-start" }}
+              >
+                <button
+                  className="add-skill-btn"
+                  onClick={handleAddExperience}
+                  type="button"
+                >
+                  + Add Experience
+                </button>
+              </div>
+
+              {experiences.length > 0 && (
+                <div className="skills-list">
+                  {experiences.map((exp, index) => (
+                    <div key={index} className="skill-item">
+                      <div>
+                        <strong>{exp.role}</strong> at{" "}
+                        <span>{exp.company}</span>
+                        <br />
+                        <small>{exp.duration}</small>
+                        <p style={{ marginTop: "5px", color: "#555" }}>
+                          {exp.description}
+                        </p>
+                      </div>
+                      
+
+                      <button
+                        className="remove-skill"
+                        onClick={() => handleRemoveExperience(index)}
+                        type="button"
+                      >
+                        <DeleteOutlineIcon sx={{
+                          color:"#0077B5"
+                        }}/>
+                      </button>
+                      <button
+                        className="remove-skill"
+                        onClick={() => handleEditEducation(index)}
+                        type="button"
+                      >
+                        <EditIcon sx={{
+                          color:"#0077B5"
+                        }}/>
+                      </button>
+
+
+
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* === SKILLS === */}
+          {activeSection === "skills" && (
+            <>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label>Skill Name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. ReactJS, Python"
+                    value={skillInput.name}
+                    onChange={e =>
+                      setSkillInput({ ...skillInput, name: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Proficiency</label>
+                  <select
+                    value={skillInput.level}
+                    onChange={e =>
+                      setSkillInput({ ...skillInput, level: e.target.value })
+                    }
+                  >
+                    <option>Beginner</option>
+                    <option>Intermediate</option>
+                    <option>Advanced</option>
+                    <option>Expert</option>
+                  </select>
+                </div>
+              </div>
+
+              <div
+                className="form-actions"
+                style={{ justifyContent: "flex-start" }}
+              >
+                <button
+                  className="add-skill-btn"
+                  onClick={handleAddSkill}
+                  type="button"
+                >
+                  + Add Skill
+                </button>
+              </div>
+
+              {skills.length > 0 && (
+                <div className="skills-list">
+                  {skills.map((skill, index) => (
+                    <div key={index} className="skill-item">
+                      {editIndex === index ? (
+                        <>
+                          <input
+                            type="text"
+                            value={editSkill.name}
+                            onChange={e =>
+                              setEditSkill({
+                                ...editSkill,
+                                name: e.target.value,
+                              })
+                            }
+                            style={{ width: "45%", marginRight: "8px" }}
+                          />
+                          <select
+                            value={editSkill.level}
+                            onChange={e =>
+                              setEditSkill({
+                                ...editSkill,
+                                level: e.target.value,
+                              })
+                            }
+                            style={{ width: "30%", marginRight: "8px" }}
+                          >
+                            <option>Beginner</option>
+                            <option>Intermediate</option>
+                            <option>Advanced</option>
+                            <option>Expert</option>
+                          </select>
+                          <button
+                            className="save-skill"
+                            type="button"
+                            onClick={() => handleSaveSkill(index)}
+                          >
+                            💾
+                          </button>
+                          <button
+                            className="cancel-edit"
+                            type="button"
+                            onClick={() => setEditIndex(null)}
+                          >
+                            ✕
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <span>
+                            {skill.name} — <em>{skill.level}</em>
+                          </span>
+                          <div>
+                            <button
+                              className="edit-skill"
+                              onClick={() => handleEditSkill(index)}
+                              type="button"
+                              style={{ marginRight: "8px" }}
+                            >
+                              ✎
+                            </button>
+                            <button
+                              className="remove-skill"
+                              onClick={() => handleRemoveSkill(index)}
+                              type="button"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* === CURRENT POSITION === */}
+          {activeSection === "current" && (
+            <>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label>Company</label>
+                  <input type="text" placeholder="Current company name" />
+                </div>
+                <div className="form-group">
+                  <label>Role / Position</label>
+                  <input type="text" placeholder="Your current role" />
+                </div>
+                <div className="form-group">
+                  <label>Employment Type</label>
+                  <select>
+                    <option>Full-time</option>
+                    <option>Part-time</option>
+                    <option>Internship</option>
+                    <option>Freelance</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Start Date</label>
+                  <input type="month" />
+                </div>
+                <div className="form-group">
+                  <label>Location</label>
+                  <input type="text" placeholder="City / Remote" />
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <textarea placeholder="Describe your current responsibilities..."></textarea>
+              </div>
+            </>
+          )}
+
+          {/* === CONTACT === */}
+          {activeSection === "contact" && (
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Email</label>
+                <input type="email" placeholder="Enter contact email" />
+              </div>
+              <div className="form-group">
+                <label>Phone</label>
+                <input type="text" placeholder="Enter contact number" />
+              </div>
+              <div className="form-group">
+                <label>LinkedIn / Portfolio</label>
+                <input type="text" placeholder="Profile or website link" />
+              </div>
+            </div>
+          )}
+
+          {/* <div className="form-actions">
+            <button type="submit" className="save-btn">
+              Save
             </button>
-            <div className="profilecard-actions">
-              <button className="save-btn" type="submit">Save</button>
-              <button className="close-btn" type="button" onClick={cancelSkills}>Cancel</button>
-            </div>
-          </form>
-        )}
-      </div>
-
-      {/* Current */}
-      <div className="profilecard">
-        <h3 className="profilecard-title">Current Position</h3>
-        {!editSection.current ? (
-          <div>
-            <div className="profilecard-viewrow"><label>Company</label><span>{current.company || '--'}</span></div>
-            <div className="profilecard-viewrow"><label>Title</label><span>{current.title || '--'}</span></div>
-            <div className="profilecard-viewrow"><label>Start</label><span>{current.start || '--'}</span></div>
-            <div className="profilecard-viewrow"><label>Type</label><span>{current.type}</span></div>
-            <div className="profilecard-actions"><button className="edit-btn" onClick={editCurrent}>Edit</button></div>
-          </div>
-        ) : (
-          <form onSubmit={saveCurrent} className="profilecard-form">
-            <div className="profilecard-group">
-              <label>Company</label>
-              <input className={currentErrors.company && "has-error"} name="company" value={current.company} onChange={handleCurrentChange} placeholder="Company" />
-              {currentErrors.company && <span className="errormsg">{currentErrors.company}</span>}
-            </div>
-            <div className="profilecard-group">
-              <label>Title</label>
-              <input className={currentErrors.title && "has-error"} name="title" value={current.title} onChange={handleCurrentChange} placeholder="Title" />
-              {currentErrors.title && <span className="errormsg">{currentErrors.title}</span>}
-            </div>
-            <div className="profilecard-group">
-              <label>Start Date</label>
-              <input name="start" value={current.start} onChange={handleCurrentChange} placeholder="Start Date" />
-            </div>
-            <div className="profilecard-group">
-              <label>Type</label>
-              <select name="type" value={current.type} onChange={handleCurrentChange}>
-                <option value="On-site">On-site</option>
-                <option value="Remote">Remote</option>
-                <option value="Hybrid">Hybrid</option>
-              </select>
-            </div>
-            <div className="profilecard-actions">
-              <button className="save-btn" type="submit">Save</button>
-              <button className="close-btn" type="button" onClick={cancelCurrent}>Cancel</button>
-            </div>
-          </form>
-        )}
-      </div>
-
-      {/* Contact */}
-      <div className="profilecard">
-        <h3 className="profilecard-title">Contact Info</h3>
-        {!editSection.contact ? (
-          <div>
-            <div className="profilecard-viewrow"><label>Email</label><span>{contact.email || '--'}</span></div>
-            <div className="profilecard-viewrow"><label>Phone</label><span>{contact.phone || '--'}</span></div>
-            <div className="profilecard-viewrow"><label>Links</label><span>{contact.links || '--'}</span></div>
-            <div className="profilecard-actions"><button className="edit-btn" onClick={editContact}>Edit</button></div>
-          </div>
-        ) : (
-          <form onSubmit={saveContact} className="profilecard-form">
-            <div className="profilecard-group">
-              <label>Email</label>
-              <input className={contactErrors.email && "has-error"} name="email" value={contact.email} onChange={handleContactChange} placeholder="Email" />
-              {contactErrors.email && <span className="errormsg">{contactErrors.email}</span>}
-            </div>
-            <div className="profilecard-group">
-              <label>Phone</label>
-              <input className={contactErrors.phone && "has-error"} name="phone" value={contact.phone} onChange={handleContactChange} placeholder="Phone" />
-              {contactErrors.phone && <span className="errormsg">{contactErrors.phone}</span>}
-            </div>
-            <div className="profilecard-group">
-              <label>Links</label>
-              <input name="links" value={contact.links} onChange={handleContactChange} placeholder="Social/Portfolio link(s)" />
-            </div>
-            <div className="profilecard-actions">
-              <button className="save-btn" type="submit">Save</button>
-              <button className="close-btn" type="button" onClick={cancelContact}>Cancel</button>
-            </div>
-          </form>
-        )}
+            <button type="reset" className="cancel-btn">
+              Cancel
+            </button>
+          </div> */}
+        </form>
       </div>
     </div>
   );
 };
+
 export default CompleteProfile;
