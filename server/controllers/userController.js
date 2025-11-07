@@ -420,7 +420,10 @@ const updateExperience = async (req, res) => {
 
 
 const deleteExperience = async (req, res) => {
+    // console.log(req.body)
+    
     try {
+
         const user = await User.findById(req.user.id);
 
         if (!user) {
@@ -428,7 +431,7 @@ const deleteExperience = async (req, res) => {
         }
 
         user.experience = user.experience.filter(
-            exp => exp._id.toString() !== req.params.id
+            exp => exp._id.toString() !== req.params.expId
         );
 
         await user.save();

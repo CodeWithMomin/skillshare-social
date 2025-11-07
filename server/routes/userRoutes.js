@@ -40,7 +40,7 @@ router.delete('/:id/education/:eduId', protect, deleteEducation);
 router.get('/:id/experience', protect, getExperience);
 router.post('/:id/experience', protect, addExperience);
 router.put('/experience/:id', protect, updateExperience);
-router.delete('/experience/:id', protect, deleteExperience);
+router.delete('/:id/experience/:expId', protect, deleteExperience);
 
 // Protected routes - Skills
 router.post('/skills', protect, addSkill);

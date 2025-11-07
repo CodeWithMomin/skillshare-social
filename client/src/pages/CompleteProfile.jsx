@@ -9,7 +9,9 @@ import { useNavigate } from "react-router-dom";
 import { useExp } from "../context/ExpContext";
 const CompleteProfile = () => {
 const [userData,setUserData]=useState(null)
- const {getUserProfile}=useAuth();
+
+
+ const {user,getUserProfile}=useAuth();
  const navigate=useNavigate()
   const {addEducation,updateEducation,deleteEducation}=useEdu()
   const {addExperience,updateExperience,deleteExperience
@@ -89,9 +91,11 @@ const [userData,setUserData]=useState(null)
 
   // Add new experience
  const handleAddExperience = async () => {
- setExperiences([experienceInput]);
+setExperiences(prev => [...prev, experienceInput]);
+ console.log(experiences);
+ 
   setTimeout(() => {
-    console.log("Latest Experience:", experienceInput);
+    console.log("Latest Experience:", experiences);
   }, 0);
  const userId = userData?._id;  // or however you store the logged-in user ID
 
@@ -122,9 +126,39 @@ const { success, error, data } = await addExperience(experienceInput);
 
 
   // Remove experience
-  const handleRemoveExperience = index => {
-    const updatedExperiences = experiences.filter((_, i) => i !== index);
+  const handleRemoveExperience = async(index,expId)=> {
+    console.log(expId);
+    
+    const userId=userData?._id;
+    if(userId && expId != null){
+      try{
+        const {success,error}=await deleteExperience(expId);
+          if(success)
+          {
+            toast.success("Experience Removed Successfully.", {
+          duration: 1000,
+          position: "top-center",
+        })
+            const updatedExperiences = experiences.filter((_, i) => i !== index);
     setExperiences(updatedExperiences);
+//     setUserData(prev => ({
+//   ...prev,
+//   experience: updatedExperiences  // assuming experiences is your updated array
+// }));
+
+    
+          }
+          else{
+            console.log("API Faled");
+            toast.error("Api failed")
+          }
+      }
+      catch(error){
+        toast.error("Failed To Delete Experience.")
+      }
+    }
+    
+
   };
 
   // --- Education States ---
@@ -338,7 +372,7 @@ useEffect(() => {
         try {
         const data = await getUserProfile(); // data is already JSON here
         
-        console.log("Profile Data",data);
+        // console.log("Profile Data",data);
         
         setUserData(data);
         setBasicInfo({
@@ -931,10 +965,11 @@ useEffect(() => {
     <input
       type="date"
       value={experienceInput.endDate}
+     
       onChange={e =>
         setExperienceInput({ ...experienceInput, endDate: e.target.value })
       }
-      disabled={experienceInput.currentlyWorking}
+      disabled={ experienceInput.employmentType === "Part-Time"}
     />
   </div>
   
@@ -969,9 +1004,9 @@ useEffect(() => {
                 </button>
               </div>
 
-              {experiences.length > 0 && (
+               {userData && Array.isArray(userData.experience) && userData.experience.length > 0 &&(
                 <div className="skills-list">
-                  {experiences.map((exp, index) => (
+                  {userData.experience.map((exp, index) => (
                     <div key={index} className="skill-item">
                       <div>
                         <strong>{exp.role}</strong> at{" "}
@@ -986,7 +1021,7 @@ useEffect(() => {
 
                       <button
                         className="remove-skill"
-                        onClick={() => handleRemoveExperience(index)}
+                        onClick={() => handleRemoveExperience(index,exp?._id)}
                         type="button"
                       >
                         <DeleteOutlineIcon sx={{

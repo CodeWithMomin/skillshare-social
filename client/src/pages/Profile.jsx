@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import {
   Avatar, Box, Chip, Container, Grid, IconButton, Paper, Tooltip, Typography, Divider,
+  Stack,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import WorkIcon from "@mui/icons-material/Work";
+import SchoolIcon from "@mui/icons-material/School";
+import LanguageIcon from "@mui/icons-material/Language";
+
 
 
 const COVER_GRADIENT = "linear-gradient(90deg, #fa709a 0%, #fee140 100%)";
@@ -26,7 +31,7 @@ const Profile = () => {
       const data = await getUserProfile(); // data is already JSON here
       // console.log(data);
       // console.log(token);
-      // console.log("Profile Data",data);
+      console.log("Profile Data",data);
       
       setUser(data);
       
@@ -164,6 +169,132 @@ const Profile = () => {
           </Box>
         </Box>
         {/* Render other sections like languages, education, experience ... */}
+         {/* Use a Stack to control the gap BETWEEN sections */}
+        <Stack spacing={4} sx={{ px: 0, pt: 3, pb: 4 }}>
+          {/* Languages Section */}
+          <Box sx={{ px: 4 }}>
+            <Stack direction="row" alignItems="center" spacing={1} mb={1}>
+              <LanguageIcon color="primary" />
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Languages
+              </Typography>
+            </Stack>
+
+            {user.languages?.length > 0 ? (
+              <Stack direction="row" flexWrap="wrap" gap={1.5}>
+                {user.languages.map((lang, i) => (
+                  <Chip
+                    key={i}
+                    label={`${lang.name} — ${lang.level}`}
+                    sx={{
+                      background: "#f8f9fa",
+                      borderRadius: "10px",
+                      fontWeight: 500,
+                    }}
+                  />
+                ))}
+              </Stack>
+            ) : (
+              <Typography color="text.secondary">
+                No languages added yet.
+              </Typography>
+            )}
+          </Box>
+
+          <Divider sx={{ mx: 4 }} />
+
+          {/* Education Section */}
+          <Box sx={{ px: 4 }}>
+            <Stack direction="row" alignItems="center" spacing={1} mb={1}>
+              <SchoolIcon color="primary" />
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Education
+              </Typography>
+            </Stack>
+
+            {user.education?.length > 0 ? (
+              <Stack spacing={2}>
+                {user.education.map((edu, i) => (
+                  <Paper
+                    key={i}
+                    variant="outlined"
+                    sx={{
+                      p: 2,
+                      borderRadius: 2,
+                      borderColor: "#e0e0e0",
+                      backgroundColor: "#fafafa",
+                    }}
+                  >
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                      {edu.school}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {edu.degree}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {edu.fieldOfStudy}
+                    </Typography>
+                    {edu.year && (
+                      <Typography variant="body2" color="text.secondary">
+                        Year: {edu.year}
+                      </Typography>
+                    )}
+                  </Paper>
+                ))}
+              </Stack>
+            ) : (
+              <Typography color="text.secondary">
+                No education details available.
+              </Typography>
+            )}
+          </Box>
+
+          <Divider sx={{ mx: 4 }} />
+
+          {/* Experience Section */}
+          <Box sx={{ px: 4 }}>
+            <Stack direction="row" alignItems="center" spacing={1} mb={1}>
+              <WorkIcon color="primary" />
+              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                Experience
+              </Typography>
+            </Stack>
+
+            {user.experience?.length > 0 ? (
+              <Stack spacing={2}>
+                {user.experience.map((exp, i) => (
+                  <Paper
+                    key={i}
+                    variant="outlined"
+                    sx={{
+                      p: 2,
+                      borderRadius: 2,
+                      borderColor: "#e0e0e0",
+                      backgroundColor: "#fafafa",
+                    }}
+                  >
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                      {exp.role}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {exp.company}
+                    </Typography>
+                    {exp.duration && (
+                      <Typography variant="body2" color="text.secondary">
+                        {exp.duration}
+                      </Typography>
+                    )}
+                  </Paper>
+                ))}
+              </Stack>
+              
+            ) : (
+              <Typography color="text.secondary">
+                No experience details available.
+              </Typography>
+            )}
+          </Box>
+        </Stack>
       </Paper>
     </Container>
   );
