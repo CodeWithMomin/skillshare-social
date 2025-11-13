@@ -31,7 +31,6 @@ const Profile = () => {
       const data = await getUserProfile(); // data is already JSON here
       // console.log(data);
       // console.log(token);
-      console.log("Profile Data",data);
       
       setUser(data);
       
@@ -274,7 +273,7 @@ const Profile = () => {
                     }}
                   >
                     <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      {exp.role}
+                      {exp.title}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       {exp.company}

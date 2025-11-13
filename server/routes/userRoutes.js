@@ -18,6 +18,9 @@ const {
     addSkill,
     deleteSkill,
     uploadProfilePhoto,
+    addInternships,
+    updateInternships,
+    deleteInternships
 } = require('../controllers/userController');
 const {protect}=require('../middleware/authMiddleware')
 // Public routes
@@ -33,7 +36,7 @@ router.put('/profile/complete', protect, completeProfile);
 // Protected routes - Education
 router.get('/:id/education', protect, getEducation);
 router.post('/:id/education', protect, addEducation);
-router.put('/:id/education/:eduId', protect, updateEducation);
+router.put('/education/:id', protect, updateEducation);
 router.delete('/:id/education/:eduId', protect, deleteEducation);
 
 // Protected routes - Experience
@@ -42,6 +45,10 @@ router.post('/:id/experience', protect, addExperience);
 router.put('/experience/:id', protect, updateExperience);
 router.delete('/:id/experience/:expId', protect, deleteExperience);
 
+//Protected Routes -Internships
+router.post('/:id/internships',protect,addInternships)
+router.put('/internships/:id',protect,updateInternships)
+router.delete('/:id/internships/:internshipId',protect,deleteInternships)
 // Protected routes - Skills
 router.post('/skills', protect, addSkill);
 router.delete('/skills/:id', protect, deleteSkill);

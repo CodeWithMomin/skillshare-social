@@ -10,13 +10,13 @@ import { Explore, Hub, NetworkWifi, People } from "@mui/icons-material";
 
 const navItems = [
   { label: "Feed", icon: <FeedIcon />, path: "/feed" },
-  {label:"Explore",icon:<Explore/>,path:"/explore"},
+  { label: "Explore", icon: <Explore />, path: "/explore" },
   { label: "Projects", icon: <FolderIcon />, path: "/projects" },
-  {label:"Network",icon:<Hub/>,path:"/mynetwork"},
+  { label: "Network", icon: <Hub />, path: "/mynetwork" },
   // { label: "Notifications", icon: <NotificationsIcon />, path: "/notifications" },
-  {label:"Alumni Connect",icon:<People/>,path:"/alumniconnect"},
+  { label: "Alumni Connect", icon: <People />, path: "/alumniconnect" },
   { label: "AI Features", icon: <SmartToyIcon />, path: "/aifeatures" },
- 
+
   // { label: "Settings", icon: <SettingsIcon />, path: "/settings" },
 ];
 
@@ -28,8 +28,8 @@ const SideBar = () => {
       sx={{
         display: "flex",
         flexDirection: "column",
-        ml:1,
-        
+        ml: 1,
+
         justifyContent: "space-between",
         p: 2,
         bgcolor: "#fff",
@@ -41,7 +41,7 @@ const SideBar = () => {
     >
       {/* Navigation Links */}
       <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-        {navItems.map((item) => (
+        {navItems.map(item => (
           <Link
             key={item.label}
             to={item.path}
@@ -53,20 +53,33 @@ const SideBar = () => {
               padding: "10px 15px",
               borderRadius: "8px",
               fontWeight: 500,
-              fontSize:"1rem",
-              color: location.pathname === item.path ? "#0077b5ff" : "black",
-              backgroundColor: location.pathname === item.path ? "#ebedeeff" : "transparent",
+              fontSize: "1rem",
+              color: location.pathname === item.path ? "#ee9917" : "black",
+              backgroundColor:
+                location.pathname === item.path ? "#ebedeeff" : "transparent",
               transition: "all 0.2s ease",
             }}
           >
-            {React.cloneElement(item.icon, { fontSize: "small",  sx: { color: "#1976d2" }, })}
+            {React.cloneElement(item.icon, {
+              fontSize: "small",
+              sx: { color: "#ee9917" },
+            })}
             <span>{item.label}</span>
           </Link>
         ))}
       </Box>
 
       {/* Profile Button */}
-      <Box sx={{ mt: 2, textAlign: "center",display:"flex",justifyContent:"center",alignItems:"center",padding:"10px" }}>
+      <Box
+        sx={{
+          mt: 2,
+          textAlign: "center",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: "10px",
+        }}
+      >
         <Link
           to="/profile"
           style={{
@@ -75,7 +88,7 @@ const SideBar = () => {
             alignItems: "center",
             width: 50,
             height: 50,
-            backgroundColor: "#0077B5",
+            backgroundColor: "#ee9917",
             color: "#fff",
             borderRadius: "50%",
             fontWeight: "bold",

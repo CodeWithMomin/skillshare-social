@@ -241,6 +241,11 @@ const addEducation = async (req, res) => {
 
 
 const updateEducation = async (req, res) => {
+  console.log("Incoming data:", req.body);
+  console.log("User ID:", req.user?.id);
+  console.log("Experience ID:", req.params.id);
+
+    
     try {
         const user = await User.findById(req.user.id);
 
@@ -340,6 +345,8 @@ const addExperience = async (req, res) => {
     const {
       company, title, employmentType, location, startDate, endDate, description,
     } = req.body;
+    console.log(req.body);
+    
 
     if (!company || !title) {
       return res.status(400).json({ message: 'Company and title are required' });
@@ -376,47 +383,61 @@ const addExperience = async (req, res) => {
 
 
 const updateExperience = async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id);
+  console.log("Incoming data:", req.body);
+  console.log("User ID:", req.user?.id);
+  console.log("Experience ID:", req.params.id);
 
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        const expIndex = user.experience.findIndex(
-            exp => exp._id.toString() === req.params.id
-        );
-
-        if (expIndex === -1) {
-            return res.status(404).json({ message: 'Experience not found' });
-        }
-
-        const { company, title, employmentType, location, startDate, endDate, currentlyWorking, description } = req.body;
-
-        if (company) user.experience[expIndex].company = company;
-        if (title) user.experience[expIndex].title = title;
-        if (employmentType) user.experience[expIndex].employmentType = employmentType;
-        if (location) user.experience[expIndex].location = location;
-        if (startDate) user.experience[expIndex].startDate = startDate;
-        if (endDate) user.experience[expIndex].endDate = endDate;
-        if (currentlyWorking !== undefined) user.experience[expIndex].currentlyWorking = currentlyWorking;
-        if (description) user.experience[expIndex].description = description;
-
-        await user.save();
-
-        res.json({
-            success: true,
-            message: 'Experience updated successfully',
-            experience: user.experience
-        });
-
-    } catch (error) {
-        res.status(500).json({
-            message: 'Server error',
-            error: error.message
-        });
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
+
+    const expIndex = user.experience.findIndex(
+      (exp) => exp._id.toString() === req.params.id
+    );
+
+    if (expIndex === -1) {
+      return res.status(404).json({ message: 'Experience not found' });
+    }
+
+    const {
+      company,
+      title,
+      employmentType,
+      location,
+      startDate,
+      endDate,
+      currentlyWorking,
+      description,
+    } = req.body;
+
+    if (company) user.experience[expIndex].company = company;
+    if (title) user.experience[expIndex].title = title;
+    if (employmentType) user.experience[expIndex].employmentType = employmentType;
+    if (location) user.experience[expIndex].location = location;
+    if (startDate) user.experience[expIndex].startDate = startDate;
+    if (endDate) user.experience[expIndex].endDate = endDate;
+    if (currentlyWorking !== undefined)
+      user.experience[expIndex].currentlyWorking = currentlyWorking;
+    if (description) user.experience[expIndex].description = description;
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Experience updated successfully',
+      experience: user.experience,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error',
+      error: error.message,
+    });
+  }
 };
+
+
 
 
 const deleteExperience = async (req, res) => {
@@ -439,7 +460,7 @@ const deleteExperience = async (req, res) => {
         res.json({
             success: true,
             message: 'Experience deleted successfully',
-            experience: user.experience
+            data: user.experience
         });
 
     } catch (error) {
@@ -509,6 +530,112 @@ const deleteSkill = async (req, res) => {
     }
 };
 
+
+// Internships
+const addInternships=async (req,res)=>{
+    
+    try{
+        const {company,role,startDate,endDate,description}=req.body;
+        if(!company || !role || !startDate || !endDate || !description){
+            return res.status(400).json(
+                {
+                    message:"All Fields are required."
+                }
+            )
+        }
+        const updatedUser=await User.findByIdAndUpdate(req.user.id,{
+            $push:{
+                internships:{
+                    company,role,startDate,endDate,description
+                },
+            },
+        },
+        {
+            new:true,runValidators:true
+        }
+    );
+
+    if(!updatedUser){
+        return res.status(404).json(
+            {
+                message:"User Not Found."
+            }
+        )
+    }
+    res.json({
+        success:true,
+        message:'Internship Information Added Successfully.',
+        internships:updatedUser.internships,
+    });
+    } catch(error){
+            res.status(500).json({
+                message:"Server Error.",
+                error:error.message
+            })
+    }
+}
+const deleteInternships=async(req,res)=>{
+    try {
+        const user=await User.findById(req.user.id)
+        if(!user){
+            return res.status(404).json({
+                message:'User not found'
+            })
+        }
+        user.internships=user.internships.filter(
+            internship=>internship._id.toString() !== req.params.internshipId
+        );
+        await user.save();
+        res.json({
+            success:true,
+            message:'Internship Information Deleted Successfully.',
+            internships:user.internships
+        })
+    } catch (error) {
+         res.status(500).json({
+            message: 'Server error',
+            error: error.message
+        });
+    }
+}
+const updateInternships=async(req,res)=>{
+    try {
+        const user=await User.findById(req.user.id)
+        if(!user){
+            return res.status(404).json({
+                message:'User Not Found.'
+            })
+        }
+        const internshipIndex=user.internships.findIndex(
+        (internship)=> internship._id.toString()===req.params.internshipId
+        )
+        if(internshipIndex== -1){
+            return res.status(404).json({
+                message:"Internship Information Not Found."
+            })
+        }
+        const { company,role,startDate,endDate,description}=req.body;
+        if(company) user.internships[internshipIndex].company=company;
+        if(role) user.internships[internshipIndex].role=role;
+        if(startDate) user.internships[internshipIndex].startDate=startDate;
+        if(endDate) user.internships[internshipIndex].endDate=endDate;
+        if(description) user.internships[internshipIndex].description=description;
+        await user.save();
+        
+
+        res.json({
+            success:true,
+            message:"Internship Information Updated Successfully.",
+            internships:user.internships
+        })
+
+    } catch (error) {
+        res.status(500).json({
+      message: 'Server error',
+      error: error.message,
+    });
+    }
+ }
 module.exports = {
     registerUser,
     loginUser,
@@ -522,6 +649,9 @@ module.exports = {
     addExperience,
     updateExperience,
     deleteExperience,
+    addInternships,
+    deleteInternships,
+    updateInternships,
     addSkill,
     deleteSkill
 };

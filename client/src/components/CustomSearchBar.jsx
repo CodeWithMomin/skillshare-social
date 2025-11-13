@@ -20,7 +20,8 @@ const CustomSearchBar = () => {
         padding: "2px 8px", // smaller vertical padding
         width: "500px",
         my: 2, // margin-top and margin-bottom
-        height: "40px", // total height of search bar
+        height: "40px",
+        borderColor: "#ee9917",
       }}
     >
       <TextField

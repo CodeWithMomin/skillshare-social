@@ -7,8 +7,9 @@ import { useAuth } from "../context/AuthContext";
 import { useEdu } from "../context/EducationContext";
 import { useNavigate } from "react-router-dom";
 import { useExp } from "../context/ExpContext";
+import { useInternship } from "../context/InternshipContext";
 const CompleteProfile = () => {
-const [userData,setUserData]=useState(null)
+const [userData,setUserData]=useState([])
 
 
  const {user,getUserProfile}=useAuth();
@@ -16,6 +17,7 @@ const [userData,setUserData]=useState(null)
   const {addEducation,updateEducation,deleteEducation}=useEdu()
   const {addExperience,updateExperience,deleteExperience
   }=useExp()
+  const {addInternships,deleteInternships,updateInternships}=useInternship()
   const sections = [
     { id: "basic", name: "Basic Info" },
     { id: "language", name: "Language" },
@@ -76,6 +78,8 @@ const [userData,setUserData]=useState(null)
 
   // --- Experience States ---
   const [experiences, setExperiences] = useState([]);
+  const [experienceEditingIndex,setExperienceEditingIndex]=useState(null)
+  const [experienceId,setExperienceId]=useState(null)
   const [experienceInput, setExperienceInput] = useState({
   company: "",
   title: "",
@@ -91,75 +95,116 @@ const [userData,setUserData]=useState(null)
 
   // Add new experience
  const handleAddExperience = async () => {
-setExperiences(prev => [...prev, experienceInput]);
- console.log(experiences);
- 
-  setTimeout(() => {
-    console.log("Latest Experience:", experiences);
-  }, 0);
- const userId = userData?._id;  // or however you store the logged-in user ID
-
   try {
-const { success, error, data } = await addExperience(experienceInput);
-    if (success) {
-      setUserData(prev => ({
-        ...prev,                                 // keep all other fields 
-        experience: [...prev.experience, data],  // append latest experience
-      }));
+    const {success,error,data}=await addExperience(experienceInput)
+    if(success){
 
-      toast.success("Experience added successfully.");
-    } else {
-      toast.error("API failed.");
+setExperiences(data)
+
+
+
+  toast.success("Added Successfully.")
+        setExperienceInput({
+           company: "",
+  title: "",
+  employmentType: "",
+  location: "",
+  startDate: "",
+  endDate: "",
+  // currentlyWorking: false,
+  description: "",
+        })
     }
+    else {
+      console.log("API failed")
+      toast.error("API failed")
+    }
+    
   } catch (error) {
-    console.error("API Error:", error);
+    console.log(error.message);
+    
   }
-   //setExperienceInput({
-  //   company: "",
-  //   role: "",
-  //   duration: "",
-  //   description: "",
-  // });
-
-};
+ }
 
 
 
   // Remove experience
   const handleRemoveExperience = async(index,expId)=> {
-    console.log(expId);
-    
-    const userId=userData?._id;
-    if(userId && expId != null){
-      try{
-        const {success,error}=await deleteExperience(expId);
-          if(success)
-          {
-            toast.success("Experience Removed Successfully.", {
-          duration: 1000,
-          position: "top-center",
-        })
-            const updatedExperiences = experiences.filter((_, i) => i !== index);
-    setExperiences(updatedExperiences);
-//     setUserData(prev => ({
-//   ...prev,
-//   experience: updatedExperiences  // assuming experiences is your updated array
-// }));
-
-    
-          }
-          else{
-            console.log("API Faled");
-            toast.error("Api failed")
-          }
+      try {
+        const {success,error,data}=await deleteExperience(expId)
+        if(success){
+          setExperiences(data)
+          toast.success("Removed Successfully.")
+        }
+        else{
+          toast.error("Failed to Remove")
+        }
+      } catch (error) {
+        console.log(error);
+        
       }
-      catch(error){
-        toast.error("Failed To Delete Experience.")
       }
-    }
+     
+const handleSaveExperienceChanges= async ()=>{
+  if(experienceEditingIndex ==null) return ;
+    // console.log(experienceId,experienceInput);
     
+ try {
+   const userId = userData?._id; // or however your logged-in user is stored
 
-  };
+    const { success, error, data } = await updateExperience(
+          
+      experienceId,       // ✅ experience ID
+      experienceInput     // ✅ updated data
+    );
+
+  if(success){
+    setExperiences(data)
+    toast.success("Updated SuccessFully.")
+  }
+  else{
+    toast.error("Update Failed",error.message)
+    console.log(error);
+    
+  }
+  
+ } catch (error) {
+  console.log(error);
+  
+ }
+  // const updateExperience=[...experiences]
+  // updateExperience[experienceEditingIndex]=experienceInput;
+  // setExperiences(updateExperience)
+  setExperienceEditingIndex(null)
+  setExperienceInput({
+    company: "",
+  title: "",
+  employmentType: "",
+  location: "",
+  startDate: "",
+  endDate: "",
+
+  description: "",
+  })
+}
+
+const handleEditExperience=async (index,expId)=>{
+  
+const selectedExperience=experiences[index]
+setExperienceInput({
+   company:selectedExperience.company,
+  title:selectedExperience.title,
+  employmentType:selectedExperience.employmentType,
+  location:selectedExperience.location,
+  startDate:selectedExperience.startDate,
+  endDate:selectedExperience.endDate,
+ 
+  description:selectedExperience.description,
+});
+setExperienceEditingIndex(index)
+setExperienceId(expId)
+}
+  
 
   // --- Education States ---
   const [education, setEducation] = useState([]);
@@ -172,6 +217,7 @@ const { success, error, data } = await addExperience(experienceInput);
     details: "",
   });
   const [educationEditingIndex, setEducationEditingIndex] = useState(null);
+  const [educationId,setEducationId]=useState(null)
 
   // --- Handlers ---
 
@@ -209,7 +255,8 @@ const { success, error, data } = await addExperience(experienceInput);
   }
 };
 
-  const handleEditEducation=(index)=>{
+  const handleEditEducation=(index,eduId)=>{
+    // alert(index)
     const selectedEducation=education[index]
     // console.log("Selected Education",selectedEducation);
     setEducationInput({
@@ -221,14 +268,32 @@ const { success, error, data } = await addExperience(experienceInput);
     details: selectedEducation.details,
   });
   setEducationEditingIndex(index)
+  setEducationId(eduId)
     
   }
-const handleSaveEducationChanges=()=>{
+const handleSaveEducationChanges= async ()=>{
   if(educationEditingIndex==null) return;
-   const updatedEducation = [...education];
-  updatedEducation[educationEditingIndex] = educationInput; // update item
-  setEducation(updatedEducation);
-  setEducationEditingIndex(null);
+  console.log(educationId,educationInput);
+  try{
+      const {success,error,data}=await updateEducation(educationId,educationInput);
+     if (success) {
+      console.log("Updated education array:", data);
+
+      // ✅ Immediately update the frontend UI
+      setEducation(data);
+       toast.success("Updated SuccessFully.")
+     }
+      else{
+        toast.error("Update Failed.")
+        console.log(error.message);
+        
+      }
+  }
+  catch (error){
+console.log(error);
+
+      }
+      setEducationEditingIndex(null)
   setEducationInput({
     school: "",
     degree: "",
@@ -237,7 +302,7 @@ const handleSaveEducationChanges=()=>{
     endDate: "",
     details: "",
   });
-}
+ }
 
 
   // Remove education entry
@@ -275,26 +340,45 @@ const handleSaveEducationChanges=()=>{
   // --- Internship States ---
   const [internships, setInternships] = useState([]);
   const [internshipInput, setInternshipInput] = useState({
-    organization: "",
+    company: "",
     role: "",
-    duration: "",
-    description: "",
+    startDate: "",
+    endDate: "",
+    description:""
   });
 
   // --- Handlers ---
 
   // Add internship
-  const handleAddInternship = () => {
-    if (!internshipInput.organization.trim() || !internshipInput.role.trim())
-      return;
-    setInternships([...internships, internshipInput]);
-    setInternshipInput({
-      organization: "",
-      role: "",
-      duration: "",
-      description: "",
-    });
-  };
+ const handleAddInternship = async () => {
+  if (!internshipInput.company.trim() || !internshipInput.role.trim()) return;
+
+  console.log("Adding internship:", internshipInput);
+
+  try {
+    const { success, data, error } = await addInternships(internshipInput);
+
+    if (success && data) {
+      setInternships(data);
+      toast.success("Internship Information added successfully.");
+      // Clear the input fields
+      setInternshipInput({
+        company: "",
+        role: "",
+        startDate: "",
+        endDate: "",
+        description: "",
+      });
+    } else {
+      console.log("API failed");
+      toast.error(error);
+    }
+  } catch (error) {
+    console.error("Error adding internship:", error);
+    toast.error("Something went wrong. Please try again.");
+  }
+};
+
 
   // Remove internship
   const handleRemoveInternship = index => {
@@ -391,15 +475,16 @@ useEffect(() => {
           endDate:data.experience.endDate || "",
           description:data.experience.description || ""
         })
-        setEducation({
-          school: data.education.school,
-    degree: data.education.degree,
-    fieldOfStudy:data.education.fieldOfStudy,
-    startDate:data.education.startDate,
-    endDate: data.education.endDate,
-    details: data.education.details
-        })
-        
+    //     setEducation({
+    //       school: data.education.school,
+    // degree: data.education.degree,
+    // fieldOfStudy:data.education.fieldOfStudy,
+    // startDate:data.education.startDate,
+    // endDate: data.education.endDate,
+    // details: data.education.details
+    //     })
+    setEducation(data.education)
+        setExperiences(data.experience)
       } catch (error) {
         console.error(error.message);
          toast("error:", error);
@@ -733,9 +818,9 @@ useEffect(() => {
                 )}
               </div>
 
-              {userData.education.length > 0 && (
+              {education.length > 0 && (
                 <div className="skills-list">
-                  {userData.education.map((edu, index) => (
+                  {education.map((edu, index) => (
                     <div key={index} className="skill-item">
                       <div>
                         <strong>{edu.degree}</strong> —{" "}
@@ -757,7 +842,7 @@ useEffect(() => {
                       </button>
                       <button
                         className="remove-skill"
-                        onClick={() => handleEditEducation(index)}
+                        onClick={() => handleEditEducation(index,edu._id)}
                         type="button"
                       >
                         <EditIcon sx={{
@@ -776,15 +861,15 @@ useEffect(() => {
             <>
               <div className="form-grid">
                 <div className="form-group">
-                  <label>Organization Name</label>
+                  <label>Company/ Organization</label>
                   <input
                     type="text"
                     placeholder="e.g. Microsoft, Deloitte"
-                    value={internshipInput.organization}
+                    value={internshipInput.company}
                     onChange={e =>
                       setInternshipInput({
                         ...internshipInput,
-                        organization: e.target.value,
+                        company: e.target.value,
                       })
                     }
                   />
@@ -805,16 +890,30 @@ useEffect(() => {
                   />
                 </div>
 
-                <div className="form-group">
-                  <label>Duration</label>
+                 <div className="form-group">
+                  <label>Start Date</label>
                   <input
-                    type="text"
-                    placeholder="e.g. June 2023 - Aug 2023"
-                    value={internshipInput.duration}
+                    type="Date"
+                    placeholder="e.g. 2020 "
+                    value={internshipInput.startDate}
                     onChange={e =>
                       setInternshipInput({
                         ...internshipInput,
-                        duration: e.target.value,
+                        startDate: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="form-group">
+                  <label>End Date</label>
+                  <input
+                    type="Date"
+                    placeholder="e.g. 2024 "
+                   value={internshipInput.endDate}
+                    onChange={e =>
+                      setInternshipInput({
+                        ...internshipInput,
+                        endDate: e.target.value,
                       })
                     }
                   />
@@ -903,7 +1002,7 @@ useEffect(() => {
                   <input
                     type="text"
                     placeholder="e.g. Software Engineer"
-                    value={experienceInput.role}
+                    value={experienceInput.title}
                     onChange={e =>
                       setExperienceInput({
                         ...experienceInput,
@@ -995,55 +1094,58 @@ useEffect(() => {
                 className="form-actions"
                 style={{ justifyContent: "flex-start" }}
               >
-                <button
+
+
+                      {experienceEditingIndex !==null?(
+                        <button
+                  className="add-skill-btn"
+                  onClick={handleSaveExperienceChanges}
+                  type="button"
+                >
+                  Save Changes
+                </button>
+                      ):(<button
                   className="add-skill-btn"
                   onClick={handleAddExperience}
                   type="button"
                 >
                   + Add Experience
-                </button>
+                </button>)
+                    }
+
+                
               </div>
-
-               {userData && Array.isArray(userData.experience) && userData.experience.length > 0 &&(
-                <div className="skills-list">
-                  {userData.experience.map((exp, index) => (
-                    <div key={index} className="skill-item">
-                      <div>
-                        <strong>{exp.role}</strong> at{" "}
-                        <span>{exp.company}</span>
-                        <br />
-                        <small>{exp.duration}</small>
-                        <p style={{ marginTop: "5px", color: "#555" }}>
-                          {exp.description}
-                        </p>
-                      </div>
-                      
-
-                      <button
-                        className="remove-skill"
-                        onClick={() => handleRemoveExperience(index,exp?._id)}
-                        type="button"
-                      >
-                        <DeleteOutlineIcon sx={{
-                          color:"#0077B5"
-                        }}/>
-                      </button>
-                      <button
-                        className="remove-skill"
-                        onClick={() => handleEditEducation(index)}
-                        type="button"
-                      >
-                        <EditIcon sx={{
-                          color:"#0077B5"
-                        }}/>
-                      </button>
+                     {experiences?.length > 0 && (
+  <div className="skills-list">
+    {experiences.map((exp, index) => (
+      <div key={exp._id || index} className="skill-item">
+        <div>
+          {/* <strong>{exp.title}</strong> at{" "} */}
+          <span>{exp.company}</span><br />
+          <small>{exp.duration || ""}</small>
+          <p style={{ marginTop: "5px", color: "#555" }}>{exp.description}</p>
+        </div>
+        <button
+          className="remove-skill"
+          onClick={() => handleRemoveExperience(index, exp._id)}
+          type="button"
+        >
+          <DeleteOutlineIcon sx={{ color:"#0077B5" }}/>
+        </button>
+        <button
+          className="remove-skill"
+          onClick={() => handleEditExperience(index,exp._id)}
+          type="button"
+        >
+          <EditIcon sx={{ color:"#0077B5" }}/>
+        </button> 
+      </div>
+    ))}
+  </div>
+)}
 
 
-
-                    </div>
-                  ))}
-                </div>
-              )}
+             
             </>
           )}
 

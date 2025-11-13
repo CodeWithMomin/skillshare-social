@@ -42,7 +42,7 @@ const EducationContext=createContext()
 const updateEducation = async (eduId, educationData) => {
   if (isAuthenticated && user?._id) {
     try {
-      const result = await educationService.updateEducation(user._id, eduId, educationData);
+      const result = await educationService.updateEducation( eduId, educationData);
       if (result.success) {
         // Update local education state array with the updated entry
         // // setEducation((prevEducation) =>

@@ -35,15 +35,21 @@ export const ExpContextProvider = ({ children }) => {
     if (isAuthenticated && user?._id) {
       const result = await expService.deleteExperience(user._id, expId);
       if (result?.success) {
-        setExperiences((prev) => prev.filter((e) => e._id !== expId));
+        setExperiences((prev = []) => 
+  prev.filter(e => e && e._id !== expId)
+);
       }
       return result;
     }
   };
   const updateExperience = async (expId, experienceData) => {
   if (isAuthenticated && user?._id) {
+  
+  
+    //  console.log("eduId",expId)
+    //     console.log(experienceData);
     try {
-      const result = await expService.updateExperience(user._id, expId, experienceData);
+      const result = await expService.updateExperience( expId, experienceData);
 
       // Optional: update state locally if you keep experiences in context
       setExperiences((prev) =>

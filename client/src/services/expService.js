@@ -13,15 +13,17 @@ const expService={
     addExperience:async(userId,experienceData)=>{
         try{
             const response= await api.post(`/users/${userId}/experience`,experienceData)
-             return {success:true,data:response.data}
+             return {success:true,data:response.experience}
         } catch (error){
              return {success:false,error:error.message || "Failed to Add Experince."}
         }
     },
-    updateExperience: async (userId,expId,experienceData)=>{
+    updateExperience: async (expId,experienceData)=>{
+       
+        
             try{
-                const response=await api.put(`users/${userId}/experience/${expId}`,experienceData)
-                return {success:true,data:response.data}
+                const response=await api.put(`users/experience/${expId}`,experienceData)
+                return {success:true,data:response.experience}
             }
             catch(error){
                 return {success:false,error:error.message || 'Failed to Update Experience  Data'}

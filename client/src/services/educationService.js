@@ -18,10 +18,10 @@ const educationService={
             return {success:false,error:error.message|| 'Failed to Add Education Data.'}
         }
     },
-    updateEducation: async (userId,eduId,educationData)=>{
+    updateEducation: async (eduId,educationData)=>{
         try{
-            const response=await api.put(`users/${userId}/education/${eduId}`,educationData)
-            return {success:true,data:response.data}
+            const response=await api.put(`users/education/${eduId}`,educationData)
+            return {success:true,data:response.education}
         }
         catch(error){
             return {success:false,error:error.message || 'Failed to Update Education Data'}
