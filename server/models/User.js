@@ -55,10 +55,10 @@ const userSchema = new mongoose.Schema(
     // Languages
     languages: [
       {
-        language: { type: String },
+        name: { type: String },
         proficiency: { 
           type: String, 
-          enum: ["Beginner", "Intermediate", "Advanced", "Native"]
+          enum: ["Beginner", "Intermediate", "Advanced","Fluent", "Native"]
         }
       }
     ],

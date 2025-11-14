@@ -7,6 +7,8 @@ import { AuthProvider } from './context/AuthContext.jsx'; // add this import
 import { EduContextProvider } from './context/EducationContext.jsx';
 import { ExpContextProvider } from './context/ExpContext.jsx';
 import { InternshipContextProvider } from './context/InternshipContext.jsx';
+import { LanguageContextProvider } from './context/LangContext.jsx';
+import { SkillContextProvider } from './context/SkillsContext.jsx';
 // ...existing code...
 
 createRoot(document.getElementById('root')).render(
@@ -15,7 +17,11 @@ createRoot(document.getElementById('root')).render(
       <EduContextProvider>
          <ExpContextProvider>
           <InternshipContextProvider>
-            <App />
+            <LanguageContextProvider>
+            <SkillContextProvider>
+                <App />
+            </SkillContextProvider>
+            </LanguageContextProvider>
           </InternshipContextProvider>
          </ExpContextProvider>
       </EduContextProvider>

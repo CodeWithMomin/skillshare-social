@@ -7,10 +7,10 @@ const internshipService = {
       const response = await api.post(`/users/${userId}/internships`, internshipData);
       return { 
         success: true, 
-        data: response?.data?.internships || response?.internships // ✅ Safe check
+        data: response?.data?.internships || response?.internships // ✅ Safe c
       };
     } catch (error) {
-      return {
+      return { 
         success: false,
         error: error.message || "Failed to add Internship Information.",
       };
@@ -23,7 +23,7 @@ const internshipService = {
       const response = await api.put(`/users/internships/${internshipId}`, internshipData);
       return { 
         success: true, 
-        data: response?.data?.internships || response?.internships // ✅ Safe check
+        data: response.internships 
       };
     } catch (error) {
       return {

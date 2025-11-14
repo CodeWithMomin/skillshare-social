@@ -471,64 +471,6 @@ const deleteExperience = async (req, res) => {
     }
 };
 
-const addSkill = async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id);
-
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        const { name, level } = req.body;
-
-        if (!name) {
-            return res.status(400).json({ message: 'Skill name is required' });
-        }
-
-        user.skills.push({ name, level });
-        await user.save();
-
-        res.json({
-            success: true,
-            message: 'Skill added successfully',
-            skills: user.skills
-        });
-
-    } catch (error) {
-        res.status(500).json({
-            message: 'Server error',
-            error: error.message
-        });
-    }
-};
-
-const deleteSkill = async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id);
-
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        user.skills = user.skills.filter(
-            skill => skill._id.toString() !== req.params.id
-        );
-
-        await user.save();
-
-        res.json({
-            success: true,
-            message: 'Skill deleted successfully',
-            skills: user.skills
-        });
-
-    } catch (error) {
-        res.status(500).json({
-            message: 'Server error',
-            error: error.message
-        });
-    }
-};
 
 
 // Internships
@@ -636,6 +578,196 @@ const updateInternships=async(req,res)=>{
     });
     }
  }
+
+const addLanguage=async(req,res)=>{
+    try{
+            const {name,proficiency}=req.body;
+            if(!name || !proficiency){
+                return res.status(400).json({message:"All Fields are required."})
+            }
+            const updatedUser=await User.findByIdAndUpdate(req.user.id,{
+                $push:{
+                    languages:{
+                        name,proficiency
+                    },
+                },
+            },{
+                new:true,runValidators:true
+            })
+            if(!updatedUser){
+                return res.status(404).json({
+                    message:"User not found."
+                })
+            }
+            res.json({
+                success:true,
+                message:"Language is added Successfully.",
+                languages:updatedUser.languages
+            })
+    } catch(error){
+            res.status(500).json({
+                message:"Server Error.",
+                error:error.message
+            })
+    }
+}
+const deleteLanguage=async(req,res)=>{
+    try {
+        const user=await User.findById(req.user.id)
+        if(!user){
+            return res.status(404).json({
+                message:"User not found."
+            })
+        }
+        user.languages=user.languages.filter(lang=>lang._id.toString()!== req.params.langId)
+        await user.save();
+        res.json({
+            success:true,
+            message:"Language Information Deleted Successfully.",
+            languages:user.languages
+
+        })
+    } catch (error) {
+                 res.status(500).json({
+                message:"Server Error.",
+                error:error.message
+            })
+        
+    }
+  }
+const updateLanguage=async(req,res)=>{
+    tr
+    
+    try {
+        const user= await User.findById(req.user.id)
+        if(!user){
+            return res.status(404).json({
+                message:"User not found."
+            })
+        }
+        const langIndex=user.languages.findIndex((language)=>language._id.toString() === req.params.langId)
+        if(langIndex ==-1){
+            return res.status(404).json({
+                message:"Language information Not Found."
+            })
+        }
+        const {name,proficiency}=req.body;
+        if(name) user.languages[langIndex].name=name;
+        if(proficiency) user.languages[langIndex].proficiency=proficiency
+
+
+        await user.save()
+        res.json({
+            success:true,
+            message:"Language information updated Successfully.",
+            languages:user.languages
+        })
+    } catch (error) {
+             res.status(500).json({
+      message: 'Server error',
+      error: error.message,
+    });
+    }
+}
+const addSkill = async (req, res) => {
+    try {
+       
+
+        const { name, level } = req.body;
+
+        if (!name || !level) {
+            return res.status(400).json({ message: 'Skill name and Level is required' });
+        }
+
+        const updatedUser=await User.findByIdAndUpdate(req.user.id,{
+            $push:{
+                skills:{
+                    name,level
+                },
+            },
+        },
+    {
+        new:true,runValidators:true
+    })
+    if(!updatedUser){
+        return res.status(404).json({
+                    message:"User not found."
+                })
+    }
+
+        res.json({
+            success: true,
+            message: 'Skill added successfully',
+            skills: updatedUser.skills
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: 'Server error',
+            error: error.message
+        });
+    }
+};
+
+const deleteSkill = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.skills = user.skills.filter(
+            skill => skill._id.toString() !== req.params.skillId
+        );
+
+        await user.save();
+
+        res.json({
+            success: true,
+            message: 'Skill deleted successfully',
+            skills: user.skills
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: 'Server error',
+            error: error.message
+        });
+    }
+};
+
+const updateSkill=async(req,res)=>{
+    console.log(req.body)
+try {
+    const user=await User.findById(req.user.id)
+    if(!user){
+         return res.status(404).json({
+                message:"User not found."
+            })
+    }
+    const skillIndex=user.skills.findIndex((skill)=>skill._id.toString()=== req.params.skillId)
+    if(skillIndex==-1){
+      return res.status(404).json({
+        message:"Skill Not found."
+      })
+    }
+    const {name,level}=req.body;
+    if(name) user.skills[skillIndex].name=name;
+    if(level) user.skills[skillIndex].level=level;
+    await user.save();
+    res.json({
+            success:true,
+            message:"Skill is information updated Successfully.",
+            skills:user.skills
+        })
+} catch (error) {
+     res.status(500).json({
+      message: 'Server error',
+      error: error.message,
+    });
+}
+}
 module.exports = {
     registerUser,
     loginUser,
@@ -652,6 +784,10 @@ module.exports = {
     addInternships,
     deleteInternships,
     updateInternships,
+    addLanguage,
+    deleteLanguage,
+    updateLanguage,
     addSkill,
-    deleteSkill
+    deleteSkill,
+    updateSkill
 };

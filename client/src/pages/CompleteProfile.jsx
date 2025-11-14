@@ -8,6 +8,9 @@ import { useEdu } from "../context/EducationContext";
 import { useNavigate } from "react-router-dom";
 import { useExp } from "../context/ExpContext";
 import { useInternship } from "../context/InternshipContext";
+import { useLang } from "../context/LangContext";
+import { getBottomNavigationUtilityClass } from "@mui/material/BottomNavigation";
+import { useSkills } from "../context/SkillsContext";
 const CompleteProfile = () => {
 const [userData,setUserData]=useState([])
 
@@ -18,6 +21,10 @@ const [userData,setUserData]=useState([])
   const {addExperience,updateExperience,deleteExperience
   }=useExp()
   const {addInternships,deleteInternships,updateInternships}=useInternship()
+  const {addLanguage,
+            deleteLanguage,
+            updatedLanguage}=useLang()
+  const {addSkill,deleteSkill,updateSkill}=useSkills();
   const sections = [
     { id: "basic", name: "Basic Info" },
     { id: "language", name: "Language" },
@@ -37,44 +44,94 @@ const [userData,setUserData]=useState([])
   const [skillInput, setSkillInput] = useState({ name: "", level: "Beginner" });
 
   // For editing existing skills
-  const [editIndex, setEditIndex] = useState(null);
-  const [editSkill, setEditSkill] = useState({ name: "", level: "Beginner" });
+  const [editSkillIndex, setEditSkillIndex] = useState(null);
+ const [editSkillId,setEditSkillId]=useState(getBottomNavigationUtilityClass)
 
   // --- Handlers ---
 
   // Add a new skill
-  const handleAddSkill = () => {
+  const handleAddSkill = async() => {
     if (!skillInput.name.trim()) return;
-    setSkills([...skills, skillInput]);
-    setSkillInput({ name: "", level: "Beginner" });
+    // console.log(skillInput);
+    try {
+      const {success,data,error}=await addSkill(skillInput)
+      if(success){
+        setSkills(data)
+        toast.success("Skill added Successfully.")
+      }
+      else{
+          console.log("API failed");
+      toast.error(error);
+      }
+    } catch (error) {
+      console.error("Error adding internship:", error);
+    toast.error("Something went wrong. Please try again.")
+    }
   };
 
   // Remove a skill
-  const handleRemoveSkill = index => {
-    const updatedSkills = skills.filter((_, i) => i !== index);
-    setSkills(updatedSkills);
+  const handleRemoveSkill = async (skillId) => {
+   console.log("i am clicked",skillId);
+   try{
+    if(!skillId){
+      console.error('Missing SkillID for Skill removal')
+    }
+    const {success,data,error}=await deleteSkill(skillId);
+    if(success){
+      setSkills(data)
+      toast.success("Skill removed Successfully.")
+    }
+    else{
+       toast.error("Failed to Remove")
+      console.error(error.message)
+    }
+   }
+   catch(error){
+console.error("Error removing skill:", err);
+      toast.error("API error. Check console.");
+   }
+   
   };
 
   // Start editing a skill
-  const handleEditSkill = index => {
-    setEditIndex(index);
-    setEditSkill(skills[index]);
+  const handleEditSkill = (index,skillId) => {
+    const selectedSkill=skills[index]
+    setSkillInput({
+      name:selectedSkill.name,
+      level:selectedSkill.level
+    })
+    setEditSkillIndex(index)
+    setEditSkillId(skillId)
+   
   };
 
   // Save an edited skill
-  const handleSaveSkill = index => {
-    if (!editSkill.name.trim()) return;
-    const updatedSkills = [...skills];
-    updatedSkills[index] = editSkill;
-    setSkills(updatedSkills);
-    setEditIndex(null);
+  const handleSaveSkillChanges = async() => {
+    if(editSkillIndex ==null) return;
+    try {
+      const {success,data,error}=await updateSkill(editSkillId,skillInput)
+      if(success){
+        setSkills(data)
+        toast.success('Skill Updated Successfully.')
+        setEditSkillIndex(null)
+        setEditSkillId(null)
+        setSkillInput({
+          name:"",
+          level:"Beginner"
+        })
+      }
+      else{
+          console.error("Update failed:", error);
+      toast.error(error || "Update failed.");
+      }
+    } catch (error) {
+       console.error("Error updating skill:", error);
+    toast.error("API error. Check console.");
+    }
   };
 
   // Cancel editing
-  const handleCancelEdit = () => {
-    setEditIndex(null);
-    setEditSkill({ name: "", level: "Beginner" });
-  };
+  
 
   // --- Experience States ---
   const [experiences, setExperiences] = useState([]);
@@ -346,6 +403,8 @@ console.log(error);
     endDate: "",
     description:""
   });
+  const [internshipEditingIndex,setInternshipEdtingIndex]=useState(null)
+  const [internshipid,setInternshipId]=useState(null)
 
   // --- Handlers ---
 
@@ -381,54 +440,167 @@ console.log(error);
 
 
   // Remove internship
-  const handleRemoveInternship = index => {
-    const updatedInternships = internships.filter((_, i) => i !== index);
-    setInternships(updatedInternships);
+  const handleRemoveInternship =async(internshipId) => {
+    try {
+      if(!internshipId){
+      console.error("Missing internshipId for Removal ")
+    }
+    const {success,error,data}=await deleteInternships(internshipId);
+    if(success){
+      setInternships(data)
+      toast.success("Internship Removed Successfully.")
+    }
+    else{
+      toast.error("Failed to Remove")
+      console.error(error)
+    }
+    } catch (error) {
+       console.error("Error removing internship:", err);
+      toast.error("API error. Check console.");
+    }
+
   };
 
+  const handleEditInternship= async(index,internshipId)=>{
+      const selectedInternship=internships[index]
+      // console.log("selected internship",selectedInternship);
+      setInternshipInput({
+         company:selectedInternship.company,
+        role:selectedInternship.role,
+        startDate:selectedInternship.startDate,
+        endDate:selectedInternship.endDate,
+        description:selectedInternship.description,
+      })
+      setInternshipEdtingIndex(index);
+      setInternshipId(internshipId)
+      
+  }
+
+  const handleSaveInternshipChanges=async()=>{
+    if(internshipEditingIndex == null) return;
+    console.log(internshipid,internshipInput);
+     try {
+      const {success,data,error}=await updateInternships(internshipid,internshipInput);
+      if(success){
+        setInternships(data)
+        toast.success("Internship Updated Successfully.")
+        setInternshipEdtingIndex(null); // keep existing setter name
+      setInternshipId(null);
+      setInternshipInput({
+        company: "",
+        role: "",
+        startDate: "",
+        endDate: "",
+        description: ""
+      });
+      } else {
+      console.error("Update failed:", error);
+      toast.error(error || "Update failed.");
+    }
+      
+     } catch (error) {
+        console.error("Error updating internship:", err);
+    toast.error("API error. Check console.");
+     }
+    
+  }
   // --- Language States ---
   const [languages, setLanguages] = useState([]);
-  const [languageInput, setLanguageInput] = useState({
-    name: "",
-    level: "Beginner",
-  });
+  const [languageInput, setLanguageInput] = useState([]);
 
   // Edit states
   const [editLangIndex, setEditLangIndex] = useState(null);
-  const [editLanguage, setEditLanguage] = useState({
-    name: "",
-    level: "Beginner",
-  });
-
-  // --- Handlers ---
+  const [editLangId,setEditLangId]=useState(null)
+ 
 
   // Add a language
-  const handleAddLanguage = () => {
+  const handleAddLanguage = async() => {
+    // console.log("i am clicked ",languages);
+    
     if (!languageInput.name.trim()) return;
-    setLanguages([...languages, languageInput]);
-    setLanguageInput({ name: "", level: "Beginner" });
+    // console.log(languageInput);
+    try {
+      const {success,data,error}=await addLanguage(languageInput)
+      if(success){
+        setLanguages(data) 
+        toast.success("Language added Successfully.")
+        setLanguageInput(
+          { name: "", proficiency: "Beginner",});
+      }  else {
+      console.log("API failed");
+      toast.error(error);
+      }
+    } catch (error) {
+      console.error("Error adding internship:", error);
+    toast.error("Something went wrong. Please try again.");
+    }
+    
+    // setLanguages([...languages, languageInput]);
+    
   };
 
   // Remove a language
-  const handleRemoveLanguage = index => {
-    const updatedLanguages = languages.filter((_, i) => i !== index);
-    setLanguages(updatedLanguages);
+  const handleRemoveLanguage = async(langId) => {
+     try{
+        if(!langId){
+          console.error("Missing Language ID for Removal.")
+        }
+         const { success, data, error } = await deleteLanguage(langId);
+        if(success)
+        {
+          setLanguages(data)
+          toast.success('Language Removed.')
+
+        }else{
+          toast.error("Failed to Remove")
+      console.error(error.message)
+        }
+   } catch(error){
+console.error("Error removing Language:", err);
+      toast.error("API error. Check console.");
+   }
   };
 
   // Edit language
-  const handleEditLanguage = index => {
-    setEditLangIndex(index);
-    setEditLanguage(languages[index]);
+  const handleEditLanguage = (index,langId) => {
+    const selectedLanguage=languages[index]
+    setLanguageInput({
+      name:selectedLanguage.name,
+      proficiency:selectedLanguage.proficiency
+
+    })
+     setEditLangIndex(index);
+     setEditLangId(langId)
+   
   };
 
   // Save edited language
-  const handleSaveLanguage = index => {
-    if (!editLanguage.name.trim()) return;
-    const updatedLanguages = [...languages];
-    updatedLanguages[index] = editLanguage;
-    setLanguages(updatedLanguages);
-    setEditLangIndex(null);
-  };
+  const handleSaveLanguageChanges = async() => {
+   if(editLangIndex== null) return
+     console.log(editLangId,languageInput);
+    try {
+      const {success,data,error}=await updatedLanguage(editLangId,languageInput)
+      if(success){
+        setLanguages(data);
+        toast.success('Language information Updates Successfully.')
+        setEditLangIndex(null)
+        // setEditLangId(null)
+        setLanguageInput({
+           name: "",
+    proficiency: "Beginner",
+        })
+      }
+      else{
+          console.error("Update failed:", error);
+      toast.error(error || "Update failed.");
+      }
+    } catch (error) {
+     console.error("Error updating internship:", error);
+    toast.error("API error. Check console.");
+    }
+    
+  // setEditLangId(null)
+  }
 
 const [basicInfo, setBasicInfo] = useState({
   fullName: "",
@@ -438,7 +610,7 @@ const [basicInfo, setBasicInfo] = useState({
 });
 
  
-  // const [educationEditingIndex, setEducationEditingIndex] = useState(null);
+ 
 
 
   const handleChangeBasic = (e) => {
@@ -485,6 +657,9 @@ useEffect(() => {
     //     })
     setEducation(data.education)
         setExperiences(data.experience)
+        setInternships(data.internships)
+        setLanguages(data.languages)
+        setSkills(data.skills)
       } catch (error) {
         console.error(error.message);
          toast("error:", error);
@@ -588,11 +763,11 @@ useEffect(() => {
                 <div className="form-group">
                   <label>Proficiency</label>
                   <select
-                    value={languageInput.level}
+                    value={languageInput.proficiency}
                     onChange={e =>
                       setLanguageInput({
                         ...languageInput,
-                        level: e.target.value,
+                        proficiency: e.target.value,
                       })
                     }
                   >
@@ -609,87 +784,44 @@ useEffect(() => {
                 className="form-actions"
                 style={{ justifyContent: "flex-start" }}
               >
-                <button
+                {editLangIndex !== null ? (
+                  <button className="add-skill-btn" onClick={handleSaveLanguageChanges} type="button">
+                    Save Changes
+                  </button>
+                ):(<button
                   className="add-skill-btn"
                   onClick={handleAddLanguage}
                   type="button"
                 >
                   + Add Language
-                </button>
+                </button>)}
               </div>
 
               {languages.length > 0 && (
-                <div className="skills-list">
+                 <div className="skills-list">
                   {languages.map((lang, index) => (
                     <div key={index} className="skill-item">
-                      {editLangIndex === index ? (
-                        <>
-                          <input
-                            type="text"
-                            value={editLanguage.name}
-                            onChange={e =>
-                              setEditLanguage({
-                                ...editLanguage,
-                                name: e.target.value,
-                              })
-                            }
-                            style={{ width: "45%", marginRight: "8px" }}
-                          />
-                          <select
-                            value={editLanguage.level}
-                            onChange={e =>
-                              setEditLanguage({
-                                ...editLanguage,
-                                level: e.target.value,
-                              })
-                            }
-                            style={{ width: "30%", marginRight: "8px" }}
-                          >
-                            <option>Beginner</option>
-                            <option>Intermediate</option>
-                            <option>Advanced</option>
-                            <option>Fluent</option>
-                            <option>Native</option>
-                          </select>
-                          <button
-                            className="save-skill"
-                            type="button"
-                            onClick={() => handleSaveLanguage(index)}
-                          >
-                            💾
-                          </button>
-                          <button
-                            className="cancel-edit"
-                            type="button"
-                            onClick={() => setEditLangIndex(null)}
-                          >
-                            ✕
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <span>
-                            {lang.name} — <em>{lang.level}</em>
-                          </span>
-                          <div>
-                            <button
-                              className="edit-skill"
-                              onClick={() => handleEditLanguage(index)}
-                              type="button"
-                              style={{ marginRight: "8px" }}
-                            >
-                              ✎
-                            </button>
-                            <button
-                              className="remove-skill"
-                              onClick={() => handleRemoveLanguage(index)}
-                              type="button"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        </>
-                      )}
+                      <div>
+                        <strong>{lang.name}</strong>
+                        <span>{lang.proficiency}</span>
+                       
+                      
+                      </div>
+                      
+                      <button
+          className="remove-skill"
+          onClick={() => handleRemoveLanguage(lang._id)}
+          type="button"
+        >
+          <DeleteOutlineIcon sx={{ color:"#0077B5" }}/>
+        </button>
+        <button
+          className="remove-skill"
+          onClick={() => handleEditLanguage(index,lang._id)}
+          type="button"
+        >
+          <EditIcon sx={{ color:"#ee" }}/>
+        </button>
                     </div>
                   ))}
                 </div>
@@ -942,13 +1074,17 @@ useEffect(() => {
                 className="form-actions"
                 style={{ justifyContent: "flex-start" }}
               >
-                <button
+                {internshipEditingIndex !== null ? (
+                  <button className="add-skill-btn" onClick={handleSaveInternshipChanges} type="button">
+                    Save Changes
+                  </button>
+                ):(<button
                   className="add-skill-btn"
                   onClick={handleAddInternship}
                   type="button"
                 >
                   + Add Internship
-                </button>
+                </button>)}
               </div>
 
               {internships.length > 0 && (
@@ -956,21 +1092,29 @@ useEffect(() => {
                   {internships.map((intern, index) => (
                     <div key={index} className="skill-item">
                       <div>
-                        <strong>{intern.role}</strong> at{" "}
+                        <strong>{intern.role}</strong> at {intern.company}
                         <span>{intern.organization}</span>
                         <br />
-                        <small>{intern.duration}</small>
-                        <p style={{ marginTop: "5px", color: "#555" }}>
+                        <small>{intern.startDate} - {intern.endDate}</small> 
+                        <p style={{ marginTop: "5px", color: "#101010ff" }}>
                           {intern.description}
                         </p>
                       </div>
+                      
                       <button
-                        className="remove-skill"
-                        onClick={() => handleRemoveInternship(index)}
-                        type="button"
-                      >
-                        ✕
-                      </button>
+          className="remove-skill"
+          onClick={() => handleRemoveInternship(intern._id)}
+          type="button"
+        >
+          <DeleteOutlineIcon sx={{ color:"#0077B5" }}/>
+        </button>
+        <button
+          className="remove-skill"
+          onClick={() => handleEditInternship(index,intern._id)}
+          type="button"
+        >
+          <EditIcon sx={{ color:"#ee" }}/>
+        </button>
                     </div>
                   ))}
                 </div>
@@ -1184,71 +1328,33 @@ useEffect(() => {
                 className="form-actions"
                 style={{ justifyContent: "flex-start" }}
               >
-                <button
+                {editSkillIndex !==null ?(
+                  <button
+                  className="add-skill-btn"
+                  onClick={handleSaveSkillChanges}
+                  type="button"
+                >
+                  Save Changes
+                </button>
+                ):(
+                  <button
                   className="add-skill-btn"
                   onClick={handleAddSkill}
                   type="button"
                 >
                   + Add Skill
                 </button>
+                )}
               </div>
 
               {skills.length > 0 && (
                 <div className="skills-list">
                   {skills.map((skill, index) => (
                     <div key={index} className="skill-item">
-                      {editIndex === index ? (
-                        <>
-                          <input
-                            type="text"
-                            value={editSkill.name}
-                            onChange={e =>
-                              setEditSkill({
-                                ...editSkill,
-                                name: e.target.value,
-                              })
-                            }
-                            style={{ width: "45%", marginRight: "8px" }}
-                          />
-                          <select
-                            value={editSkill.level}
-                            onChange={e =>
-                              setEditSkill({
-                                ...editSkill,
-                                level: e.target.value,
-                              })
-                            }
-                            style={{ width: "30%", marginRight: "8px" }}
-                          >
-                            <option>Beginner</option>
-                            <option>Intermediate</option>
-                            <option>Advanced</option>
-                            <option>Expert</option>
-                          </select>
-                          <button
-                            className="save-skill"
-                            type="button"
-                            onClick={() => handleSaveSkill(index)}
-                          >
-                            💾
-                          </button>
-                          <button
-                            className="cancel-edit"
-                            type="button"
-                            onClick={() => setEditIndex(null)}
-                          >
-                            ✕
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <span>
-                            {skill.name} — <em>{skill.level}</em>
-                          </span>
-                          <div>
-                            <button
+                      <strong>{skill.name}</strong>    <span>{skill.level}</span>
+                      <button
                               className="edit-skill"
-                              onClick={() => handleEditSkill(index)}
+                              onClick={() => handleEditSkill(index,skill?._id)}
                               type="button"
                               style={{ marginRight: "8px" }}
                             >
@@ -1256,14 +1362,11 @@ useEffect(() => {
                             </button>
                             <button
                               className="remove-skill"
-                              onClick={() => handleRemoveSkill(index)}
+                              onClick={() => handleRemoveSkill(skill?._id)}
                               type="button"
                             >
                               ✕
                             </button>
-                          </div>
-                        </>
-                      )}
                     </div>
                   ))}
                 </div>

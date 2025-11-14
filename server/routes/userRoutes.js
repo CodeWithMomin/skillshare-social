@@ -17,7 +17,10 @@ const {
     deleteExperience,
     addSkill,
     deleteSkill,
-    uploadProfilePhoto,
+    updateSkill,
+    addLanguage,
+    deleteLanguage,
+    updateLanguage,
     addInternships,
     updateInternships,
     deleteInternships
@@ -47,10 +50,15 @@ router.delete('/:id/experience/:expId', protect, deleteExperience);
 
 //Protected Routes -Internships
 router.post('/:id/internships',protect,addInternships)
-router.put('/internships/:id',protect,updateInternships)
+router.put('/internships/:internshipId',protect,updateInternships)
 router.delete('/:id/internships/:internshipId',protect,deleteInternships)
+// Protected Routes for Language
+router.post('/:id/languages',protect,addLanguage)
+router.put('/languages/:langId',protect,updateLanguage)
+router.delete('/:id/languages/:langId',protect,deleteLanguage)
 // Protected routes - Skills
-router.post('/skills', protect, addSkill);
-router.delete('/skills/:id', protect, deleteSkill);
+router.post('/:id/skills', protect, addSkill);
+router.put('/skills/:skillId',protect,updateSkill)
+router.delete('/:id/skills/:skillId', protect, deleteSkill);
 
 module.exports = router;

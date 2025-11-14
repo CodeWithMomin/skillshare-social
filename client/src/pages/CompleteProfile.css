@@ -340,6 +340,8 @@ textarea {
   align-items: center;
   gap: 10px;
   box-shadow: 0 2px 6px rgba(248, 152, 7, 0.15);
+ 
+ 
 }
 
 .skill-item em {
