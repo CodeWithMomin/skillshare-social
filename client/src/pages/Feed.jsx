@@ -8,147 +8,242 @@ import {
   Avatar,
   Typography,
   IconButton,
+  TextField,
+  Button,
+  Grid,
+  Paper,
 } from "@mui/material";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import ShareIcon from "@mui/icons-material/Share";
+import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
+import CloseIcon from "@mui/icons-material/Close";
+import { usePosts } from "../context/PostContext";
 
 const reactions = ["👍", "❤️", "😂", "😮", "😢", "😡"];
-const users = [
-  { name: "Alice", avatar: "https://i.pravatar.cc/150?img=1" },
-  { name: "Bob", avatar: "https://i.pravatar.cc/150?img=2" },
-  { name: "Charlie", avatar: "https://i.pravatar.cc/150?img=3" },
-  { name: "David", avatar: "https://i.pravatar.cc/150?img=4" },
-];
 
 const Feed = () => {
-  const [showEmojis, setShowEmojis] = useState(null); // Which post shows emoji row
-  const [selectedReaction, setSelectedReaction] = useState({}); // emoji per post
-  const [showComment, setShowComment] = useState(null); // Which post shows comment input
-  const [comments, setComments] = useState({}); // store comments per post
-  const [commentInput, setCommentInput] = useState({}); // input text per post
+  // ⭐ Create Post States
+  const [caption, setCaption] = useState("");
+  const [images, setImages] = useState([]);
+  const [previewImages, setPreviewImages] = useState([]);
 
-  const handleEmojiClick = (postId, emoji) => {
-    setSelectedReaction((prev) => ({ ...prev, [postId]: emoji }));
-    setShowEmojis(null);
+  // ⭐ Feed Reactions/Comments (your existing code)
+  const [showEmojis, setShowEmojis] = useState(null);
+  const [selectedReaction, setSelectedReaction] = useState({});
+  const [showComment, setShowComment] = useState(null);
+  const [comments, setComments] = useState({});
+  const [commentInput, setCommentInput] = useState({});
+
+  // ⭐ Dummy users for example feed
+  const users = [
+    { name: "Alice", avatar: "https://i.pravatar.cc/150?img=1" },
+    { name: "Bob", avatar: "https://i.pravatar.cc/150?img=2" },
+  ];
+
+  // ⭐ Handle File Input
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    setImages(files);
+
+    const previews = files.map((file) => URL.createObjectURL(file));
+    setPreviewImages(previews);
   };
 
-  const handlePostComment = (postId) => {
-    const text = commentInput[postId];
-    if (!text) return;
-    const user = users[Math.floor(Math.random() * users.length)];
-    const newComment = { user, text };
-    setComments((prev) => ({
-      ...prev,
-      [postId]: prev[postId] ? [...prev[postId], newComment] : [newComment],
-    }));
-    setCommentInput((prev) => ({ ...prev, [postId]: "" })); // clear input
+  // ⭐ Remove a single image
+  const removeImage = (index) => {
+    const newImages = [...images];
+    const newPreviews = [...previewImages];
+
+    newImages.splice(index, 1);
+    newPreviews.splice(index, 1);
+
+    setImages(newImages);
+    setPreviewImages(newPreviews);
   };
 
-  const posts = Array.from({ length: 20 }, (_, i) => {
+  // ⭐ Submit Post
+ // Import context
+
+
+// Inside your component:
+const { createPost } = usePosts();
+
+const handleCreatePost = async () => {
+  if (!caption.trim() && images.length === 0) {
+    return toast.error("Write something or select at least one image!");
+  }
+
+  try {
+    // Send request to backend
+    const result = await createPost(caption, images);
+
+    if (result?.success) {
+      toast.success("Post uploaded successfully!");
+
+      // Reset UI
+      setCaption("");
+      setImages([]);
+      setPreviewImages([]);
+    } else {
+      toast.error("Failed to create post");
+    }
+  } catch (err) {
+    toast.error("Something went wrong.");
+  }
+};
+
+
+  // Dummy generated posts
+  const posts = Array.from({ length: 5 }, (_, i) => {
     const user = users[i % users.length];
     return {
       id: i + 1,
       user,
       content: `This is post number ${i + 1}`,
       image: `https://picsum.photos/seed/${i + 1}/600/400`,
+     
     };
   });
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 2, p: 2 }}>
-      {posts.map((post) => (
-        <Card key={post.id} sx={{ borderRadius: 2, boxShadow: 2, position: "relative" }}>
-          <CardHeader
-            avatar={<Avatar src={post.user.avatar} />}
-            title={post.user.name}
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 3, p: 2 }}>
+      
+      {/* --------------------------------------------------------------- */}
+      {/* ⭐ SEXY CREATE POST CARD */}
+      {/* --------------------------------------------------------------- */}
+      <Card sx={{ p: 2, borderRadius: 3, boxShadow: 4 }}>
+        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+          Create a Post
+        </Typography>
+
+        {/* Caption Input */}
+        <TextField
+          fullWidth
+          multiline
+          placeholder="What's on your mind?"
+          value={caption}
+          onChange={(e) => setCaption(e.target.value)}
+          sx={{
+            mb: 2,
+            "& .MuiOutlinedInput-root": {
+              borderRadius: 3,
+            },
+          }}
+        />
+
+        {/* Upload Images */}
+        <Box
+          sx={{
+            border: "2px dashed #ccc",
+            borderRadius: 3,
+            p: 3,
+            textAlign: "center",
+            cursor: "pointer",
+            transition: "0.2s",
+            "&:hover": {
+              borderColor: "#1976d2",
+              background: "#f6faff",
+            },
+          }}
+          onClick={() => document.getElementById("post-image-input").click()}
+        >
+          <AddPhotoAlternateIcon sx={{ fontSize: 50, color: "#888" }} />
+          <Typography sx={{ mt: 1, color: "#666" }}>
+            Click to upload images (max 10)
+          </Typography>
+
+          <input
+            id="post-image-input"
+            type="file"
+            accept="image/*"
+            multiple
+            hidden
+            onChange={handleImageUpload}
           />
+        </Box>
+
+        {/* Image Preview Grid */}
+        {previewImages.length > 0 && (
+          <Grid container spacing={2} sx={{ mt: 2 }}>
+            {previewImages.map((src, index) => (
+              <Grid item xs={6} sm={4} md={3} key={index}>
+                <Paper
+                  elevation={4}
+                  sx={{
+                    position: "relative",
+                    borderRadius: 2,
+                    overflow: "hidden",
+                  }}
+                >
+                  <img
+                    src={src}
+                    alt="preview"
+                    style={{
+                      width: "100%",
+                      height: 120,
+                      objectFit: "cover",
+                    }}
+                  />
+
+                  {/* Remove button */}
+                  <IconButton
+                    size="small"
+                    sx={{
+                      position: "absolute",
+                      top: 4,
+                      right: 4,
+                      bgcolor: "rgba(0,0,0,0.4)",
+                      color: "white",
+                      "&:hover": { bgcolor: "rgba(0,0,0,0.7)" },
+                    }}
+                    onClick={() => removeImage(index)}
+                  >
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+
+        {/* Post Button */}
+        <Button
+          variant="contained"
+          fullWidth
+          sx={{
+            mt: 2,
+            py: 1,
+            borderRadius: 2,
+            textTransform: "none",
+            fontWeight: 600,
+            fontSize: "1rem",
+            background:"#ee9917"
+          }}
+          onClick={handleCreatePost}
+          disabled={!caption && images.length === 0}
+        >
+          Post
+        </Button>
+      </Card>
+
+      {/* --------------------------------------------------------------- */}
+      {/* ⭐ EXISTING FEED POSTS BELOW */}
+      {/* --------------------------------------------------------------- */}
+      {posts.map((post) => (
+        <Card key={post.id} sx={{ borderRadius: 2, boxShadow: 3, position: "relative" }}>
+          <CardHeader avatar={<Avatar src={post.user.avatar} />} title={post.user.name} />
+
           <CardContent>
             <Typography>{post.content}</Typography>
           </CardContent>
+
           <CardMedia
             component="img"
             image={post.image}
             alt={`Post ${post.id}`}
             sx={{ width: "100%", height: 300, objectFit: "cover", borderRadius: 1 }}
           />
-
-          {/* Interaction Bar */}
-          <Box sx={{ display: "flex", gap: 1, p: 1, alignItems: "center", position: "relative" }}>
-            <IconButton
-              size="small"
-              onMouseEnter={() => setShowEmojis(post.id)}
-              onMouseLeave={() => setShowEmojis(null)}
-            >
-              {selectedReaction[post.id] ? (
-                <Typography fontSize="1.2rem">{selectedReaction[post.id]}</Typography>
-              ) : (
-                <FavoriteBorderIcon fontSize="small" />
-              )}
-            </IconButton>
-
-            <IconButton
-              size="small"
-              onClick={() => setShowComment((prev) => (prev === post.id ? null : post.id))}
-            >
-              <ChatBubbleOutlineIcon fontSize="small" />
-            </IconButton>
-
-            <IconButton size="small">
-              <ShareIcon fontSize="small" />
-            </IconButton>
-
-            {/* Emoji Row */}
-            {showEmojis === post.id && (
-              <Box sx={{
-                position: "absolute", bottom: 35, left: 0,
-                display: "flex", gap: 1, bgcolor: "white",
-                p: 1, borderRadius: 2, boxShadow: 3, zIndex: 10
-              }}>
-                {reactions.map((emoji) => (
-                  <Box
-                    key={emoji}
-                    sx={{ fontSize: "1.5rem", cursor: "pointer", "&:hover": { transform: "scale(1.4)" } }}
-                    onClick={() => handleEmojiClick(post.id, emoji)}
-                  >
-                    {emoji}
-                  </Box>
-                ))}
-              </Box>
-            )}
-          </Box>
-
-          {/* Comment Input */}
-          {showComment === post.id && (
-            <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 1 }}>
-              <Box sx={{ display: "flex", gap: 1 }}>
-                <input
-                  type="text"
-                  placeholder="Write a comment..."
-                  value={commentInput[post.id] || ""}
-                  onChange={(e) =>
-                    setCommentInput((prev) => ({ ...prev, [post.id]: e.target.value }))
-                  }
-                  style={{ flex: 1, padding: "8px", borderRadius: "8px", border: "1px solid #ccc" }}
-                  onKeyDown={(e) => { if (e.key === "Enter") handlePostComment(post.id); }}
-                />
-                <button
-                  style={{ padding: "8px 12px", borderRadius: "8px", background: "#1976d2", color: "white", border: "none" }}
-                  onClick={() => handlePostComment(post.id)}
-                >
-                  Post
-                </button>
-              </Box>
-
-              {/* Show all comments */}
-              {comments[post.id] && comments[post.id].map((cmt, idx) => (
-                <Box key={idx} sx={{ display: "flex", gap: 1, alignItems: "center", mt: 1 }}>
-                  <Avatar src={cmt.user.avatar} sx={{ width: 24, height: 24 }} />
-                  <Typography variant="body2"><strong>{cmt.user.name}:</strong> {cmt.text}</Typography>
-                </Box>
-              ))}
-            </Box>
-          )}
         </Card>
       ))}
     </Box>

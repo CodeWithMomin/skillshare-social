@@ -1,4 +1,4 @@
-import React, { Children } from 'react'
+import React, { Children, use } from 'react'
 import { createContext,useState,useEffect,useContext } from 'react'
 import authService from '../services/authService'
 const AuthContext= createContext()
@@ -22,6 +22,8 @@ export const AuthProvider=({children})=>{
             if (res.success) {
               const userData = res.response.user;  // extract user object
               setUser(userData);
+              
+              
               setIsAuthenticated(true);
               if (userData.token) {
                 localStorage.setItem('authToken', userData.token);
@@ -33,12 +35,14 @@ export const AuthProvider=({children})=>{
 
             const login = async (credentials) => {
               const res = await authService.login(credentials);
-              //  console.log("Login response:", res);
+              // console.log("Login response:", res);
               
             
               if (res.success) {
                 const userData = res.response.user;  // extract user object
                 setUser(userData);
+              
+                
                 setIsAuthenticated(true);
                 if (userData.token) {
                   localStorage.setItem('authToken', userData.token);
