@@ -7,7 +7,8 @@ import SmartToyIcon from "@mui/icons-material/SmartToy";
 import FolderIcon from "@mui/icons-material/Folder";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { Explore, Hub, NetworkWifi, People } from "@mui/icons-material";
-
+import { useProfilePicture } from "../context/ProfilePictureContext";
+import { useAuth } from "../context/AuthContext";
 const navItems = [
   { label: "Feed", icon: <FeedIcon />, path: "/feed" },
   { label: "Explore", icon: <Explore />, path: "/explore" },
@@ -22,7 +23,9 @@ const navItems = [
 
 const SideBar = () => {
   const location = useLocation();
-
+  const {profilePic}=useProfilePicture()
+  const {user}=useAuth()
+  
   return (
     <Box
       sx={{
@@ -70,36 +73,49 @@ const SideBar = () => {
       </Box>
 
       {/* Profile Button */}
-      <Box
-        sx={{
-          mt: 2,
-          textAlign: "center",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          padding: "10px",
-        }}
-      >
-        <Link
-          to="/profile"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            width: 50,
-            height: 50,
-            backgroundColor: "#ee9917",
-            color: "#fff",
-            borderRadius: "50%",
-            fontWeight: "bold",
-            fontSize: "1.2rem",
-            textDecoration: "none",
-            transition: "all 0.2s ease",
-          }}
-        >
-          M
-        </Link>
-      </Box>
+      {/* Profile Button */}
+<Box
+  sx={{
+    mt: 2,
+    textAlign: "center",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: "10px",
+  }}
+>
+  <Link
+    to="/profile"
+    style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      width: 90,        // bigger circle
+      height: 85,
+      backgroundColor: "#ee9817de",
+      color: "#fff",
+      borderRadius: "50%",
+      textDecoration: "none",
+      transition: "all 0.2s ease",
+      overflow: "hidden",
+      boxShadow: "0px 2px 6px rgba(0,0,0,0.18)",
+    }}
+  >
+    <Avatar
+      src={user.profilePic || "/default-avatar.png"}
+      alt="Profile"
+      sx={{
+        width: 86,        // bigger image
+        height: 85,
+        borderRadius: "50%",
+        objectFit: "cover",
+        border: "2px solid white",
+      }}
+    />
+  </Link>
+</Box>
+
+      
     </Box>
   );
 };
