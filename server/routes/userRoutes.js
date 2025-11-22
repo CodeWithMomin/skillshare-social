@@ -1,7 +1,5 @@
 const express = require('express');
-const upload = require("../config/upload");
-const { uploadProfilePicture } = require("../controllers/userController");
-
+const {upload}=require('../middleware/uploadMiddleware')
 
 const router = express.Router();
 const {
@@ -25,12 +23,7 @@ const {
     updateLanguage,
     addInternships,
     updateInternships,
-    deleteInternships,
-    addCurrentPosition,
-    updateCurrentPosition,
-    deleteCurrentPostion,
-    addBasicInfo,
-    updateBasicInfo
+    deleteInternships
 } = require('../controllers/userController');
 const {protect}=require('../middleware/authMiddleware')
 // Public routes
@@ -67,20 +60,5 @@ router.delete('/:id/languages/:langId',protect,deleteLanguage)
 router.post('/:id/skills', protect, addSkill);
 router.put('/skills/:skillId',protect,updateSkill)
 router.delete('/:id/skills/:skillId', protect, deleteSkill);
-// Protected routes - Current  positions
-router.post('/:id/current', protect, addCurrentPosition);
-router.put('/current/:currentPositionId',protect,updateCurrentPosition)
-router.delete('/:id/current/:currentPositionId', protect, deleteCurrentPostion);
-  
-router.post('/:id/basicInfo', protect, addBasicInfo);
-router.put('/basicInfo/:basicInfoId',protect,updateBasicInfo)
-
-
-router.post(
-  '/upload-profile-picture',
-  protect,
-  upload.single('profile'),
-  uploadProfilePicture
-);
 
 module.exports = router;

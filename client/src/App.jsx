@@ -76,7 +76,10 @@ function App() {
           path: "profile",
           element: <Profile />,
         },
-        
+        {
+          path: "chat",
+          element:<UserChat/>,
+        },
         // {
         //   path:"complete-profile",
         //   element:<CompleteProfile/>
@@ -102,14 +105,6 @@ function App() {
       element:(
         <AlumniProtectedRoutes element={<CompleteProfile/>}
         isAlumniAuthenticated={isAlumniAuthenticated}/>
-      )
-    },
-    {
-      path:'/chat',
-      element:(
-      <ProtectedRoute element={<UserChat/>}
-      isAuthenticated={isAuthenticated}/>
-        
       )
     },
     {

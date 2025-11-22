@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema(
     // Basic Authentication
     email: {
       type: String,
-      required:false,
+      required: true,
       unique: true,
       lowercase: true,
       trim: true
@@ -47,7 +47,7 @@ const userSchema = new mongoose.Schema(
       default: "",
       trim: true
     },
-    profilePic: {
+    photo: {
       type: String, // URL to profile photo
       default: null
     },
@@ -127,60 +127,23 @@ const userSchema = new mongoose.Schema(
     ],
 
     // Current Position
-    current: [
-      {company: { type: String, default: "" },
-      role: { type: String, default: "" },
-      startDate: { type: String, default: "" },
-      employmentType: { 
+    current: {
+      company: { type: String, default: "" },
+      title: { type: String, default: "" },
+      start: { type: String, default: "" },
+      type: { 
         type: String, 
-        enum: ["Full-time","Part-time","Internship","Freelance"],
-        default: "Full-time"
-      },
-      location:{type: String, default: ""},
-      description:{type: String, default: ""
+        enum: ["On-site", "Remote", "Hybrid"],
+        default: "On-site"
       }
-      }
-    ],
+    },
 
     // Contact Information
     contact: {
-      github: { type: String, default: "" },
-      linkedin: { type: String, default: "" },
-      instagram: { type: String, default: "" },
-      portfolio: { type: String, default: "" } // Could be LinkedIn, portfolio, etc.
-    },
-    basicInfo: [
-  {
-    fullName: {
-      type: String,
-      required: true,
-      trim: true
-    },
-   
-    phoneNo: {
-      type: String,
-      default: "",
-      trim: true
-    },
-    location: {
-      type: String,
-      default: "",
-      trim: true
-    },
-    portfolioLink: {
-      type: String,
-      default: "",
-      trim: true
-    },
-    bio: {
-      type: String,
-      default: "",
-      trim: true,
-      maxlength: 500
+      email: { type: String, default: "" },
+      phone: { type: String, default: "" },
+      links: { type: String, default: "" } // Could be LinkedIn, portfolio, etc.
     }
-  }
-]
-
   },
   {
     timestamps: true // Automatically adds createdAt and updatedAt
