@@ -1,22 +1,34 @@
 import api from './api';
 
 const profileService = {
+
+  getUserProfile: async () => {
+    try {
+      const response = await api.get('/users/profile');
+      return response.user;  // Adjust if API response differs
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      return null;
+    }
+  },
+
   uploadProfilePhoto: async (file) => {
     try {
       const formData = new FormData();
-      formData.append('profile', file); // MUST match Multer upload.single('profile')
+      formData.append('photo', file);
 
-      const response = await api.post(
-        '/users/upload-profile-picture',
-        formData
-      );
+      const response = await api.post('/users/upload-profile-photo', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
-      return response.url; // Cloudinary URL returned from backend
+      return response.imageUrl;  // Adjust to actual response field
     } catch (error) {
-      console.error('Error uploading profile photo:', error);
-      throw error.response?.data?.message || 'Upload failed';
+      console.error('Error uploading photo:', error);
+      throw error;
     }
-  },
+  }
 };
 
 export default profileService;

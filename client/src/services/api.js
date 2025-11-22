@@ -6,7 +6,7 @@ const BASE_URL ='http://localhost:5000/api';
 // ✅Create Axios instance
 const api = axios.create({
   baseURL: BASE_URL,
-  // headers: { 'Content-Type': 'application/json' }, //  lowercase 'headers'
+  headers: { 'Content-Type': 'application/json' }, //  lowercase 'headers'
   timeout: 10000,
 });
 

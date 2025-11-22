@@ -10,7 +10,7 @@ import toast from 'react-hot-toast';
 import WorkIcon from "@mui/icons-material/Work";
 import SchoolIcon from "@mui/icons-material/School";
 import LanguageIcon from "@mui/icons-material/Language";
-import { useProfilePicture } from '../context/ProfilePictureContext';
+
 
 
 const COVER_GRADIENT = "linear-gradient(90deg, #fa709a 0%, #fee140 100%)";
@@ -24,17 +24,16 @@ const Profile = () => {
   const token = localStorage.getItem('authToken'); 
   const navigate=useNavigate()
  
-const{ profilePic,
-        uploadProfilePicture}=useProfilePicture()
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
       const data = await getUserProfile(); // data is already JSON here
-      //  console.log(data);
+      // console.log(data);
       // console.log(token);
       
       setUser(data);
-      setPreview(data.profilePic)
+      
       
     } catch (error) {
       console.error(error.message);
@@ -47,24 +46,15 @@ const{ profilePic,
     
   }, [token]);
   const handleImageChange = async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+    const file = e.target.files[0];
+    if (!file) return;
 
-  // Preview the selected image
-  const imageUrl = URL.createObjectURL(file);
-  setPreview(imageUrl);
+    // ✅ Preview the selected image without API
+    const imageUrl = URL.createObjectURL(file);
+    setPreview(imageUrl);
 
-  // // 🔥 Upload to backend & Cloudinary
-  const result = await uploadProfilePicture(file);
-    console.log(result);
-    
-  if (result?.success) {
-    toast.success("Profile picture updated!");
-  } else {
-    toast.error("Upload failed!");
-  }
-};
-
+   
+  };
 
   ;
   if (loading) {
@@ -75,7 +65,7 @@ const{ profilePic,
       </Container>
     );
   }else{
-   
+    toast.dismiss()
 }
   if (!user) {
     return (

@@ -78,7 +78,6 @@ const Login = () => {
       
       if (result.success) {
         navigate("/");
-        
       } else {
         setError(result.error || "Login failed");
         toast("Login Failed.")

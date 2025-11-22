@@ -2,7 +2,7 @@
 const User=require('../models/User')
 const bcrypt=require('bcryptjs')
 const jwt=require('jsonwebtoken')
-const cloudinary = require("../config/cloudinary");
+
 
 const genrationToken=(id)=>{
     return jwt.sign({id},process.env.JWT_SECRET,{expiresIn:'30d'});
@@ -83,8 +83,7 @@ const loginUser= async (req,res)=>{
                     _id:user._id,
                     fullName:user.fullName,
                     email:user.email,
-                    token:genrationToken(user._id),
-                    profilePic:user.profilePic
+                    token:genrationToken(user._id)
                 }
             });
         } else{
@@ -769,213 +768,6 @@ try {
     });
 }
 }
-const addCurrentPosition = async (req, res) => {
-  try {
-    const { company, role, startDate, employmentType, location, description } = req.body;
-
-    if (!company || !role || !startDate || !employmentType || !location || !description) {
-      return res.status(400).json({ message: "All fields are required." });
-    }
-
-    const user = await User.findById(req.user.id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
-    }
-
-    // ❗ Prevent duplicate position (same company + role)
-    const alreadyExists = user.current.some(
-      (pos) =>
-        pos.company.toLowerCase() === company.toLowerCase() &&
-        pos.role.toLowerCase() === role.toLowerCase()
-    );
-
-    if (alreadyExists) {
-      return res.status(400).json({
-        success: false,
-        message: "This current position is already added.",
-      });
-    }
-
-    // Add new position
-    user.current.push({
-      company,
-      role,
-      startDate,
-      employmentType,
-      location,
-      description,
-    });
-
-    await user.save();
-
-    res.json({
-      success: true,
-      message: "Current position added successfully.",
-      current: user.current,
-    });
-
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
-
-const deleteCurrentPostion=async(req,res)=>{
-    try {
-        const user=await User.findById(req.user.id);
-        if(!user){
-            return res.status(404).json({
-                message:'User not found'
-            })
-        }
-        user.current=user.current.filter(currentPosition=>currentPosition._id.toString() !== req.params.currentPositionId)
-        await user.save();
-        res.json({
-            success:true,
-            message:"Current Position Deleted Successfully.",
-            current:user.current
-        })
-    } catch (error) {
-        res.status(500).json({
-            message: 'Server error',
-            error: error.message
-        });
-    }
-}
-const updateCurrentPosition=async(req,res)=>{
-    try {
-        const user=await User.findById(req.user.id)
-        if(!user){
-             return res.status(404).json({
-                message:'User Not Found.'
-            })
-        }
-        const currentPositionIndex=user.current.findIndex((position)=>position._id.toString()===req.params.currentPositionId)
-        if(currentPositionIndex==-1){
-
-        return res.status(404).json({
-                message:"Internship Information Not Found."
-            })
-        }
-       const {company,role,startDate,employmentType,location,description}=req.body;
-        if(company) user.current[currentPositionIndex].company=company
-        if(role) user.current[currentPositionIndex].role=role
-        if(startDate) user.current[currentPositionIndex].startDate=startDate
-        if(employmentType) user.current[currentPositionIndex].employmentType=employmentType
-        if(location) user.current[currentPositionIndex].location=location
-        if(description) user.current[currentPositionIndex].description=description
-        await user.save();
-        res.json({
-            success:true,
-            message:"CurrentPosition Updated Successfully.",
-            current:user.current
-        })
-
-    } catch (error) {
-        res.status(500).json({
-      message: 'Server error',
-      error: error.message,
-    });
-    }
-}
-const addBasicInfo = async (req, res) => {
-  try {
-    const { fullName, phoneNo, location, bio, portfolioLink } = req.body;
-    
-    
-    if (!fullName || !phoneNo || !location || !bio || !portfolioLink) {
-      return res.status(400).json({ message: "All fields are required." });
-    }
-
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user.id,
-      {
-        $push: {
-          basicInfo: { fullName, phoneNo, location, bio, portfolioLink }
-        }
-      },
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedUser) {
-      return res.status(404).json({ message: "User not found." });
-    }
-
-    res.json({
-      success: true,
-      message: "Basic Info added successfully.",
-      basicInfo: updatedUser.basicInfo
-    });
-
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
-
-const updateBasicInfo = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id);
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
-    }
-
-    const basicIndex = user.basicInfo.findIndex(
-      (info) => info._id.toString() === req.params.basicInfoId
-    );
-
-    if (basicIndex === -1) {
-      return res.status(404).json({ message: "Basic info not found." });
-    }
-
-    const { fullName, phoneNo, location, bio, portfolioLink } = req.body;
-
-    if (fullName) user.basicInfo[basicIndex].fullName = fullName;
-    if (phoneNo) user.basicInfo[basicIndex].phoneNo = phoneNo;
-    if (location) user.basicInfo[basicIndex].location = location;
-    if (bio) user.basicInfo[basicIndex].bio = bio;
-    if (portfolioLink)
-      user.basicInfo[basicIndex].portfolioLink = portfolioLink;
-
-    await user.save();
-
-    res.json({
-      success: true,
-      message: "Basic info updated successfully.",
-      basicInfo: user.basicInfo
-    });
-
-  } catch (error) {
-    res.status(500).json({
-      message: "Server error",
-      error: error.message
-    });
-  }
-};
-const uploadProfilePicture = async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id);
-
-    if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
-    }
-
-    // req.file.path contains Cloudinary URL (via multer-storage-cloudinary)
-    user.profilePic = req.file.path;
-    await user.save();
-
-    res.json({
-      success: true,
-      message: "Profile picture uploaded successfully",
-      url: req.file.path
-    });
-  } catch (err) {
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
-};
-
 module.exports = {
     registerUser,
     loginUser,
@@ -997,11 +789,5 @@ module.exports = {
     updateLanguage,
     addSkill,
     deleteSkill,
-    updateSkill,
-    addCurrentPosition,
-    deleteCurrentPostion,
-    updateCurrentPosition,
-    addBasicInfo,
-    updateBasicInfo,
-    uploadProfilePicture
+    updateSkill
 };

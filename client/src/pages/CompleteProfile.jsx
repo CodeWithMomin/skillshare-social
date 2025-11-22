@@ -11,8 +11,6 @@ import { useInternship } from "../context/InternshipContext";
 import { useLang } from "../context/LangContext";
 import { getBottomNavigationUtilityClass } from "@mui/material/BottomNavigation";
 import { useSkills } from "../context/SkillsContext";
-import { useCurrentPosition } from "../context/CurrentPosContext";
-import { useBasicInfo } from "../context/BasicInfoContext";
 const CompleteProfile = () => {
 const [userData,setUserData]=useState([])
 
@@ -27,9 +25,6 @@ const [userData,setUserData]=useState([])
             deleteLanguage,
             updatedLanguage}=useLang()
   const {addSkill,deleteSkill,updateSkill}=useSkills();
-  const { addCurrentPosition,deleteCurrentPosition,updateCurrentPosition}=useCurrentPosition()
-  const {addBasicInfo,updateBasicInfo}=useBasicInfo()
-
   const sections = [
     { id: "basic", name: "Basic Info" },
     { id: "language", name: "Language" },
@@ -38,7 +33,7 @@ const [userData,setUserData]=useState([])
     { id: "experience", name: "Experience" },
     { id: "skills", name: "Skills" },
     { id: "current", name: "Current Position" },
-    
+    { id: "contact", name: "Contact" },
   ];
  
   const [activeSection, setActiveSection] = useState("basic");
@@ -606,204 +601,26 @@ console.error("Error removing Language:", err);
     
   // setEditLangId(null)
   }
-const[basicInformation,setBasicInformation]=useState([])
+
 const [basicInfo, setBasicInfo] = useState({
   fullName: "",
   phoneNo: "",
   location: "",
   bio: "",
-  portfolioLink:""
 });
 
- const [basicinfoIndex,setBasicInfoIndex]=useState(null)
- const [basicInfoId,setBasicInfoId]=useState()
+ 
  
 
 
-  const handleBasicChange = (e) => {
+  const handleChangeBasic = (e) => {
     const { name, value } = e.target;
     setBasicInfo((prev) => ({ ...prev, [name]: value }));
   };
-const handleBasicInfoSave=async()=>{
+const handleBasicInfoSave=()=>{
 console.log(basicInfo);
 
-try{
-  const {success,data,error}=await addBasicInfo(basicInfo)
-  if(success){
-    setBasicInformation(data)
-    toast.success("Added Successfully.")
-    setBasicInfo({
-  fullName: "",
-  phoneNo: "",
-  location: "",
-  bio: "",
-  portfolioLink:""
-    })
-  }
-  else{
-toast.error("Failed to add.")
-console.error(error)
-  }
-}catch(error){
-console.error("Error adding Basic Info:", error);
-    toast.error("Something went wrong. Please try again.");
 }
-
-
-}
-const handleSaveBasicChanges= async ()=>{
-  console.log(basicInfoId);
-
-  
-  if(basicinfoIndex==null) return;
-  try {
-    const {success,data,error}=await updateBasicInfo(basicInfoId,basicInfo)
-    if(success){
-      setBasicInformation(data)
-      toast.success("Updated Successfully.")
-      setBasicInfoIndex(null)
-      setBasicInfo({
-        fullName: "",
-  phoneNo: "",
-  location: "",
-  bio: "",
-  portfolioLink:""
-      })
-    }else{
-toast.error("Failed to Update.")
-console.error(error)
-  }
-
-  } catch (error) {
-    console.error("Error Updating Basic Info:", error);
-    toast.error("Something went wrong. Please try again.");
-}
-  }
-
-const handleEditBasicChange=(index,infoId)=>{
-
-    const selectedInfo=basicInformation[index]
-setBasicInfo({
-  fullName:selectedInfo.fullName,
-  phoneNo:selectedInfo.phoneNo,
-  location:selectedInfo.location,
-  bio:selectedInfo.bio,
-  portfolioLink:selectedInfo.portfolioLink
-    })
-  
-  setBasicInfoIndex(index)
-  setBasicInfoId(infoId)
-}
-// current postion 
-const [currentPositions,setCurrentPositions]=useState([])
-const [currentPositionInputs,setCurrentPositionInputs]=useState({
-  company:"",
-  role:"",
-  startDate:"",
-  employmentType:"Full-time",
-  location:"",
-  description:""
-})
-const [currentPositionId,setCurrentPositionId]=useState(null)
-const [currentPositionEditingIndex,setCurrentPositionEditingIndex]=useState(null)
-
-const handleAddCurrentPosition=async()=>{
-  if(!currentPositionInputs) return;
-  console.log(currentPositionInputs);
-  
-  try {
-    const {success,data,error}=await addCurrentPosition(currentPositionInputs);
-    if(success){
-      setCurrentPositions(data)
-      toast.success("Position added.")
-      setCurrentPositionInputs({
-        company:"",
-        role:"",
-        startDate:"",
-        employmentType:"Full-time",
-        location:"",
-        description:""
-      })
-    }
-    else{
-      console.log("API failed");
-      toast.error(error.message);
-    }
-
-  } catch (error) {
-     console.error("Error adding internship:", error);
-    toast.error("Something went wrong. Please try again.");
-  }
-
-}
-const handleSaveCurrentPositionChanges=async()=>{
-// console.log(currentPositionId,currentPositionInputs);
-if(currentPositionEditingIndex == null) return;
-try {
-  const {success,data,error}=await updateCurrentPosition(currentPositionId,currentPositionInputs)
-  if(success){
-    setCurrentPositions(data)
-    toast.success('Updated Successfully.')
-    setCurrentPositionEditingIndex(null)
-    setCurrentPositionId(null)
-    setCurrentPositionInputs({
-        company:"",
-        role:"",
-        startDate:"",
-        employmentType:"Full-time",
-        location:"",
-        description:""
-      })
-    }else{
-      console.error("Update failed:", error);
-      toast.error(error || "Update failed.");
-    }
-  
-} catch (error) {
-  console.error("Error updating internship:", err);
-    toast.error("API error. Check console.");
-}
-
-}
-const handleEditCurrentPosition=async(index,posId)=>{
-  const selectedCurrentPosition=currentPositions[index]
-  setCurrentPositionInputs({
-     company:selectedCurrentPosition.company,
-  role:selectedCurrentPosition.role,
-  startDate:selectedCurrentPosition.startDate,
-  employmentType:selectedCurrentPosition.employmentType,
-  location:selectedCurrentPosition.location,
-  description:selectedCurrentPosition.description,
-  })
-  setCurrentPositionEditingIndex(index)
-  setCurrentPositionId(posId)
-
-}
-const handleRemoveCurrentPosition=async(index,posId)=>{
-  console.log(posId);
-  
-  try {
-    if(!posId)
-      {
-         console.error("Missing PosId for Removal ")
-      } 
-      const {success,data,error}=await deleteCurrentPosition(posId)
-      if(success){
-        setCurrentPositions(data)
-        toast.success("Removed Successfully.")
-      }else{
-      toast.error("Failed to Remove")
-      console.error(error)
-    }
-  } catch (error) {
-    console.error("Error removing internship:", err);
-      toast.error("API error. Check console.");
-  }
-}
-
-
-
-
 useEffect(() => {
       const fetchUserProfile = async () => {
         
@@ -843,8 +660,6 @@ useEffect(() => {
         setInternships(data.internships)
         setLanguages(data.languages)
         setSkills(data.skills)
-        setCurrentPositions(data.current)
-        setBasicInformation(data.basicInfo)
       } catch (error) {
         console.error(error.message);
          toast("error:", error);
@@ -891,105 +706,40 @@ useEffect(() => {
 
         <form className="profile-form">
           {/* === BASIC INFO === */}
-        {activeSection === "basic" && (
-  <>
-    <div className="form-grid">
-
-      <div className="form-group">
-        <label>Full Name</label>
-        <input
-          type="text"
-          name="fullName"
-          placeholder="Enter your full name"
-          value={basicInfo.fullName}
-          onChange={handleBasicChange}
-        />
-      </div>
-
-    
-      <div className="form-group">
-        <label>Phone Number</label>
-        <input
-          type="text"
-          name="phoneNo"
-          placeholder="Enter your phone number"
-          value={basicInfo.phoneNo}
-          onChange={handleBasicChange}
-        />
-      </div>
-
-      <div className="form-group">
-        <label>Location</label>
-        <input
-          type="text"
-          name="location"
-          placeholder="City, Country"
-          value={basicInfo.location}
-          onChange={handleBasicChange}
-        />
-      </div>
-
-      <div className="form-group">
-        <label>Portfolio Link</label>
-        <input
-          type="text"
-          name="portfolioLink"
-          placeholder="Your portfolio website"
-          value={basicInfo.portfolioLink}
-          onChange={handleBasicChange}
-        />
-      </div>
-
-    </div>
-
-    <div className="form-group">
-      <label>Bio</label>
-      <textarea
-        name="bio"
-        placeholder="Write a short bio..."
-        value={basicInfo.bio}
-        onChange={handleBasicChange}
-      ></textarea>
-    </div>
-
-    <div className="form-actions">
-      {basicinfoIndex !== null ? (
-                  <button className="add-skill-btn" onClick={handleSaveBasicChanges} type="button">
-                    Save Changes
-                  </button>
-                ):(<button
-                  className="add-skill-btn"
-                  onClick={handleBasicInfoSave}
-                  type="button"
-                >
-                  Submit Basic INFO
-                </button>)}
-    </div>
-
-    {basicInformation.length > 0 && (
-                <div className="skills-list">
-                  {basicInformation.map((info, index) => (
-                    <div key={index} className="skill-item">
-                    <p>Name:<span>{info.fullName}</span> </p>
-                    <p>No:<span>{info.phoneNo}</span></p>
-                        
-                      
-                      <button
-                        className="remove-skill"
-                        onClick={() => handleEditBasicChange(index,info._id)}
-                        type="button"
-                      >
-                        <EditIcon sx={{
-                          color:"#0077B5"
-                        }}/>
-                      </button>
-                    </div>
-                  ))}
+          {activeSection === "basic" && (
+            <>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label>Full Name</label>
+                  <input type="text" placeholder="Enter your full name" name="fullName" value={basicInfo.fullName}  onChange={handleChangeBasic}/>
                 </div>
-              )}
-  </>
-)}
-
+                <div className="form-group">
+                  <label>Email</label>
+                  <input type="email" placeholder="Enter your email" name="email" disabled value={basicInfo.email} />
+                </div>
+                <div className="form-group">
+                  <label>Phone</label>
+                  <input type="text" placeholder="Enter your phone number" name="phoneNo" value={basicInfo.phoneNo}   onChange={handleChangeBasic} />
+                </div>
+                <div className="form-group">
+                  <label>Location</label>
+                  <input type="text" placeholder="City, Country" value={basicInfo.location}  name="location"  onChange={handleChangeBasic}/>
+                </div>
+              </div>
+              <div className="form-group">
+                <label>Bio</label>
+                <textarea placeholder="Write a short bio..." value={basicInfo.bio} name="bio"  onChange={handleChangeBasic}></textarea>
+              </div>
+              <div className="form-actions">
+            <button  className="save-btn" onClick={handleBasicInfoSave}>
+              Save
+            </button>
+            <button type="reset" className="cancel-btn">
+              Cancel
+            </button>
+          </div>
+            </>
+          )}
 
           {/* === LANGUAGE SECTION === */}
           {activeSection === "language" && (
@@ -1404,10 +1154,10 @@ useEffect(() => {
                       })
                     }
                   />
-                  </div>
+                </div>
                     {/* Employment Type */}
-                 <div className="form-group">
-                  <label>Employment Type</label>
+  <div className="form-group">
+    <label>Employment Type</label>
     <select
       value={experienceInput.employmentType}
       onChange={e =>
@@ -1630,28 +1380,15 @@ useEffect(() => {
               <div className="form-grid">
                 <div className="form-group">
                   <label>Company</label>
-                  <input type="text" placeholder="Current company name"  value={ currentPositionInputs.company} onChange={e=>
-                    setCurrentPositionInputs({...currentPositionInputs,
-                      company:e.target.value
-                    })
-                  }/>
+                  <input type="text" placeholder="Current company name" />
                 </div>
                 <div className="form-group">
                   <label>Role / Position</label>
-                  <input type="text" placeholder="Your current role" value={currentPositionInputs.role} onChange={e=>
-                    setCurrentPositionInputs({...currentPositionInputs,
-                      role:e.target.value
-                    })}
-                    />
+                  <input type="text" placeholder="Your current role" />
                 </div>
                 <div className="form-group">
                   <label>Employment Type</label>
-                  <select 
-                  value={currentPositionInputs.employmentType} onChange={e=>
-                    setCurrentPositionInputs({...currentPositionInputs,
-                      employmentType:e.target.value
-                    })}
-                  >
+                  <select>
                     <option>Full-time</option>
                     <option>Part-time</option>
                     <option>Internship</option>
@@ -1660,99 +1397,46 @@ useEffect(() => {
                 </div>
                 <div className="form-group">
                   <label>Start Date</label>
-                  <input type="date" 
-                   value={currentPositionInputs.startDate} onChange={e=>
-                    setCurrentPositionInputs({...currentPositionInputs,
-                      startDate:e.target.value
-                    })
-                  }/>
+                  <input type="month" />
                 </div>
                 <div className="form-group">
                   <label>Location</label>
-                  <input type="text" placeholder="City / Remote"  value={currentPositionInputs.location} onChange={e=>
-                    setCurrentPositionInputs({...currentPositionInputs,
-                      location:e.target.value
-                    })
-                  }/>
+                  <input type="text" placeholder="City / Remote" />
                 </div>
               </div>
               <div className="form-group">
                 <label>Description</label>
-                <textarea placeholder="Describe your current responsibilities..."   value={currentPositionInputs.description}
-                onChange={e=>
-                    setCurrentPositionInputs({...currentPositionInputs,
-                      description:e.target.value
-                    })
-                }
-                ></textarea>
+                <textarea placeholder="Describe your current responsibilities..."></textarea>
               </div>
-                <div
-                className="form-actions"
-                style={{ justifyContent: "flex-start" }}
-                  >
-
-
-                      {currentPositionEditingIndex !==null?(
-                        <button
-                  className="add-skill-btn"
-                  onClick={handleSaveCurrentPositionChanges}
-                  type="button"
-                >
-                  Save Changes
-                </button>
-                      ):(<button
-                  className="add-skill-btn"
-                  onClick={handleAddCurrentPosition}
-                  type="button"
-                >
-                  + Add Current Position
-                </button>)
-                    }
-
-                
-              </div>
-
-
-
-              {
-                currentPositions?.length>0 &&(
-                    <div className="skills-list">
-                     {currentPositions.map((pos, index) => (
-      <div key={pos._id || index} className="skill-item">
-        <div>
-          {/* <strong>{exp.title}</strong> at{" "} */}
-          <span>{pos.company}</span><br />
-          <small>{pos.startDate || ""}</small>
-          <p style={{ marginTop: "5px", color: "#555" }}>{pos.description}</p>
-        </div>
-        <button
-          className="remove-skill"
-          onClick={() => handleRemoveCurrentPosition(index, pos._id)}
-          type="button"
-        >
-          <DeleteOutlineIcon sx={{ color:"#0077B5" }}/>
-        </button>
-        <button
-          className="remove-skill"
-          onClick={() => handleEditCurrentPosition(index,pos._id)}
-          type="button"
-        >
-          <EditIcon sx={{ color:"#0077B5" }}/>
-        </button> 
-      </div>
-    ))}
-                    </div>
-                )
-              }
             </>
           )}
 
-          
-         
+          {/* === CONTACT === */}
+          {activeSection === "contact" && (
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Email</label>
+                <input type="email" placeholder="Enter contact email" />
+              </div>
+              <div className="form-group">
+                <label>Phone</label>
+                <input type="text" placeholder="Enter contact number" />
+              </div>
+              <div className="form-group">
+                <label>LinkedIn / Portfolio</label>
+                <input type="text" placeholder="Profile or website link" />
+              </div>
+            </div>
+          )}
 
-
-
-         
+          {/* <div className="form-actions">
+            <button type="submit" className="save-btn">
+              Save
+            </button>
+            <button type="reset" className="cancel-btn">
+              Cancel
+            </button>
+          </div> */}
         </form>
       </div>
     </div>
