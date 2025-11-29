@@ -23,7 +23,12 @@ const {
     updateLanguage,
     addInternships,
     updateInternships,
-    deleteInternships
+    deleteInternships,
+    addBasicInfo,
+    updateBasicInfo,
+    addCurrentPosition,
+    updateCurrentPosition,
+    deleteCurrentPostion
 } = require('../controllers/userController');
 const {protect}=require('../middleware/authMiddleware')
 // Public routes
@@ -60,5 +65,13 @@ router.delete('/:id/languages/:langId',protect,deleteLanguage)
 router.post('/:id/skills', protect, addSkill);
 router.put('/skills/:skillId',protect,updateSkill)
 router.delete('/:id/skills/:skillId', protect, deleteSkill);
+   
 
+
+router.post('/:id/current', protect, addCurrentPosition);
+router.put('/current/:currentPositionId',protect,updateCurrentPosition)
+router.delete('/:id/current/:currentPositionId', protect, deleteCurrentPostion);
+  
+router.post('/:id/basicInfo', protect, addBasicInfo);
+router.put('/basicInfo/:basicInfoId',protect,updateBasicInfo)
 module.exports = router;

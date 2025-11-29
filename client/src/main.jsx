@@ -9,6 +9,8 @@ import { ExpContextProvider } from './context/ExpContext.jsx';
 import { InternshipContextProvider } from './context/InternshipContext.jsx';
 import { LanguageContextProvider } from './context/LangContext.jsx';
 import { SkillContextProvider } from './context/SkillsContext.jsx';
+import { BasicInfoContextProvider } from './context/BasicInfoContext.jsx';
+import { CurrentPositionContextProvider } from './context/CurrentPosContext.jsx';
 // ...existing code...
 
 createRoot(document.getElementById('root')).render(
@@ -19,7 +21,11 @@ createRoot(document.getElementById('root')).render(
           <InternshipContextProvider>
             <LanguageContextProvider>
             <SkillContextProvider>
-                <App />
+               <BasicInfoContextProvider>
+                <CurrentPositionContextProvider>
+                   <App />
+                </CurrentPositionContextProvider>
+               </BasicInfoContextProvider>
             </SkillContextProvider>
             </LanguageContextProvider>
           </InternshipContextProvider>

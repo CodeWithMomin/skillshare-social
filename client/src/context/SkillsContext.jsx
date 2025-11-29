@@ -9,7 +9,7 @@ export const SkillContextProvider=({children})=>{
     const [userSkills,setUserSkills]=useState([])
     const addSkill=async(skillData)=>{
         try {
-            if(!isAuthenticated && !user?._id) return;
+           
             const result=await skillsService.addSkill(user?._id,skillData)
             if(result.success){
                 setUserSkills(result.data)
