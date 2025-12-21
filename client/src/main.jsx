@@ -11,7 +11,8 @@ import { LanguageContextProvider } from './context/LangContext.jsx';
 import { SkillContextProvider } from './context/SkillsContext.jsx';
 import { BasicInfoContextProvider } from './context/BasicInfoContext.jsx';
 import { CurrentPositionContextProvider } from './context/CurrentPosContext.jsx';
-// ...existing code...
+import { ProfilePictureContextProvider } from './context/ProfilePictureContext.jsx';
+import {AlumniAuthContextProvider} from './AlumniConnect/alumniContext/AlumniAuthContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -23,7 +24,11 @@ createRoot(document.getElementById('root')).render(
             <SkillContextProvider>
                <BasicInfoContextProvider>
                 <CurrentPositionContextProvider>
-                   <App />
+                  <ProfilePictureContextProvider>
+                   <AlumniAuthContextProvider>
+                      <App />
+                   </AlumniAuthContextProvider>
+                  </ProfilePictureContextProvider>
                 </CurrentPositionContextProvider>
                </BasicInfoContextProvider>
             </SkillContextProvider>

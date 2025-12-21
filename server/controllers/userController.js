@@ -5,7 +5,7 @@ const jwt=require('jsonwebtoken')
 
 
 const genrationToken=(id)=>{
-    return jwt.sign({id},process.env.JWT_SECRET,{expiresIn:'30d'});
+    return jwt.sign({id},process.env.JWT_SECRET,{  expiresIn: "30d" });
 }
 
 
@@ -123,22 +123,7 @@ const getUserProfile=async (req,res)=>{
   }
 };
 
-exports.uploadProfilePhoto= async (req,res)=>{
-    try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
-// Construct image URL for serving static files
-    const imageUrl = `/uploads/${req.file.filename}`;
 
-    // Here, save imageURL to user profile in DB as needed (pseudo code):
-    await User.findByIdAndUpdate(req.user.id, { photo: imageUrl });
-
-    res.status(200).json({ message: 'Upload successful', imageUrl });
-  } catch (error) {
-    res.status(500).json({ error: 'Server error during file upload' });
-  }
-};
 
 const completeProfile = async (req, res) => {
     try {
@@ -953,6 +938,40 @@ const updateCurrentPosition=async(req,res)=>{
     }
 }
 
+
+const uploadProfilePhoto = async (req, res) => {
+  console.log("i got clicked ",req.file);
+  
+  try {
+    // Cloudinary multer ALWAYS gives a req.file with .path = Cloudinary URL
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No file uploaded" });
+    }
+
+    // Cloudinary returns secure image URL automatically
+    const imageUrl = req.file.path; // <-- IMPORTANT: Cloudinary CDN URL
+
+    // Save Cloudinary URL in DB
+    await User.findByIdAndUpdate(
+      req.user.id,
+      { profilePic: imageUrl },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Profile picture uploaded successfully",
+      imageUrl,
+    });
+  } catch (error) {
+    console.error("Cloudinary Upload Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error during Cloudinary upload",
+    });
+  }
+};
+
 module.exports = {
     registerUser,
     loginUser,
@@ -979,5 +998,6 @@ module.exports = {
     updateBasicInfo,
     addCurrentPosition,
     deleteCurrentPostion,
-    updateCurrentPosition
+    updateCurrentPosition,
+    uploadProfilePhoto,
 };

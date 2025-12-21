@@ -8,13 +8,15 @@ import {
   CardContent,
   Divider,
   MenuItem,
+  duration,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-
+import toast from "react-hot-toast";
+import { useAlumniAuth } from "../../AlumniConnect/alumniContext/AlumniAuthContext";
 const AlumniAuth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
-
+  const {register,login}=useAlumniAuth()
   const toggleForm = () => setIsSignUp(!isSignUp);
 
   const [formData, setFormData] = useState({
@@ -31,21 +33,41 @@ const AlumniAuth = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (isSignUp) {
       console.log("Signing up with minimal data:", formData);
-      localStorage.setItem("alumni-token", "dummy_signup_token");
+      const result=await register(formData)
+      // console.log(result);
+      if(result.success){
+        toast.success(result.message,{
+          duration:1000,
+          position:"top-center"
+        })
+        navigate("/alumniconnect")
+      }
+      else{
+        toast.error(result.error||"Error")
+      }
 
-      // Redirect to Complete Profile page
-      navigate("/alumniconnect/profile");
+     
     } else {
       console.log("Signing in with data:", formData);
-      localStorage.setItem("alumni-token", "dummy_signin_token");
 
-      // Redirect to alumni network after sign in
-      navigate("/alumniconnect");
+      const result=await login(formData)
+      // console.log(result);
+      
+      if(result.success){
+         toast.success("Login  Successfull.",{
+          duration:1000,
+          position:"top-center"
+        })
+      navigate('/alumniconnect')
+      } else{
+        toast.error(result.error||"Error")
+      }
+
     }
   };
 
@@ -131,18 +153,21 @@ const AlumniAuth = () => {
               />
 
               {/* User Type Dropdown */}
-              <TextField
-                select
-                label="User Type"
-                name="userType"
-                value={formData.userType}
-                onChange={handleChange}
-                size="small"
-                fullWidth
-              >
-                <MenuItem value="Student">Student</MenuItem>
-                <MenuItem value="Alumni">Alumni</MenuItem>
-              </TextField>
+          {isSignUp && (
+  <TextField
+    select
+    label="User Type"
+    name="userType"
+    value={formData.userType}
+    onChange={handleChange}
+    size="small"
+    fullWidth
+  >
+    <MenuItem value="student">Student</MenuItem>
+    <MenuItem value="alumni">Alumni</MenuItem>
+  </TextField>
+)}
+
 
               {/* Submit Button */}
               <Button

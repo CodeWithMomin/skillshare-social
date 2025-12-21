@@ -15,8 +15,8 @@ export const AuthProvider=({children})=>{
             }
     },[]);
 
-         const register = async (userData) => {
-            const res = await authService.register(userData);
+         const register = async (userInfo) => {
+            const res = await authService.register(userInfo);
             console.log("Register response: ", res);
 
             if (res.success) {
@@ -63,7 +63,7 @@ export const AuthProvider=({children})=>{
         <AuthContext.Provider value={{user,isAuthenticated,register,login,logout,getUserProfile}}>
             {children}
         </AuthContext.Provider>
-    )
+    )        
 }
 export const useAuth=()=> useContext(AuthContext)   //custom hook
 

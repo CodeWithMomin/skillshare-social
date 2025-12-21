@@ -28,7 +28,9 @@ const {
     updateBasicInfo,
     addCurrentPosition,
     updateCurrentPosition,
-    deleteCurrentPostion
+    deleteCurrentPostion,
+    
+    uploadProfilePhoto
 } = require('../controllers/userController');
 const {protect}=require('../middleware/authMiddleware')
 // Public routes
@@ -74,4 +76,12 @@ router.delete('/:id/current/:currentPositionId', protect, deleteCurrentPostion);
   
 router.post('/:id/basicInfo', protect, addBasicInfo);
 router.put('/basicInfo/:basicInfoId',protect,updateBasicInfo)
+
+router.post(
+  "/upload-profile-picture",
+  protect,
+  upload.single("profile"),
+  uploadProfilePhoto
+);
+
 module.exports = router;
