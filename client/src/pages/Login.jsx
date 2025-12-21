@@ -70,13 +70,14 @@ const Login = () => {
       const result = await login(loginData);
       setLoading(false);
       
-      console.log(result.success);
-      toast.success("Login  Successfull.",{
+      // console.log(result.success);
+     
+      if (result.success) {
+         toast.success("Login  Successfull.",{
           duration:1000,
           position:"top-center"
         })
       
-      if (result.success) {
         navigate("/");
       } else {
         setError(result.error || "Login failed");

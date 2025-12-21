@@ -1,85 +1,92 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Box, Avatar } from "@mui/material";
+import { Box, IconButton } from "@mui/material";
 import FeedIcon from "@mui/icons-material/Home";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import FolderIcon from "@mui/icons-material/Folder";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { Explore, Hub, NetworkWifi, People } from "@mui/icons-material";
-
+import { Explore, Hub, People } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
 const navItems = [
   { label: "Feed", icon: <FeedIcon />, path: "/feed" },
   { label: "Explore", icon: <Explore />, path: "/explore" },
   { label: "Projects", icon: <FolderIcon />, path: "/projects" },
   { label: "Network", icon: <Hub />, path: "/mynetwork" },
-  // { label: "Notifications", icon: <NotificationsIcon />, path: "/notifications" },
   { label: "Alumni Connect", icon: <People />, path: "/alumniconnect" },
   { label: "AI Features", icon: <SmartToyIcon />, path: "/aifeatures" },
-
-  // { label: "Settings", icon: <SettingsIcon />, path: "/settings" },
 ];
 
 const SideBar = () => {
   const location = useLocation();
-
+    const navigate=useNavigate()
   return (
     <Box
       sx={{
         display: "flex",
         flexDirection: "column",
-        ml: 1,
-
         justifyContent: "space-between",
         p: 2,
+        ml: 1,
         bgcolor: "#fff",
         borderRadius: 2,
         minHeight: "calc(100vh - 85px)",
-        width: 220,
+        width: 230,
         boxShadow: "0px 5px 10px rgba(0,0,0,0.1)",
       }}
     >
-      {/* Navigation Links */}
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-        {navItems.map(item => (
-          <Link
-            key={item.label}
-            to={item.path}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "5px",
-              textDecoration: "none",
-              padding: "10px 15px",
-              borderRadius: "8px",
-              fontWeight: 500,
-              fontSize: "1rem",
-              color: location.pathname === item.path ? "#ee9917" : "black",
-              backgroundColor:
-                location.pathname === item.path ? "#ebedeeff" : "transparent",
-              transition: "all 0.2s ease",
-            }}
-          >
-            {React.cloneElement(item.icon, {
-              fontSize: "small",
-              sx: { color: "#ee9917" },
-            })}
-            <span>{item.label}</span>
-          </Link>
-        ))}
+      {/* ---------------- NAVIGATION ---------------- */}
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}>
+        {navItems.map((item) => {
+          const active = location.pathname === item.path;
+
+          return (
+            <Link
+              key={item.label}
+              to={item.path}
+              style={{
+                textDecoration: "none",
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 2,
+                  px: 2,
+                  py: 1.4,
+                  borderRadius: "10px",
+                  fontWeight: 500,
+                  fontSize: "1rem",
+                  color: active ? "#ee9917" : "#333",
+                  backgroundColor: active ? "#f5f5f5" : "transparent",
+                  transition: "0.2s ease",
+                  "&:hover": {
+                    backgroundColor: "#fafafa",
+                  },
+                }}
+              >
+                {React.cloneElement(item.icon, {
+                  fontSize: "medium",
+                  sx: { color: "#ee9917" },
+                })}
+                <span>{item.label}</span>
+              </Box>
+            </Link>
+          );
+        })}
       </Box>
 
-      {/* Profile Button */}
+      {/* ---------------- PROFILE + SETTINGS ---------------- */}
       <Box
         sx={{
-          mt: 2,
-          textAlign: "center",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          padding: "10px",
+          gap: 2.5,
+          mt: 4,
         }}
       >
+        {/* Profile Button */}
         <Link
           to="/profile"
           style={{
@@ -94,11 +101,23 @@ const SideBar = () => {
             fontWeight: "bold",
             fontSize: "1.2rem",
             textDecoration: "none",
-            transition: "all 0.2s ease",
           }}
         >
           M
         </Link>
+
+        {/* Settings Icon */}
+        <IconButton
+          sx={{
+            color: "#555",
+            "&:hover": { color: "#ee9917" },
+          }}
+          onClick={()=>{
+            navigate('/settings')
+          }}
+        >
+          <SettingsIcon sx={{ fontSize: 30 }} />
+        </IconButton>
       </Box>
     </Box>
   );

@@ -23,12 +23,13 @@ import AboutUs from "./pages/AlumniConnect/AboutUs";
 import AlumniProtectedRoutes from "./components/AlumniComponents/AlumniProtectedRoutes";
 import Dashboard from "./pages/AlumniConnect/Dashboard";
 import { useAuth } from "./context/AuthContext";
-
+import { useAlumniAuth } from "./AlumniConnect/alumniContext/AlumniAuthContext";
 function App() {
   // const isAuthenticated = !!localStorage.getItem("authToken");
   const {isAuthenticated}=useAuth()
 
-  const isAlumniAuthenticated=!!localStorage.getItem("alumni-token");
+  const {isAlumniAuthenticated}=useAlumniAuth()
+  
   //  console.log(isAlumniAuthenticated)
   
   const router = createBrowserRouter([
@@ -63,6 +64,10 @@ function App() {
         {
           path: "notifications",
           element: <Notifications />,
+        },
+        {
+          path: "settings",
+          element: <Settings />,
         },
         {
           path: "aifeatures",
