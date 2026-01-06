@@ -22,7 +22,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { useNavigate } from "react-router-dom";
-
+import { useAlumniAuth } from "../../AlumniConnect/alumniContext/AlumniAuthContext";
 const AlumniProfile = () => {
  const localTheme = createTheme({
   palette: {
@@ -48,6 +48,7 @@ const AlumniProfile = () => {
     fontFamily: "Poppins, Inter, sans-serif",
     h5: { fontWeight: 700 },
     h6: { fontWeight: 700 },
+    
     button: {
       fontWeight: 600,
       textTransform: "none",
@@ -144,7 +145,7 @@ const AlumniProfile = () => {
 });
 const [profilePic, setProfilePic] = useState(null);
 const [profilePicPreview, setProfilePicPreview] = useState(null);
-
+const {userType,alumniUser,isAlumniAuthenticated,logout}=useAlumniAuth()
 const handleProfilePicUpload = (e) => {
   const file = e.target.files[0];
   if (file) {
@@ -161,7 +162,8 @@ const handleProfilePicUpload = (e) => {
     { id: "language", name: "Language" },
     { id: "Acadmic", name: "Acadmic" },
     { id: "acheivements", name: "Acheivements" },
-    {id:"alumniInfo",name:"AlumniInfo"}
+    ...(userType === "student" ? [{id:"skills",name:"Skills"}]:[]),
+    ...(userType !== "student" ? [{id:"alumniInfo",name:"AlumniInfo"}]:[])
   ];
 
   // ---------------- STATES (Same as yours) ----------------
@@ -219,6 +221,23 @@ const handleEditAcademics=()=>{
 
 }
 const handleRemoveAcademics=()=>{
+
+}
+
+const [skills, setskills] = useState([]);
+  const [skillInput, setSkillInput] = useState({
+    name: "",
+    proficiency: "Beginner",
+  });
+  const [editSkillIndex,setEditSkillIndex]=useState(null)
+  const [editSkillId,setEditSkillId]=useState(null)
+  const addSkill=async()=>{
+
+  }
+ const handleEditSkill=async (index, skillId)=>{
+            
+          }
+const handleRemoveSkill=async (skillId)=>{
 
 }
 
@@ -475,37 +494,7 @@ const handleRemoveAlumniInfo=()=>{
             Submit
           </Button>)}
         </Box>
-        {/* {basicInformation && (
-  <Box
-    sx={{
-      mt: 4,
-      p: 3,
-      borderRadius: 3,
-      boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-      backgroundColor: "#fff",
-    }}
-  >
-    <Typography sx={{ fontSize: "1.3rem", fontWeight: 700, mb: 2 }}>
-      Submitted Information
-    </Typography>
-
-    <Typography><strong>Full Name:</strong> {basicInformation.fullName}</Typography>
-    <Typography><strong>Email:</strong> {basicInformation.email}</Typography>
-    <Typography><strong>Phone Number:</strong> {basicInformation.phoneNo}</Typography>
-    <Typography><strong>Location:</strong> {basicInformation.location}</Typography>
-    <Typography><strong>Portfolio:</strong> {basicInformation.portfolioLink}</Typography>
-    <Typography><strong>LinkedIn:</strong> {basicInformation.linkedInUrl}</Typography>
-    <Typography><strong>Bio:</strong> {basicInformation.bio}</Typography>
-
-    {profilePicPreview && (
-      <Avatar 
-        src={profilePicPreview}
-        sx={{ width: 100, height: 100, mt: 2, border: "2px solid #f89807" }}
-      />
-    )}
-  </Box>
-)} */}
-
+       
 
       </Box>
     </Box>
@@ -971,6 +960,67 @@ const renderAlumniInfo = () => (
   </>
 );
 
+const renderSkills = () => (
+    <>
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            label="Skill"
+            value={skillInput.name}
+            onChange={(e) =>
+              setLanguageInput({ ...skillInput, name: e.target.value })
+            }
+          />
+        </Grid>
+
+        <Grid item xs={12} sm={6}>
+          <TextField
+            select
+            fullWidth
+            label="Proficiency"
+            value={skillInput.proficiency}
+            onChange={(e) =>
+              setLanguageInput({
+                ...skillInput,
+                proficiency: e.target.value,
+              })
+            }
+          >
+            {["Beginner", "Intermediate", "Advanced", "Fluent", "Native"].map(
+              (item) => (
+                <MenuItem key={item} value={item}>
+                  {item}
+                </MenuItem>
+              )
+            )}
+          </TextField>
+        </Grid>
+      </Grid>
+
+      <Box mt={2}>
+        {editLangIndex !== null ?(<Button variant="contained" onClick={handleSaveLanguageChanges}>Save Changes</Button>):(<Button variant="contained" onClick={handleAddLanguage}> add Skill</Button>)}
+      </Box>
+
+      {skills.length > 0 &&
+        skills.map((skill, index) => (
+          <Card key={index} sx={{ mt: 2 }}>
+            <CardContent>
+              <Typography variant="h6">{skill.name}</Typography>
+              <Typography>{lang.proficiency}</Typography>
+         
+              <IconButton onClick={() => handleEditSkill(index, skill._id)}>
+                <EditIcon />
+              </IconButton>
+
+              <IconButton onClick={() => handleRemoveSkill(skill._id)}>
+                <DeleteOutlineIcon color="error" />
+              </IconButton>
+            </CardContent>
+          </Card>
+        ))}
+    </>
+  );
 
   return (
    <ThemeProvider theme={localTheme}>
@@ -979,9 +1029,7 @@ const renderAlumniInfo = () => (
       {/* ---------------- SIDEBAR ---------------- */}
       <Box width="250px" mr={4}>
 
-        <Typography variant="h6" mb={1}>
-          Profile Sections
-        </Typography>
+
 
         <List>
           {sections.map((sec) => (
@@ -1017,6 +1065,7 @@ const renderAlumniInfo = () => (
          {activeSection === "Acadmic" && renderAcadmics()}
          {activeSection === "acheivements" && renderAchievements()}
          {activeSection==="alumniInfo" && renderAlumniInfo()}
+         {activeSection ==='skills' && renderSkills()}
         {/* You can add the rest sections exactly like above */}
 
       </Box>

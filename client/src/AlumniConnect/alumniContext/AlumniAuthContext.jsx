@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 const AlumniAuthContext=createContext()
 export const AlumniAuthContextProvider=({children})=>{
     const [alumniUser,setAlumniUser]=useState(null)
+    const [userType,setUserType]=useState("")
       const [isAlumniAuthenticated,setIsAlumniAuthenticated]=useState(false)
       useEffect(()=>{
         const storedUser=alumniAuthServices.getUser()
@@ -21,6 +22,8 @@ export const AlumniAuthContextProvider=({children})=>{
         const result=await alumniAuthServices.register(userData)
         if(result.success){
             const userData=result.response.user;
+          
+            setUserType(userData.userType)
             setAlumniUser(userData)
             setIsAlumniAuthenticated(true)
             // console.log(isAlumniAuthenticated);
@@ -33,6 +36,7 @@ export const AlumniAuthContextProvider=({children})=>{
         const result=await alumniAuthServices.login(credentials)
         if(result.success){
             const userData=result.response.user
+              setUserType(userData.userType)
             setAlumniUser(userData)
             setIsAlumniAuthenticated(true)
         }
@@ -44,7 +48,7 @@ export const AlumniAuthContextProvider=({children})=>{
         setIsAlumniAuthenticated(false)
     }
       return (
-        <AlumniAuthContext.Provider value={{alumniUser,isAlumniAuthenticated,register,login,logout}}>
+        <AlumniAuthContext.Provider value={{userType,alumniUser,isAlumniAuthenticated,register,login,logout}}>
             {children}
         </AlumniAuthContext.Provider>
       )
