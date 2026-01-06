@@ -19,7 +19,7 @@ const alumniSchema = new mongoose.Schema(
 
     userType: {
       type: String,
-      enum: ["Student", "Alumni"],
+      enum: ["student", "alumni"],
       default: "student",
       required: true
     },
@@ -35,6 +35,15 @@ const alumniSchema = new mongoose.Schema(
       }
     },
      languages: [
+      {
+        name: { type: String },
+        proficiency: { 
+          type: String, 
+          enum: ["Beginner", "Intermediate", "Advanced","Fluent", "Native"]
+        }
+      }
+    ],
+     skills: [
       {
         name: { type: String },
         proficiency: { 
