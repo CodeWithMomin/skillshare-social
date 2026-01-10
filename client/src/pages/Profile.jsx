@@ -1,315 +1,361 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
-  Avatar, Box, Chip, Container, Grid, IconButton, Paper, Tooltip, Typography, Divider,
+  Avatar,
+  Box,
+  Chip,
+  Container,
+  Grid,
+  IconButton,
+  Paper,
+  Tooltip,
+  Typography,
+  Divider,
   Stack,
-} from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
-import WorkIcon from "@mui/icons-material/Work";
-import SchoolIcon from "@mui/icons-material/School";
-import LanguageIcon from "@mui/icons-material/Language";
-import { useProfilePicture } from '../context/ProfilePictureContext';
+} from "@mui/material";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { useProfilePicture } from "../context/ProfilePictureContext";
 
+// NEW ICONS
+import EditRoundedIcon from "@mui/icons-material/EditRounded";
+import LanguageRoundedIcon from "@mui/icons-material/LanguageRounded";
+import SchoolRoundedIcon from "@mui/icons-material/SchoolRounded";
+import BusinessCenterRoundedIcon from "@mui/icons-material/BusinessCenterRounded";
+import WorkHistoryRoundedIcon from "@mui/icons-material/WorkHistoryRounded";
+import PsychologyRoundedIcon from "@mui/icons-material/PsychologyRounded";
+import LocationOnRoundedIcon from "@mui/icons-material/LocationOnRounded";
+import LinkRoundedIcon from "@mui/icons-material/LinkRounded";
 
-const COVER_GRADIENT = "linear-gradient(90deg, #fa709a 0%, #fee140 100%)";
+const BRAND = "#ee9917";
+
+const COVER_GRADIENT =
+  "linear-gradient(135deg, #ee9917 0%, #f2b04a 100%)";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const {getUserProfile}=useAuth();
-  const [preview, setPreview] = useState(null); 
-  // Assume token is stored in localStorage after login
-  const token = localStorage.getItem('authToken'); 
-  const navigate=useNavigate()
- const {profilePic, uploadProfilePicture}=useProfilePicture()
+  const { getUserProfile } = useAuth();
+  const [preview, setPreview] = useState(null);
+  const token = localStorage.getItem("authToken");
+  const navigate = useNavigate();
+  const { profilePic, uploadProfilePicture } = useProfilePicture();
 
- useEffect(() => {
+  useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-      const data = await getUserProfile(); // data is already JSON here
-      //  console.log(data);
-      // console.log(token);
-    
-      
-      setUser(data);
-      setPreview(data.profilePic)
-      console.log(profilePic);
-      
-      
-    } catch (error) {
-      console.error(error.message);
-       toast("error:", error);
-    } finally {
-      setLoading(false);
-    }
+        const data = await getUserProfile();
+        setUser(data);
+        setPreview(data.profilePic);
+      } catch (error) {
+        toast.error("Failed to load profile");
+      } finally {
+        setLoading(false);
+      }
     };
- fetchUserProfile();
-    
+    fetchUserProfile();
   }, [token]);
 
-const handleImageChange = async (e) => {
-  const file = e.target.files[0];
- 
-  
-  if (!file) return;
+  const handleImageChange = async e => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-  // Preview the selected image
-  const imageUrl = URL.createObjectURL(file);
-  setPreview(imageUrl);
+    setPreview(URL.createObjectURL(file));
+    const result = await uploadProfilePicture(file);
 
-  // // 🔥 Upload to backend & Cloudinary
-  const result = await uploadProfilePicture(file);
-    console.log(result);
-    
-  if (result?.success) {
-    toast.success("Profile picture updated!");
-  } else {
-    toast.error("Upload failed!");
-  }
-};
-  ;
-  if (loading) {
+    result?.success
+      ? toast.success("Profile picture updated!")
+      : toast.error("Upload failed!");
+  };
+
+  if (loading) return <Container maxWidth="md" sx={{ mt: 4 }} />;
+  if (!user)
     return (
-      <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
-        {/* <Typography variant="h6" align="center">Loading user data...</Typography> */}
-       {/* { toast.loading('Loading user data...')} */}
+      <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Typography align="center">User not found</Typography>
       </Container>
     );
-  }else{
-    toast.dismiss()
-}
-  if (!user) {
-    return (
-      <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
-        <Typography variant="h6" align="center">
-          User not found or please login
-        </Typography>
-      </Container>
-    );
-  }
 
-  const isProfileComplete = () =>
+  const profileComplete =
     user.fullName &&
     user.email &&
     user.education?.length > 0 &&
     user.experience?.length > 0;
 
-  const profileComplete = isProfileComplete();
-
   return (
-    <Container maxWidth="md" sx={{ mt: 5, mb: 8 }}>
-      {/* Your full profile page JSX here, same as before */}
-      <Paper elevation={3} sx={{ borderRadius: 2, overflow: 'hidden', pb: 2 }}>
-        {/* Cover/Banner */}
-        <Box sx={{
-          background: COVER_GRADIENT,
-          height: 170,
-          position: 'relative'
-        }} />
+    <Container maxWidth="md" sx={{
+      mt: 6, mb: 10,
+    }}>
+      <Paper
+        elevation={0}
+        sx={{
+          borderRadius: 4,
+          overflow: "hidden",
+          boxShadow: "0 20px 50px rgba(0,0,0,0.08)",
+        }}
+      >
+        {/* COVER */}
+        <Box sx={{ background: COVER_GRADIENT, height: 190 }} />
 
-        {/* Profile content overlay */}
-        <Box sx={{
-          position: 'relative',
-          mt: -10,
-          px: 4,
-          display: 'flex',
-          alignItems: 'center'
-        }}>
-            <input
+        {/* HEADER */}
+        <Box
+          sx={{
+            mt: -11,
+            px: 4,
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+          }}
+        >
+          <input
             accept="image/*"
             id="upload-photo"
             type="file"
-            style={{ display: "none" }}
+            hidden
             onChange={handleImageChange}
           />
-                   <label htmlFor="upload-photo">
+          <label htmlFor="upload-photo">
             <Avatar
-              src={ `http://localhost:5000${profilePic}`}
+              src={`http://localhost:5000${profilePic}`}
               alt={user.fullName}
               sx={{
-                width: 120,
-                height: 120,
-                border: "4px solid #fff",
-                boxShadow: 2,
-                position: "relative",
-                zIndex: 2,
-                cursor: "pointer", // 👈 makes it look clickable
-                "&:hover": {
-                  opacity: 0.8,
-                },
+                width: 130,
+                height: 130,
+                border: "5px solid white",
+                boxShadow: "0 12px 28px rgba(0,0,0,0.25)",
+                cursor: "pointer",
+                transition: "0.3s",
+                "&:hover": { transform: "scale(1.05)" },
               }}
             />
           </label>
 
-          <Box sx={{ ml: 4, flex: 1 }}>
-            <Typography variant="h4" sx={{ fontWeight: 700 }}>
-              {user.fullName || 'Name not set'}
+          <Box flex={1}>
+            <Typography mt={1.9} mb={.5} variant="h4" fontWeight={800} color="#fff">
+              {user.fullName}
             </Typography>
-            <Typography variant="subtitle1" color="primary" mt={0.5}>
-              {user.headline || 'No headline set'}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" mt={0.5}>
-              {user.location || 'Location not set'}
-            </Typography>
-            <Box mt={1.5}>
-              <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>
-                {user.bio || 'No bio available.'}
-              </Typography>
-            </Box>
-          </Box>
-          <Box>
-            <Tooltip title={profileComplete ? 'Edit Your Profile' : 'Complete Your Profile'}>
-              <IconButton
-                color={profileComplete ? 'success' : 'primary'}
-                onClick={() => {
-                  navigate('/complete-profile')
-                }}
-                sx={{
-                  borderRadius: 2,
-                  background: '#fff',
-                  boxShadow: 1,
-                  '&:hover': {
-                    background: '#f5f5f5'
-                  }
-                }}
-              >
-                <AddIcon fontSize="large" />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        </Box>
-        {/* Render other sections like languages, education, experience ... */}
-         {/* Use a Stack to control the gap BETWEEN sections */}
-        <Stack spacing={4} sx={{ px: 0, pt: 3, pb: 4 }}>
-          {/* Languages Section */}
-          <Box sx={{ px: 4 }}>
-            <Stack direction="row" alignItems="center" spacing={1} mb={1}>
-              <LanguageIcon color="primary" />
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Languages
-              </Typography>
-            </Stack>
+            {user.basicInfo?.[0]?.portfolioLink && (
 
-            {user.languages?.length > 0 ? (
-              <Stack direction="row" flexWrap="wrap" gap={1.5}>
-                {user.languages.map((lang, i) => (
+              <Typography
+                variant="subtitle1"
+                sx={{ mb: 0, mt: 0, fontWeight: 600, }}
+              >
+                <a
+                  href={user.basicInfo[0].portfolioLink}
+                  style={{
+                    color: "#fff",
+                    textDecoration: "none"
+                  }}
+                  target="_blank"
+                  rel="noopener noreferrer"
+
+                >
+                  Visit Portfolio
+                  <LinkRoundedIcon sx={{ fontSize: 18, color: "#fff" }} />
+                </a>
+              </Typography>
+            )}
+
+            <Typography mt={0} color="#000" fontWeight={600}>
+              {user.basicInfo?.[0]?.location}
+            </Typography>
+            <Typography mt={0.5} fontWeight={600} whiteSpace="pre-line">
+              {user.basicInfo?.[0]?.bio}
+            </Typography>
+          </Box>
+
+          <Tooltip
+            title={profileComplete ? "Edit Profile" : "Complete Profile"}
+          >
+            <IconButton
+              onClick={() => navigate("/complete-profile")}
+              sx={{
+                bgcolor: "#fff",
+                p: 1.5,
+                borderRadius: 3,
+                boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+                "&:hover": { bgcolor: "#fff6e8" },
+              }}
+            >
+              <EditRoundedIcon sx={{ color: BRAND }} fontSize="large" />
+            </IconButton>
+          </Tooltip>
+        </Box>
+
+        {/* SECTIONS */}
+        <Stack spacing={5} sx={{ pt: 4, pb: 5 }}>
+          {/* LANGUAGES */}
+          <Section title="Languages" icon={<LanguageRoundedIcon sx={{ color: BRAND }} />}>
+            <Stack direction="row" flexWrap="wrap" gap={1.5}>
+              {user.languages?.length > 0 ? (
+                user.languages.map((lang, i) => (
                   <Chip
                     key={i}
-                    label={`${lang.name} — ${lang.level}`}
+                    label={`${lang.name} \u2022 ${lang.proficiency}`}
                     sx={{
-                      background: "#f8f9fa",
-                      borderRadius: "10px",
-                      fontWeight: 500,
+                      background: "linear-gradient(135deg, #ee9917 0%, #f2b04a 100%)",
+                      borderRadius: 2,
+                      fontWeight: 600,
                     }}
                   />
-                ))}
-              </Stack>
-            ) : (
-              <Typography color="text.secondary">
-                No languages added yet.
-              </Typography>
-            )}
-          </Box>
-
-          <Divider sx={{ mx: 4 }} />
-
-          {/* Education Section */}
-          <Box sx={{ px: 4 }}>
-            <Stack direction="row" alignItems="center" spacing={1} mb={1}>
-              <SchoolIcon color="primary" />
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Education
-              </Typography>
+                ))
+              ) : (
+                <Typography color="text.secondary">
+                  No languages added yet.
+                </Typography>
+              )}
             </Stack>
+          </Section>
 
-            {user.education?.length > 0 ? (
-              <Stack spacing={2}>
-                {user.education.map((edu, i) => (
-                  <Paper
-                    key={i}
-                    variant="outlined"
-                    sx={{
-                      p: 2,
-                      borderRadius: 2,
-                      borderColor: "#e0e0e0",
-                      backgroundColor: "#fafafa",
-                    }}
-                  >
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      {edu.school}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {edu.degree}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {edu.fieldOfStudy}
-                    </Typography>
-                    {edu.year && (
-                      <Typography variant="body2" color="text.secondary">
-                        Year: {edu.year}
-                      </Typography>
-                    )}
-                  </Paper>
-                ))}
-              </Stack>
-            ) : (
-              <Typography color="text.secondary">
-                No education details available.
-              </Typography>
-            )}
-          </Box>
+          <Divider />
 
-          <Divider sx={{ mx: 4 }} />
-
-          {/* Experience Section */}
-          <Box sx={{ px: 4 }}>
-            <Stack direction="row" alignItems="center" spacing={1} mb={1}>
-              <WorkIcon color="primary" />
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Experience
-              </Typography>
+          {/* EDUCATION */}
+          <Section title="Education" icon={<SchoolRoundedIcon sx={{ color: BRAND }} />}>
+            <Stack spacing={2}
+            >
+              {user.education.map((edu, i) => (
+                <ModernPaper key={i}>
+                  <Typography fontWeight={700}>{edu.school}</Typography>
+                  <Typography color="text.secondary">
+                    {edu.degree} • {edu.fieldOfStudy}
+                  </Typography>
+                  <Typography color="text.secondary">
+                    Duration: {edu.startDate} - {edu.endDate}
+                  </Typography>
+                  <Typography color="text.secondary">
+                    {edu.details}
+                  </Typography>
+                </ModernPaper>
+              ))}
             </Stack>
+          </Section>
 
-            {user.experience?.length > 0 ? (
-              <Stack spacing={2}>
-                {user.experience.map((exp, i) => (
-                  <Paper
-                    key={i}
-                    variant="outlined"
-                    sx={{
-                      p: 2,
-                      borderRadius: 2,
-                      borderColor: "#e0e0e0",
-                      backgroundColor: "#fafafa",
-                    }}
-                  >
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                      {exp.title}
+          <Divider />
+
+          {/* INTERNSHIP */}
+          <Section title="Internship" icon={<BusinessCenterRoundedIcon sx={{ color: BRAND }} />}>
+            <Stack spacing={2}>
+              {user.internships.map((internship, i) => (
+                <ModernPaper key={i}>
+                  <Typography fontWeight={700}>
+                    {internship.company} • ({internship.role}) {internship.employmentType}
+                  </Typography>
+                  <Typography color="text.secondary">
+                    Start Date: {internship.startDate}
+                  </Typography>
+                  <Typography color="text.secondary">
+                    End Date: {internship.endDate}
+                  </Typography>
+                  <Typography color="text.secondary">
+                    {internship.description}
+                  </Typography>
+                </ModernPaper>
+              ))}
+            </Stack>
+          </Section>
+
+          <Divider />
+
+          {/* EXPERIENCE */}
+          <Section title="Experience" icon={<WorkHistoryRoundedIcon sx={{ color: BRAND }} />}>
+            <Stack spacing={2}>
+              {user.experience.map((exp, i) => (
+                <ModernPaper key={i}>
+                  <Typography fontWeight={700}>
+                    {exp.company} • ({exp.title}) {exp.employmentType}
+                  </Typography>
+                  <Typography color="text.secondary">
+                    Location: {exp.location}
+                  </Typography>
+                  <Typography color="text.secondary">
+                    Start Date: {exp.startDate}
+                  </Typography>
+                  <Typography color="text.secondary">
+                    End Date: {exp.endDate}
+                  </Typography>
+                  <Typography color="text.secondary">
+                    {exp.description}
+                  </Typography>
+                </ModernPaper>
+              ))}
+            </Stack>
+          </Section>
+
+          <Divider />
+
+          {/* SKILLS */}
+          <Section title="Skills" icon={<PsychologyRoundedIcon sx={{ color: BRAND }} />}>
+            <Grid container spacing={2}>
+              {user.skills.map((skill, i) => (
+                <Grid item xs={12} sm={6} md={4} key={i}>
+                  <ModernPaper>
+                    <Typography fontWeight={700}>{skill.name}</Typography>
+                    <Typography color="text.secondary">
+                      {skill.level}
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {exp.company}
-                    </Typography>
-                    {exp.duration && (
-                      <Typography variant="body2" color="text.secondary">
-                        {exp.duration}
-                      </Typography>
-                    )}
-                  </Paper>
-                ))}
-              </Stack>
-              
-            ) : (
-              <Typography color="text.secondary">
-                No experience details available.
-              </Typography>
-            )}
-          </Box>
+                  </ModernPaper>
+                </Grid>
+              ))}
+            </Grid>
+          </Section>
+
+          <Divider />
+
+          {/* CURRENT */}
+          <Section title="Current Position" icon={<BusinessCenterRoundedIcon sx={{ color: BRAND }} />}>
+            <Stack spacing={2}>
+              {user.current.map((current, i) => (
+                <ModernPaper key={i}>
+                  <Typography fontWeight={700}>
+                    {current.company} • ({current.role}) {current.employmentType}
+                  </Typography>
+                  <Typography color="text.secondary">
+                    Start Date: {current.startDate}
+                  </Typography>
+                  <Typography color="text.secondary">
+                    {current.description}
+                  </Typography>
+                </ModernPaper>
+              ))}
+            </Stack>
+          </Section>
         </Stack>
       </Paper>
-    </Container>
+    </Container >
   );
 };
+
+/* ---------- small UI helpers (STYLE ONLY) ---------- */
+
+const Section = ({ title, icon, children }) => (
+  <Box px={4}>
+    <Stack direction="row" spacing={1} alignItems="center" mb={1.5}>
+      {icon}
+      <Typography variant="h6" fontWeight={700}>
+        {title}
+      </Typography>
+    </Stack>
+    {children}
+  </Box>
+);
+
+const ModernPaper = ({ children }) => (
+  <Paper
+    elevation={0}
+    sx={{
+      p: 2.5,
+      borderRadius: 3,
+      backgroundColor: "#fff",
+      boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
+      transition: "0.25s",
+      "&:hover": {
+        transform: "translateY(-4px)",
+        boxShadow: "0 16px 40px rgba(0,0,0,0.12)",
+      },
+    }}
+  >
+    {children}
+  </Paper>
+);
 
 export default Profile;
