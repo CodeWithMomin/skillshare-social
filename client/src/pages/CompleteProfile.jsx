@@ -14,7 +14,8 @@ import { useSkills } from "../context/SkillsContext";
 import { useBasicInfo } from "../context/BasicInfoContext";
 import { useCurrentPosition } from "../context/CurrentPosContext";
 const CompleteProfile = () => {
-const [userData,setUserData]=useState([])
+const [userData,
+  setUserData]=useState([])
 
 
  const {user,getUserProfile}=useAuth();
@@ -823,6 +824,8 @@ useEffect(() => {
         // console.log("Profile Data",data);
         
         setUserData(data);
+        console.log();
+        
         setBasicInfo({
             fullName: data.fullName || "",
             email: data.email || "",

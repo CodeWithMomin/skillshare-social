@@ -1,6 +1,6 @@
 import api from '../../services/api'
 
-const academicServices={
+const alumniAcademicServices={
     addAcademics:async(academicData)=>{
         try {
             const response=await api.post('/alumni/academics',academicData)
@@ -49,4 +49,4 @@ const academicServices={
 }
 
 
-export default alumniAcademics
+export default alumniAcademicServices
