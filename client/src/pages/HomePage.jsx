@@ -13,8 +13,9 @@ const HomePage = () => {
     <>
       <div className="header">
         <Logo />
-        <CustomSearchBar />
         <div className="noti-chat">
+          <CustomSearchBar />
+
           <Notificationlogo />
           <ChatLauncher />
         </div>
