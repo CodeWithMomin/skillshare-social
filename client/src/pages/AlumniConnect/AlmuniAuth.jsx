@@ -13,6 +13,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAlumniAuth } from "../../AlumniConnect/alumniContext/AlumniAuthContext";
+
 const AlumniAuth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
