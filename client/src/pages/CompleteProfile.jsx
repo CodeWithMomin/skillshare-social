@@ -14,20 +14,21 @@ import { useSkills } from "../context/SkillsContext";
 import { useBasicInfo } from "../context/BasicInfoContext";
 import { useCurrentPosition } from "../context/CurrentPosContext";
 const CompleteProfile = () => {
-  const [userData, setUserData] = useState([])
+const [userData,
+  setUserData]=useState([])
 
 
-  const { user, getUserProfile } = useAuth();
-  const navigate = useNavigate()
-  const { addEducation, updateEducation, deleteEducation } = useEdu()
-  const { addExperience, updateExperience, deleteExperience
-  } = useExp()
-  const { addInternships, deleteInternships, updateInternships } = useInternship()
-  const { addLanguage,
-    deleteLanguage,
-    updatedLanguage } = useLang()
-  const { addSkill, deleteSkill, updateSkill } = useSkills();
-  const { addBasicInfo, updateBasicInfo } = useBasicInfo()
+ const {user,getUserProfile}=useAuth();
+ const navigate=useNavigate()
+  const {addEducation,updateEducation,deleteEducation}=useEdu()
+  const {addExperience,updateExperience,deleteExperience
+  }=useExp()
+  const {addInternships,deleteInternships,updateInternships}=useInternship()
+  const {addLanguage,
+            deleteLanguage,
+            updatedLanguage}=useLang()
+  const {addSkill,deleteSkill,updateSkill}=useSkills();
+  const {addBasicInfo,updateBasicInfo}=useBasicInfo()
   const { addCurrentPosition,
     deleteCurrentPosition,
     updateCurrentPosition } = useCurrentPosition()
@@ -821,6 +822,8 @@ const CompleteProfile = () => {
         // console.log("Profile Data",data);
 
         setUserData(data);
+        console.log();
+        
         setBasicInfo({
           fullName: data.fullName || "",
           email: data.email || "",

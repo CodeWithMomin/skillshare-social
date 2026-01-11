@@ -2,8 +2,7 @@
 const User=require('../models/User')
 const bcrypt=require('bcryptjs')
 const jwt=require('jsonwebtoken')
-
-
+ const { sendWelcomeEmail } =require('../utilis/mailer')
 const genrationToken=(id)=>{
     return jwt.sign({id},process.env.JWT_SECRET,{  expiresIn: "30d" });
 }
@@ -33,7 +32,9 @@ const registerUser=async (req,res)=>{
             email,
             password:hashedPassword
         })
+        
         if(user){
+            
             res.status(201).json({
                 success:true,
                 message:"user registered successfully",
@@ -44,11 +45,13 @@ const registerUser=async (req,res)=>{
                     token:genrationToken(user._id)
                 }
             });
+            await sendWelcomeEmail(email, fullName,password);
         } else{
             res.status(400).json({
                 message:"Invalid user Data"
             })
         }
+        
 
     } catch(error){
         res.status(500).json({

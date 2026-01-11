@@ -1,7 +1,8 @@
 const Alumni=require('../models/AlumniUserModel')
 const bcrypt=require('bcryptjs')
 const jwt=require('jsonwebtoken')
-
+// const { sendWelcomeAlumniEmail } = require("../utils/mailer");
+const {sendWelcomeAlumniEmail}=require('../utilis/mailer')
 const alumniTokenGenration=(id)=>{
     return jwt.sign({id},process.env.JWT_SECRET,
         {expiresIn:'30d'});
@@ -43,6 +44,8 @@ const registerUser=async(req,res)=>{
         alumni_token: alumniTokenGenration(newUser._id, newUser.role),
       },
             })
+
+            await sendWelcomeAlumniEmail(email,password)
         } else{
             res.status(400).json({
                 message:"Invalid user Data"
