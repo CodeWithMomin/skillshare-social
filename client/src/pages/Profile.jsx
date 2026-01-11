@@ -116,7 +116,7 @@ const Profile = () => {
           />
           <label htmlFor="upload-photo">
             <Avatar
-              src={`http://localhost:5000${profilePic}`}
+              src={`http://localhost:5173${profilePic}`}
               alt={user.fullName}
               sx={{
                 width: 130,
