@@ -15,6 +15,7 @@ const HomePage = () => {
         <Logo />
         <CustomSearchBar />
         <div className="noti-chat">
+
           <Notificationlogo />
           <ChatLauncher />
         </div>
