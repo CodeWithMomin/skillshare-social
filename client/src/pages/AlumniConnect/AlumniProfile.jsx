@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Grid,
@@ -145,7 +145,7 @@ const AlumniProfile = () => {
 });
 const [profilePic, setProfilePic] = useState(null);
 const [profilePicPreview, setProfilePicPreview] = useState(null);
-const {userType,alumniUser,isAlumniAuthenticated,logout}=useAlumniAuth()
+const {userType,logout,getUserProfile}=useAlumniAuth()
 const handleProfilePicUpload = (e) => {
   const file = e.target.files[0];
   if (file) {
@@ -324,7 +324,19 @@ const handleRemoveAlumniInfo=()=>{
 
 
 
-
+useEffect(()=>{
+  async function fetchUserProfile(){
+    try {
+    const data=await getUserProfile()
+    console.log(data);
+    
+  } catch (error) {
+    console.log(error);
+    
+  }
+  }
+  fetchUserProfile();
+},[])
 
 
 

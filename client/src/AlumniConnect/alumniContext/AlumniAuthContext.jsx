@@ -23,9 +23,13 @@ export const AlumniAuthContextProvider=({children})=>{
         if(result.success){
             const userData=result.response.user;
           
+            
             setUserType(userData.userType)
             setAlumniUser(userData)
             setIsAlumniAuthenticated(true)
+             if (userData.alumni_token) {
+                  localStorage.setItem('alumniAuth_Token', userData.token);
+                }
             // console.log(isAlumniAuthenticated);
             
            
@@ -36,9 +40,13 @@ export const AlumniAuthContextProvider=({children})=>{
         const result=await alumniAuthServices.login(credentials)
         if(result.success){
             const userData=result.response.user
+              console.log(userData.alumni_token);
               setUserType(userData.userType)
             setAlumniUser(userData)
             setIsAlumniAuthenticated(true)
+             if (userData.alumni_token) {
+                  localStorage.setItem('alumniAuth_Token', userData.alumni_token);
+                }
         }
         return result
       }
@@ -47,8 +55,17 @@ export const AlumniAuthContextProvider=({children})=>{
         setAlumniUser(null)
         setIsAlumniAuthenticated(false)
     }
+    const getUserProfile=async()=>{
+      try {
+        const result=await alumniAuthServices.getuserProfile()
+        return result;
+      } catch (error) {
+        console.log(error);
+        
+      }
+    }
       return (
-        <AlumniAuthContext.Provider value={{userType,alumniUser,isAlumniAuthenticated,register,login,logout}}>
+        <AlumniAuthContext.Provider value={{userType,alumniUser,isAlumniAuthenticated,register,login,getUserProfile,logout}}>
             {children}
         </AlumniAuthContext.Provider>
       )
