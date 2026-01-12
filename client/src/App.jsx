@@ -24,6 +24,7 @@ import AlumniProtectedRoutes from "./components/AlumniComponents/AlumniProtected
 import Dashboard from "./pages/AlumniConnect/Dashboard";
 import { useAuth } from "./context/AuthContext";
 import { useAlumniAuth } from "./AlumniConnect/alumniContext/AlumniAuthContext";
+import AlumniSettings from "./pages/AlumniSettings";
 function App() {
   // const isAuthenticated = !!localStorage.getItem("authToken");
   const {isAuthenticated}=useAuth()
@@ -141,6 +142,10 @@ function App() {
     {
       path:"alumni-directory",
       element:<AlumniDirectory/>
+    },
+    {
+      path:"alumnisettings",
+      element:<AlumniSettings/>
     },
   ],
 }
