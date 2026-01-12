@@ -23,6 +23,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { useNavigate } from "react-router-dom";
 import { useAlumniAuth } from "../../AlumniConnect/alumniContext/AlumniAuthContext";
+import SettingsIcon from '@mui/icons-material/Settings';
 const AlumniProfile = () => {
  const localTheme = createTheme({
   palette: {
@@ -1064,6 +1065,24 @@ const renderSkills = () => (
         >
           Go Back
         </Button>
+        <Button
+  sx={{
+    minWidth: "auto",
+    p: 1,
+    m: 3,
+    display: "flex",
+    justifyContent: "center",
+  }}
+  onClick={() => navigate("/alumniconnect/alumnisettings")}
+>
+  
+  <SettingsIcon
+    sx={{
+      fontSize: 28,
+    }}
+  />
+</Button>
+
       </Box>
 
       {/* ---------------- RIGHT FORM AREA ---------------- */}
