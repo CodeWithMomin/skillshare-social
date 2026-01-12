@@ -95,16 +95,21 @@ const Profile = () => {
         }}
       >
         {/* COVER */}
-        <Box sx={{ background: COVER_GRADIENT, height: 190 }} />
+        <Box sx={{
+          background: COVER_GRADIENT,
+          height: { xs: 120, sm: 190 },
+        }} />
 
         {/* HEADER */}
         <Box
           sx={{
-            mt: -11,
-            px: 4,
+            mt: { xs: -9, sm: -11 },
+            px: { xs: 2, sm: 4 },
             display: "flex",
-            alignItems: "center",
-            gap: 4,
+            flexDirection: { xs: "row", sm: "row" },
+            alignItems: { xs: "center", sm: "center" },
+            gap: { xs: 2, sm: 4 },
+            textAlign: { xs: "left", sm: "left" },
           }}
         >
           <input
@@ -119,9 +124,9 @@ const Profile = () => {
               src={`http://localhost:5173${profilePic}`}
               alt={user.fullName}
               sx={{
-                width: 130,
-                height: 130,
-                border: "5px solid white",
+                width: { xs: 90, sm: 130 },
+                height: { xs: 90, sm: 130 },
+                border: "4px solid white",
                 boxShadow: "0 12px 28px rgba(0,0,0,0.25)",
                 cursor: "pointer",
                 transition: "0.3s",
@@ -131,14 +136,23 @@ const Profile = () => {
           </label>
 
           <Box flex={1}>
-            <Typography mt={1.9} mb={.5} variant="h4" fontWeight={800} color="#fff">
+            <Typography
+              mt={{ xs: 1, sm: 1.2 }}
+              mb={{ xs: 0, sm: 0 }}
+              fontWeight={800}
+              color="#fff"
+              sx={{
+                fontSize: { xs: "1.2rem", sm: "2.1rem" },
+              }}
+            >
+
               {user.fullName}
             </Typography>
             {user.basicInfo?.[0]?.portfolioLink && (
 
               <Typography
                 variant="subtitle1"
-                sx={{ mb: 0, mt: 0, fontWeight: 600, }}
+                sx={{ mb: 0, mt: { xs: 0, sm: 0 }, fontWeight: 600, fontSize: { xs: "0.9rem", sm: "1rem" } }}
               >
                 <a
                   href={user.basicInfo[0].portfolioLink}
@@ -151,15 +165,21 @@ const Profile = () => {
 
                 >
                   Visit Portfolio
-                  <LinkRoundedIcon sx={{ fontSize: 18, color: "#fff" }} />
+                  <LinkRoundedIcon sx={{ fontSize: 18, color: "#fff", }} />
                 </a>
               </Typography>
             )}
 
-            <Typography mt={0} color="#000" fontWeight={600}>
+            <Typography color="#000" fontWeight={600} sx={{ fontSize: { xs: "0.9rem", sm: "1rem" }, mt: { xs: 1.5, sm: 0 } }}>
               {user.basicInfo?.[0]?.location}
             </Typography>
-            <Typography mt={0.5} fontWeight={600} whiteSpace="pre-line">
+            <Typography
+              mt={0.5}
+              fontWeight={600}
+              whiteSpace="pre-line"
+              sx={{ fontSize: { xs: "0.9rem", sm: "1rem" } }}
+            >
+
               {user.basicInfo?.[0]?.bio}
             </Typography>
           </Box>
@@ -171,9 +191,11 @@ const Profile = () => {
               onClick={() => navigate("/complete-profile")}
               sx={{
                 bgcolor: "#fff",
-                p: 1.5,
+                p: 1.2,
                 borderRadius: 3,
                 boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+                alignSelf: { xs: "auto", sm: "auto" },
+                mt: { xs: 1, sm: 0 },
                 "&:hover": { bgcolor: "#fff6e8" },
               }}
             >
