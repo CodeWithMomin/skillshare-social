@@ -9,8 +9,14 @@ const alumniProtect=async(req,res,next)=>{
     ){
         try {
             alumni_token=req.headers.authorization.split(' ')[1]
+            
+            
             const decoded=jwt.verify(alumni_token,process.env.JWT_SECRET)
-            req.user=await Alumni.findById(decoded._id).select('-password')
+            // console.log(decoded);
+            
+            req.user=await Alumni.findById(decoded.id).select('-password')
+            // console.log("decoded .user",req.user);
+            
             next();
         } catch (error) {
               res.status(401).json({
