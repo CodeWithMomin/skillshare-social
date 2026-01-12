@@ -21,6 +21,7 @@ const { registerUser,
 alumniRouter.post('/register',registerUser)
 alumniRouter.post('/login',loginUser)
  
+alumniRouter.get('/profile',alumniProtect,getAlumniProfile)
 // Basic Info
 alumniRouter.post("/basicinfo",alumniProtect,addAlumniBasicInfo)
 alumniRouter.put("/basicinfo/:basicInfoId",alumniProtect,updateAlumniBasicInfo)
