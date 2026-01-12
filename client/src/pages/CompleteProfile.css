@@ -340,8 +340,8 @@ textarea {
   align-items: center;
   gap: 10px;
   box-shadow: 0 2px 6px rgba(248, 152, 7, 0.15);
- 
- 
+
+
 }
 
 .skill-item em {
@@ -387,21 +387,88 @@ textarea {
 }
 
 
+/* ===============================
+   MOBILE RESPONSIVE ONLY
+   =============================== */
+@media (max-width: 768px) {
 
-/* === Responsive === */
-@media (max-width: 900px) {
+  /* Stack sidebar and form */
   .profile-wrapper {
     flex-direction: column;
+    overflow-x: hidden;
   }
 
+  /* Sidebar on top */
   .sidebar {
+    position: relative;
     width: 100%;
+    height: auto;
+    padding: 15px;
     border-right: none;
     border-bottom: 2px solid #eee;
+    box-shadow: none;
   }
 
+  /* Sections list horizontal scroll */
+  .sidebar-list {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    padding-bottom: 10px;
+    scrollbar-width: none;
+  }
+
+  .sidebar-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sidebar-item {
+    flex-shrink: 0;
+    margin-bottom: 0;
+    padding: 8px 14px;
+    font-size: 0.9rem;
+  }
+
+  /* Form below sidebar */
   .form-area {
-    margin: 20px;
-    padding: 30px;
+    margin-left: 0;
+    width: 100%;
+    /* ← THIS IS THE FIX */
+    height: auto;
+  }
+
+  /* Single column form layout */
+  .form-grid {
+    grid-column: 1 / -1 !important;
+  }
+
+  /* 1️⃣ Ensure grid is truly single column */
+  .form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* 2️⃣ Override ALL inline gridColumn spans */
+  .form-grid>* {
+    grid-column: 1 / -1 !important;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* 3️⃣ Prevent inputs from forcing width */
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* 4️⃣ Hard stop any horizontal overflow */
+  .form-area,
+  .profile-wrapper {
+    overflow-x: hidden;
   }
 }
