@@ -412,13 +412,29 @@ textarea {
   /* Sections list horizontal scroll */
   .sidebar-list {
     display: flex;
+    margin-bottom: 10px;
     flex-direction: row;
     gap: 10px;
     overflow-x: auto;
     overflow-y: hidden;
     white-space: nowrap;
-    padding-bottom: 10px;
-    scrollbar-width: none;
+    padding-bottom: 5px;
+    scrollbar-width: thin;
+    overflow-x: scroll;
+    scrollbar-color: #f89807 transparent;
+  }
+
+  .sidebar-list::-webkit-scrollbar {
+    height: 5px;
+  }
+
+  .sidebar-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .sidebar-list::-webkit-scrollbar-thumb {
+    background-color: #f89807;
+    border-radius: 10px;
   }
 
   .sidebar-list::-webkit-scrollbar {
@@ -427,7 +443,7 @@ textarea {
 
   .sidebar-item {
     flex-shrink: 0;
-    margin-bottom: 0;
+    margin-bottom: 10px;
     padding: 8px 14px;
     font-size: 0.9rem;
   }

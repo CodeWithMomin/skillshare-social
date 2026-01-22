@@ -8,17 +8,18 @@
 html,
 body {
   height: 100%;
-    overflow-x:hidden ;
+  overflow-x: hidden;
   overflow-y: auto;
   font-family: "poppins", Arial, sans-serif;
   background-color: #f5f5f5;
-  color: #0077B5;
-  scrollbar-width:thin;
-            
+  color: #000;
+  scrollbar-width: thin;
+
 }
-body::-webkit-scrollbar-thumb{
-    border: none;
-    background-clip: padding-box;
+
+body::-webkit-scrollbar-thumb {
+  border: none;
+  background-clip: padding-box;
 }
 
 /* body:hover {
@@ -31,20 +32,22 @@ body::-webkit-scrollbar-thumb{
 
   height: auto;
   border: 1px solid;
- 
+
   /* padding: 10px; */
 }
-.header-body{
-    top: 0;
-    position: sticky;
-    z-index: 1000;
+
+.header-body {
+  top: 0;
+  position: sticky;
+  z-index: 1000;
 }
+
 .alumni-header {
   width: 100%;
   height: 100px;
- background-color: white;
+  background-color: white;
   display: flex;
- 
+
 
 
 }
@@ -70,8 +73,8 @@ body::-webkit-scrollbar-thumb{
   font-weight: bold;
   font-size: 35px;
   font-family: sans-serif;
-  background-color: #ee9917;
-  color: #222221;
+  background-color: #e65100;
+  color: #fff;
 }
 
 .header-text {
@@ -101,7 +104,7 @@ body::-webkit-scrollbar-thumb{
 }
 
 .alumni-navlinks {
-  background-color: #f89807;
+  background-color: #e65100;
 
   display: flex;
   justify-content: center;
@@ -144,19 +147,20 @@ body::-webkit-scrollbar-thumb{
   min-height: calc(100vh - 120px);
   /* full height minus header */
   background-color: #ffffff;
-  
 
- 
+
+
 }
-.dashboard_container{
-     margin-top: 10px;
+
+.dashboard_container {
+  margin-top: 10px;
   /* spacing below header/nav */
   min-height: calc(100vh - 120px);
   /* full height minus header */
   background-color: #ffffff;
   /* optional background */
   display: flex;
-  flex-direction:row;
+  flex-direction: row;
   /* stack child components vertically */
   gap: 25px;
   /* space between child components */
@@ -167,98 +171,218 @@ body::-webkit-scrollbar-thumb{
   height: 230px;
   border: 1px solid gray;
   border-radius: 15px;
-  padding:40px 20px;
+  padding: 40px 20px;
   /* Background settings */
-  background-color:#9c5b2f; /* better opacity control */
+  background-color: #9c5b2f;
+  /* better opacity control */
   background-image: url('../../assets/378_1466079494_1.jpg');
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
-  background-blend-mode: overlay; /* ✅ blends color + image beautifully */
-}
-.profile{
-    color: white;
-    font-family: 'Courier New', Courier, monospace;
-}
-.profile p{
-    font-size: 13px;
+  background-blend-mode: overlay;
+  /* ✅ blends color + image beautifully */
 }
 
-.profile button:hover{
-    cursor: pointer;
-     transition: all 0.3s ease;
-     background-color: whitesmoke;
+.profile {
+  color: white;
+  font-family: 'Courier New', Courier, monospace;
 }
-.alumni-directory{
-    width: 290px;
+
+.profile p {
+  font-size: 13px;
+}
+
+.profile button:hover {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: whitesmoke;
+}
+
+.alumni-directory {
+  width: 290px;
   height: 230px;
   border: 1px solid gray;
   border-radius: 15px;
-  padding:40px 20px;
+  padding: 40px 20px;
   color: white;
   font-family: 'Courier New', Courier, monospace;
-  background-color:#494545; /* better opacity control */
+  background-color: #494545;
+  /* better opacity control */
   background-image: url('../../assets/post1328_t1513785733_5iHoMR6DRG.jpg');
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
   background-blend-mode: overlay;
 }
-.alumni-directory p{
-    font-size: 13px;
+
+.alumni-directory p {
+  font-size: 13px;
 }
-.alumni-city{
+
+.alumni-city {
   width: 290px;
   height: 230px;
   border: 1px solid gray;
   border-radius: 15px;
-  padding:40px 20px;
+  padding: 40px 20px;
   color: white;
   font-family: 'Courier New', Courier, monospace;
-  background-color:#9c5b2f; /* better opacity control */
+  background-color: #9c5b2f;
+  /* better opacity control */
   background-image: url('../../assets/post1372_t1515410383_ALaMbKYyPy.jpg');
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
   background-blend-mode: overlay;
 }
-.alumni-city p{
-    font-size: 13px;
+
+.alumni-city p {
+  font-size: 13px;
 }
-.alumni-batchmates{
+
+.alumni-batchmates {
   width: 290px;
   height: 230px;
   border: 1px solid gray;
   border-radius: 15px;
-  padding:40px 20px;
+  padding: 40px 20px;
   color: white;
   font-family: 'Courier New', Courier, monospace;
-  background-color:#454444; /* better opacity control */
+  background-color: #454444;
+  /* better opacity control */
   background-image: url('../../assets/1590474494227.png');
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
   background-blend-mode: overlay;
 }
-.alumni-batchmates p{
-    font-size: 13px;
+
+.alumni-batchmates p {
+  font-size: 13px;
 }
 
-.dashboard-button{
-    width: 100px;
-    height: 35px;
-    background-color: white;
-    color:#ee9917;
-    border: none;
-    margin-top: 15px;
-    border-radius: 5px;
-     /* position: absolute;
+.dashboard-button {
+  width: 100px;
+  height: 35px;
+  background-color: white;
+  color: #ee9917;
+  border: none;
+  margin-top: 15px;
+  border-radius: 5px;
+  /* position: absolute;
      bottom: 0; */
 }
 
-.dashboard-button:hover{
-    cursor: pointer;
-     transition: all 0.3s ease;
-     background-color: whitesmoke;
-    
+.dashboard-button:hover {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: whitesmoke;
+
+}
+
+/* =========================
+   MOBILE CLEAN ALIGNMENT
+   ========================= */
+
+@media (max-width: 768px) {
+
+  .dashboard_container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 1fr;
+    gap: 12px;
+    min-height: 200px;
+  }
+
+  .profile,
+  .alumni-directory,
+  .alumni-city,
+  .alumni-batchmates {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .dashboard_container>div {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    /* 🔑 CRITICAL */
+    padding: 18px 12px;
+    /* 🔑 reduce padding */
+    border-radius: 12px;
+    min-width: 0;
+    /* 🔑 prevents grid overflow */
+  }
+
+  .dashboard_container h3 {
+    font-size: 14px;
+  }
+
+  .dashboard_container p {
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  .dashboard-button {
+    width: 80px;
+    height: 30px;
+    font-size: 12px;
+  }
+
+  /* Header stays clean & centered */
+  .alumni-header {
+    flex-direction: column;
+    height: auto;
+    align-items: center;
+  }
+
+  .alumni-logo {
+    width: 100%;
+    justify-content: center;
+    padding: 8px 0;
+  }
+
+  .header-text {
+    width: auto;
+    align-items: center;
+    text-align: center;
+    padding: 0;
+    gap: 2px;
+  }
+
+  .header-text span {
+    font-size: 22px;
+    margin-bottom: 8px;
+    white-space: nowrap;
+    /* keeps single line */
+  }
+
+  /* Navigation — single line, equal spacing */
+  .alumni-navlinks {
+    display: flex;
+    flex-wrap: nowrap;
+    /* 🔑 NO wrapping */
+    justify-content: space-evenly;
+    /* 🔑 equal gaps */
+    align-items: center;
+    height: auto;
+    padding: 10px 5px;
+    gap: 0;
+  }
+
+  .alumni-navlinks a {
+    font-size: 13px;
+    white-space: nowrap;
+    /* prevents breaking */
+  }
+
+  /* Body spacing */
+  .alumni-body {
+    padding: 20px 15px;
+  }
 }
