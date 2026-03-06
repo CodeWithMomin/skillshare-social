@@ -19,18 +19,11 @@ import {
   Avatar,
   avatarGroupClasses,
 } from "@mui/material";
-import toast from "react-hot-toast";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { useNavigate } from "react-router-dom";
 import { useAlumniAuth } from "../../AlumniConnect/alumniContext/AlumniAuthContext";
-import { useAlumniLanguages } from "../../AlumniConnect/alumniContext/AlumniLanguageContext";
-import { useAlumniSkills } from "../../AlumniConnect/alumniContext/AlumniSKillcontext";
 import SettingsIcon from '@mui/icons-material/Settings';
-// import { useBasicInfo } from "../../context/BasicInfoContext";
-import {usealumnibasicInfo} from '../../AlumniConnect/alumniContext/AlumniBasicINfoContext'
-import { useAlumniAcheivement } from "../../AlumniConnect/alumniContext/AlumniAcheivement";
-import { useAlumniAcademics } from "../../AlumniConnect/alumniContext/AlumniAcademicContext";
 const AlumniProfile = () => {
  const localTheme = createTheme({
   palette: {
@@ -176,7 +169,7 @@ const handleProfilePicUpload = (e) => {
 
   // ---------------- STATES (Same as yours) ----------------
  
-const { addBasicInfo,updateBasicInfo}=usealumnibasicInfo()
+
   const [basicInfo, setBasicInfo] = useState({
     fullName: "",
     phoneNo: "",
@@ -196,32 +189,15 @@ const { addBasicInfo,updateBasicInfo}=usealumnibasicInfo()
   const handleSaveBasicChange=(e)=>{
 
   }
-  const handleAddBasicInfo=async()=>{
+  const handleSaveBasicInfo=()=>{
     console.log(basicInfo)
-    try {
-      const result=await addBasicInfo(basicInfo)
-      if(result.success){
-        setBasicInformation(result.basicInfo)
-        toast.success("Information added Successfullt.")
-    //     setBasicInfo({
-    //       fullName: "",
-    // phoneNo: "",
-    // location: "",
-    // bio: "",
-    // portfolioLink: "",
-    // linkedInUrl: "",})
-      }
-    } catch (error) {
-      console.error("error",error.message)
-      toast.error(error.message)
-    }
   }
  
 
 
 
 
-const { addAcademics,deleteAcademics,updateAcademics}=useAlumniAcademics()
+
 const [academicInput, setAcademicInput] = useState({
   university: "",
   degree: "",
@@ -233,85 +209,22 @@ const [academicInput, setAcademicInput] = useState({
 const [academics, setAcademics] = useState([]);
 const [editAcademicIndex, setEditAcademicIndex] = useState(null);
 
-const [EditAcademicId, setEditAcademicId] = useState(null);
+const [academicInfoId, setAcadmicInfoId] = useState(null);
 
-const handleSaveAcademicChanges=async()=>{
-  console.log(editAcademicIndex,EditAcademicId,academicInput);
-  
- if(editAcademicIndex== null) return;
-  try {
-    const result=await updateAcademics(EditAcademicId,academicInput)
-    if(result.success){
-      setAcademics(result.data)
-        toast.success("Updated Successfully.")
-        setEditAcademicIndex(null)
-      
-    }
-  } catch (error) {
-    toast.error(error)
-    
-  }
-}
-const handleAddAcademics=async ()=>{
-// console.log(academicInput);
-try {
-  const result=await addAcademics(academicInput)
-  if(result.success){
-    setAcademics(result.data)
-    console.log("reuslt:",result);
-    
-    console.log("Academics ",academics);
-    
-    setAcademicInput({
-    university: "",
-    degree: "",
-    department: "",
-    enrollmentYear: "",
-    graduationYear: "",
-    cgpa: "",
-    })
-    toast.success("Added Successfully.")
-
-  }
-} catch (error) {
-  toast.error("error",error.message)
-  console.error(error)
-}
+const handleSaveAcademicChanges=()=>{
 
 }
-const handleEditAcademics=(index,academicId)=>{
-  const selectedAcademics=academics[index]
-  // console.log("selected",selectedAcademics);
-  setAcademicInput({
-  university:selectedAcademics.university,
-  degree:selectedAcademics.degree,
-  department:selectedAcademics.department,
-  enrollmentYear:selectedAcademics.enrollmentYear,
-  graduationYear:selectedAcademics.graduationYear,
-  cgpa:selectedAcademics.cgpa,
-  })
-  setEditAcademicId(academicId)
-  setEditAcademicIndex(index)
-  
+const handleAddAcademics=()=>{
+console.log(academicInput);
 
 }
-const handleRemoveAcademics=async(academicId)=>{
-try {
-  const result=await deleteAcademics(academicId)
-  // console.log(ReadableStreamDefaultController);
-    // setAcademics(result.data)
-  
-  if(result.succes){
-  
-    toast.success("Deleted Successfully.")
-  }
-} catch (error) {
-  toast.error("error",error.message)
-  console.error(error)
+const handleEditAcademics=()=>{
+
 }
+const handleRemoveAcademics=()=>{
+
 }
 
-const {addSkill,deleteSkill,updateSkill}=useAlumniSkills()
 const [skills, setskills] = useState([]);
   const [skillInput, setSkillInput] = useState({
     name: "",
@@ -319,79 +232,16 @@ const [skills, setskills] = useState([]);
   });
   const [editSkillIndex,setEditSkillIndex]=useState(null)
   const [editSkillId,setEditSkillId]=useState(null)
-  const handleAddSkill=async()=>{
-try {
-  const result=await addSkill(skillInput)
-  if(result.success){
-    setskills(result.data)
-    setSkillInput(
-      {name: "",
-    proficiency: "Beginner",})
-    
-    toast.success("Added Successfully.")
+  const addSkill=async()=>{
 
-  }
-} catch (error) {
-  toast.error(error.message)
-  console.error("error:",error.message)
-}
   }
  const handleEditSkill=async (index, skillId)=>{
-
-            const selectedSkill=skills[index]
-            console.log(index);
             
-  //  console.log(selectedLanguage);
-   
-   setSkillInput(
-    {
-      name:selectedSkill.name,
-    proficiency:selectedSkill.proficiency
-    }
-    
-   )
-   setEditSkillId(skillId)
-    setEditSkillIndex(index)
           }
 const handleRemoveSkill=async (skillId)=>{
-    try{
-      const result=await deleteSkill(skillId)
-      if(result.success){
-        setskills(result.data)
-        toast.success("Delete Successfully.")
-        console.log(result);
-        
-      }
-    }catch(error){
-      toast.error(error.message)
-      console.log(error);
-      
-    }
+
 }
 
-const handleSaveSkillChanges=async()=>{
-  console.log(skillInput);
-  // console.log(editSkillIndex);
-  
-  if(editSkillIndex === null) return;
-    try {
-      const result=await updateSkill(editSkillId,skillInput)
-      if(result.success){
-        setskills(result.data)
-        toast.success("Updated Successfully.")
-        setSkillInput({
-          name:" ",
-          proficiency:"Beginner "
-        })
-        setEditSkillIndex(null)
-        
-      }
-    } catch (error) {
-      console.error("error",error.message)
-        toast.error(error.message)
-    }
-}
-const { addLanguage,deleteLanguage,updateLanguage}=useAlumniLanguages()
 const [languages, setLanguages] = useState([]);
   const [languageInput, setLanguageInput] = useState({
     name: "",
@@ -399,78 +249,23 @@ const [languages, setLanguages] = useState([]);
   });
   const [editLangIndex, setEditLangIndex] = useState(null);
   const [editLangId, setEditLangId] = useState(null);
-  
-  const handleAddLanguage=async()=>{
-    // console.log(languageInput);
-    try {
-  const result=await addLanguage(languageInput)
-  if(result.success){
-//  console.log(result);
-setLanguages(result.data)
-setLanguageInput({
-   name: "",
-    proficiency: "Beginner",
-})
-toast.success("Added Successfully.")
+  const handleSaveLanguageChanges=()=>{
+
   }
- 
-  
-} catch (error) {
-  toast.error
-  console.log(error);
-  
-}
+  const handleAddLanguage=()=>{
+    console.log(languageInput);
     
   }
-  const handleEditLanguage=async(index,langId)=>{
-   const selectedLanguage=languages[index]
-  //  console.log(selectedLanguage);
+  const handleEditLanguage=()=>{
    
-   setLanguageInput(
-    {
-      name:selectedLanguage.name,
-    proficiency:selectedLanguage.proficiency
-    }
-    
-   )
-   setEditLangId(langId)
-    setEditLangIndex(index)
   }
- const handleRemoveLanguage=async(langId)=>{
-      try {
-        const result=await deleteLanguage(langId)
-        if(result.success){
-          setLanguages(result.data)
-          toast.success("Deleted Successfully.")
-        }
-      } catch (error) {
-         console.error(error)
-         toast.error(error.message)
-      }
+ const handleRemoveLanguage=()=>{
+
     }
-    const handleSaveLanguageChanges=async ()=>{
-      if(editLangIndex== null) return;
-      try{
-        const result=await updateLanguage(editLangId,languageInput)
-        if(result.success){
-          setLanguages(result.data)
-          setLanguageInput({
-            name:" ",
-            proficiency: "Beginner",
-
-          })
-          toast.success('Updated Successfully.')
-          setEditLangIndex(null)
-        }
-      }catch(error){
-        console.error("error",error.message)
-        toast.error(error.message)
-      }
-  }
 
 
 
-const { addAcheivement,deleteAcheivement,updateAcheivement}=useAlumniAcheivement()
+
 const [achievements, setAchievements] = useState([]);
 const [achievementInput, setAchievementInput] = useState({
   title: "",
@@ -481,86 +276,22 @@ const [achievementInput, setAchievementInput] = useState({
 });
 
 const [editAchIndex, setEditAchIndex] = useState(null);
-const [editAchId,setEditAchId]=useState(null)
+const [eidtAchId,setEditAchId]=useState(null)
 
 
 
-const handleSaveAchievementChanges=async()=>{ 
-try {
-  const result=await updateAcheivement(editAchId,achievementInput)
-  console.log(result);
-  
-  if(result.success){
-    setAchievements(result.data)
-    console.log(achievements);
-    
-    setAchievementInput({
-       title: "",
-       organization: "",
-       issueDate: "",
-       certificateUrl: "",
-       description: ""
-    })
-    toast.success("Updated Successfully.")
-    setEditAchIndex(null)
-    
+const handleSaveAchievementChanges=()=>{
 
-  }
-} catch (error) {
-   console.error("error",error.message)
-        toast.error(error.message)
 }
-}
-const handleAddAchievements=async()=>{
+const handleAddAchievements=()=>{
 console.log(achievementInput);
-try{
-  const result=await addAcheivement(achievementInput)
-   console.log(result);
-  
-  if(result.success)
-  {
-    setAchievements(result.data)
-    setAchievementInput({
-      title: "",
-  organization: "",
-  issueDate: "",
-  certificateUrl: "",
-  description: ""
-    })
-    // console.log(achievements);
-    
-    toast.success("Added succesfully.")
-
-  }
-}catch(error){
-    console.error("error",error.message)
-        toast.error(error.message)
-}
 
 }
-const handleEditAchievement=(index,acheivementId)=>{
-    const selectedAcheivement=achievements[index]
-    setAchievementInput({
-       title:selectedAcheivement.title,
-  organization:selectedAcheivement.organization,
-  issueDate:selectedAcheivement.issueDate,
-  certificateUrl:selectedAcheivement.certificateUrl,
-  description: selectedAcheivement.description
-    })
-    setEditAchId(acheivementId)
-    setEditAchIndex(index)
+const handleEditAchievement=()=>{
+
 }
-const handleRemoveAchievement=async(acheivementId)=>{
-try {
-  const result=await deleteAcheivement(acheivementId)
-  if(result.success){
-    setAchievements(result.data)
-    toast.success("Deleted Successfully.")
-  }
-} catch (error) {
-    console.error("error",error.message)
-        toast.error(error.message)
-}
+const handleRemoveAchievement=()=>{
+
 }
 
 
@@ -576,7 +307,7 @@ const [alumniInput, setAlumniInput] = useState({
 });
 
 const [editAlumniIndex, setEditAlumniIndex] = useState(null);
-const [editAlumniId,setEditAlumniId]=useState(null)
+const [editAlumniId,setEditAcademicId]=useState(null)
 
 const handleSaveAlumniChanges=()=>{
 
@@ -598,21 +329,7 @@ useEffect(()=>{
   async function fetchUserProfile(){
     try {
     const data=await getUserProfile()
-    //  console.log(data);
-    setLanguages(data.languages)
-    // setBasicInfo({
-    //   fullName:data.basicInfo.fullname,
-    // phoneNo:data.basicInfo.phoneNo ,
-    // location: data.basicInfo.location,
-    // email:data.basicInfo.email,
-    // bio: data.basicInfo.bio,
-    // portfolioLink:data.basicInfo.portfolioLink,
-    // linkedInUrl:data.basicInfo.linkedInUrl,
-
-    // })
-    setskills(data.skills)
-    setAchievements(data.Acheivements)
-    setAcademics(data.Academics)
+    console.log(data);
     
   } catch (error) {
     console.log(error);
@@ -786,8 +503,8 @@ useEffect(()=>{
         <Box mt={3} display="flex" justifyContent="end">
           {basicinfoIndex !==null?(<Button variant="contained" sx={{ px: 4, py: 1.2 }} onClick={handleSaveBasicChange}>
             Save Changes
-          </Button>) :(<Button variant="contained" sx={{ px: 4, py: 1.2 }} onClick={handleAddBasicInfo}>
-            Add
+          </Button>) :(<Button variant="contained" sx={{ px: 4, py: 1.2 }} onClick={handleSaveBasicInfo}>
+            Submit
           </Button>)}
         </Box>
        
@@ -892,18 +609,18 @@ const renderAcadmics = () => (
     </Box>
 
     {/* LIST OF ADDED ACADEMIC ENTRIES */}
-    {academics.length > 0 &&
-      academics.map((edu, index) => (
+    {academicInput.length > 0 &&
+      academicInput.map((edu, index) => (
         <Card key={index} sx={{ mt: 2 }}>
           <CardContent>
-            <Typography variant="h6">{edu.degree} — {edu.university}</Typography>
+            <Typography variant="h6">{edu.degree} — {edu.school}</Typography>
 
             <Typography>
-              {edu.department}
+              {edu.fieldOfStudy}
             </Typography>
 
             <Typography>
-              {edu.enrollmentYear} - {edu.graduationYear}
+              {edu.startDate} - {edu.endDate}
             </Typography>
 
             <Typography>CGPA: {edu.cgpa}</Typography>
@@ -912,7 +629,7 @@ const renderAcadmics = () => (
               <EditIcon />
             </IconButton>
 
-            <IconButton onClick={() => handleRemoveAcademics( edu._id)}>
+            <IconButton onClick={() => handleRemoveAcademics(index, edu._id)}>
               <DeleteOutlineIcon color="error" />
             </IconButton>
           </CardContent>
@@ -1077,7 +794,7 @@ const renderAchievements = () => (
     {/* ACHIEVEMENTS LIST */}
     {achievements.length > 0 &&
       achievements.map((ach, index) => (
-        <Card key={ach._id} sx={{ mt: 2 }}>
+        <Card key={index} sx={{ mt: 2 }}>
           <CardContent>
             <Typography variant="h6">
               {ach.title}
@@ -1265,7 +982,7 @@ const renderSkills = () => (
             label="Skill"
             value={skillInput.name}
             onChange={(e) =>
-              setSkillInput({ ...skillInput, name: e.target.value })
+              setLanguageInput({ ...skillInput, name: e.target.value })
             }
           />
         </Grid>
@@ -1277,7 +994,7 @@ const renderSkills = () => (
             label="Proficiency"
             value={skillInput.proficiency}
             onChange={(e) =>
-              setSkillInput({
+              setLanguageInput({
                 ...skillInput,
                 proficiency: e.target.value,
               })
@@ -1295,7 +1012,7 @@ const renderSkills = () => (
       </Grid>
 
       <Box mt={2}>
-        {editSkillIndex !== null ?(<Button variant="contained" onClick={handleSaveSkillChanges}>Save Changes</Button>):(<Button variant="contained" onClick={handleAddSkill}> add Skill</Button>)}
+        {editLangIndex !== null ?(<Button variant="contained" onClick={handleSaveLanguageChanges}>Save Changes</Button>):(<Button variant="contained" onClick={handleAddLanguage}> add Skill</Button>)}
       </Box>
 
       {skills.length > 0 &&
@@ -1303,7 +1020,7 @@ const renderSkills = () => (
           <Card key={index} sx={{ mt: 2 }}>
             <CardContent>
               <Typography variant="h6">{skill.name}</Typography>
-              <Typography>{skill.proficiency}</Typography>
+              <Typography>{lang.proficiency}</Typography>
          
               <IconButton onClick={() => handleEditSkill(index, skill._id)}>
                 <EditIcon />
