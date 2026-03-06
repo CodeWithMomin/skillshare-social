@@ -1,4 +1,4 @@
-import {React,createContext,useContext,useState} from 'react'
+import React,{createContext,useContext,useState} from 'react'
 import { useAuth } from './AuthContext'
 import skillsService from '../services/skillsService'
 import { data } from 'react-router-dom'

@@ -1,13 +1,13 @@
-import api from '../../services/api'
+import alumniapi from '../../services/alumniapi'
 const alumniAcheivementServices={
     addAcheivement:async (acheivementData)=>{
             try{
-                const response=await api.post('/alumni/acheivement',acheivementData)
+                const response=await alumniapi.post('/alumni/acheivement',acheivementData)
                 if(!response) return{ message:"No Data from backend and This error is from Service function"}
                 
                     return {
                     success:true,
-                    data:response
+                    data:response.Acheivements
                     }
                
             }catch(error){
@@ -19,12 +19,12 @@ const alumniAcheivementServices={
             },
             updateAcheivement:async (acheivementId,acheivementData)=>{
             try{
-                const response=await api.put(`/alumni/acheivements/${acheivementId}`,acheivementData)
+                const response=await alumniapi.put(`/alumni/acheivement/${acheivementId}`,acheivementData)
                 if(!response) return{ message:"No Data from backend and This error is from Service function"}
                 
                     return {
                     success:true,
-                    data:response
+                    data:response.Acheivements
                     }
                
             }catch(error){
@@ -36,12 +36,12 @@ const alumniAcheivementServices={
             },
             deleteAcheivement:async (acheivementId)=>{
             try{
-                const response=await api.delete(`/alumni/acheivements/${acheivementId}`)
+                const response=await alumniapi.delete(`/alumni/acheivement/${acheivementId}`)
                 if(!response) return{ message:"No Data from backend and This error is from Service function"}
                 
                     return {
                     success:true,
-                    data:response
+                    data:response.Acheivements
                     }
                
             }catch(error){

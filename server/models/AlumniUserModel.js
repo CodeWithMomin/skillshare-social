@@ -55,12 +55,12 @@ const alumniSchema = new mongoose.Schema(
     // Academics
     Academics: [
       {
-        school: { type: String, required: true },
+        university: { type: String, required: true },
         degree: { type: String ,required:true},
-        fieldOfStudy: { type: String },
-        startDate: { type: String },
-        endDate: { type: String },
-        grade: { type: String },
+        department: { type: String },
+        enrollmentYear: { type: String },
+        graduationYear: { type: String },
+        cgpa: { type: String },
         
       }
     ],
