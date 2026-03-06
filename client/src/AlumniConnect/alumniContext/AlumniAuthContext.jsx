@@ -40,7 +40,7 @@ export const AlumniAuthContextProvider=({children})=>{
         const result=await alumniAuthServices.login(credentials)
         if(result.success){
             const userData=result.response.user
-              console.log(userData.alumni_token);
+              // console.log(userData.alumni_token);
               setUserType(userData.userType)
             setAlumniUser(userData)
             setIsAlumniAuthenticated(true)

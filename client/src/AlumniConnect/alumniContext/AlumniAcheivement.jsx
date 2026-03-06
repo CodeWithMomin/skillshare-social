@@ -32,7 +32,7 @@ import alumniAcheivementServices from "../alumniServices/alumniAcheivement";
              console.error('Update acheivement Error:',error)
         }
         }
-    }
+    
  
 return (
     <AlumniAcheivementContext.Provider value={{
@@ -40,5 +40,5 @@ return (
     }}>
         {children}
     </AlumniAcheivementContext.Provider>
-)
-export const useAlumniAcheivement=useContext(AlumniAcheivementContext)
+)}
+export const useAlumniAcheivement=()=>useContext(AlumniAcheivementContext)

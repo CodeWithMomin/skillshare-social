@@ -1,13 +1,14 @@
-import api from '../../services/api'
+// import api from '../../services/api'
+import alumniapi from '../../services/alumniapi'
 const alumniSkillServices={
     addSkill: async(skillData)=>{
         try {
-            const response=await api.post('/alumni/skill',skillData)
+            const response=await alumniapi.post('/alumni/skill',skillData)
            if(!response) return{ message:"No Data from backend and This error is from Service function"}
             
           return {
                     success:true,
-                    data:response
+                    data:response.skills
                     }
         } catch (error) {
              return {
@@ -18,12 +19,12 @@ const alumniSkillServices={
     },
     updateSkill:async(skillId,skillData)=>{
         try {
-            const response=await api.put(`/alumni/skill/${skillId}`,skillData)
+            const response=await alumniapi.put(`/alumni/skill/${skillId}`,skillData)
              if(!response) return{ message:"No Data from backend and This error is from Service function"}
 
               return {
                     success:true,
-                    data:response
+                    data:response.skills
                     }
 
                 
@@ -36,12 +37,12 @@ const alumniSkillServices={
     },
     deleteSkill:async(skillId)=>{
         try {
-            const response=await api.delete(`/alumni/skill/${skillId}`,)
+            const response=await alumniapi.delete(`/alumni/skill/${skillId}`,)
              if(!response) return{ message:"No Data from backend and This error is from Service function"}
 
               return {
                     success:true,
-                    data:response
+                    data:response.skills
                     }   
         } catch (error) {
             return {

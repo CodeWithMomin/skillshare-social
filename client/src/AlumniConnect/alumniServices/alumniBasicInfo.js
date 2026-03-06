@@ -1,13 +1,13 @@
-import api from '../../services/api'
+import alumniapi from '../../services/alumniapi'
 const alumniBasicInfo={
    addAlumniBasicInfo:async(basicInfo)=>{
      try{
-        const response=await api.post('/alumni/basicinfo',basicInfo)
+        const response=await alumniapi.post('/alumni/basicinfo',basicInfo)
          if(!response) return{ message:"No Data from backend and This error is from Service function"}
             
           return {
                     success:true,
-                    data:response
+                    data:response.basicInfo
                     }
     }catch(error){
         return {
@@ -18,12 +18,12 @@ const alumniBasicInfo={
    },
    updateAlumniBasicInfo:async(basicInfoId,basicInfo)=>{
     try {
-        const response=await api.put(`/alumni/basicinfo/${basicInfoId}`,basicInfo)
+        const response=await alumniapi.put(`/alumni/basicinfo/${basicInfoId}`,basicInfo)
     if(!response) return{ message:"No Data from backend and This error is from Service function"}
             
           return {
                     success:true,
-                    data:response
+                    data:response.basicInfo
                     }
     } catch (error) {
          return {

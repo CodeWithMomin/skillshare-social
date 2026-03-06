@@ -1,13 +1,15 @@
-import api from "../../services/api"
+import alumniapi from "../../services/alumniapi"
 const alumniLanguageServices={
     addlanguage:async (languageData)=>{{
             try {
-                const response=await api.post('/alumni/language',languageData)
+                const response=await alumniapi.post('/alumni/language',languageData)
+                // console.log(response);
+                
                  if(!response) return{ message:"No Data from backend and This error is from Service function"}
                 
                     return {
                     success:true,
-                    data:response
+                    data:response.languages
                     }
                
               
@@ -22,12 +24,12 @@ const alumniLanguageServices={
     }},
     updateLanguage:async (langId,languageData)=>{
         try {
-            const response=await api.put(`/alumni/language/${langId}`,languageData)
+            const response=await alumniapi.put(`/alumni/language/${langId}`,languageData)
            
             if(!response) return{ message:"No Data from backend and This error is from Service function"}
             return {
                 success:true,
-                data:response
+                data:response.languages
             }
             
         } catch (error) {
@@ -39,12 +41,12 @@ const alumniLanguageServices={
     },
     deleteLanguage:async (langId)=>{
         try {
-            const response=await api.delete(`/alumni/language/${langId}`)
+            const response=await alumniapi.delete(`/alumni/language/${langId}`)
              if(!response) return{ message:"No Data from backend and This error is from Service function"}
 
              return {
                 success:true,
-                data:response
+                data:response.languages
              }
         } catch (error) {
             return {
