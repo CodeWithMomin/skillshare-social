@@ -123,7 +123,9 @@ const addAlumniBasicInfo=async (req,res)=>{
         if (!fullName || !phoneNo || !location || !bio || !portfolioLink || !linkedInUrl) {
       return res.status(400).json({ message: "All fields are required." });
     }
-        console.log(req.body)
+         //console.log(req.body)
+        console.log(req.user.id);
+        
         const updatedUser = await Alumni.findByIdAndUpdate(
               req.user.id,
               {
@@ -133,6 +135,8 @@ const addAlumniBasicInfo=async (req,res)=>{
               },
               { new: true, runValidators: true }
             );
+            
+            
        if (!updatedUser) {
       return res.status(404).json({ message: "User not found." });
     }
@@ -311,11 +315,11 @@ const deleteSkill=async(req,res)=>{
                 message:"User not found."
             })
         }
-        user.languages=user.skills.filter(skill=>skill._id.toString()!== req.params.skillId)
+        user.skills=user.skills.filter(skill=>skill._id.toString()!== req.params.skillId)
         await user.save();
         res.json({
             success:true,
-            message:"Language Information Deleted Successfully.",
+            message:"skill Information Deleted Successfully.",
             skills:user.skills
 
         })
@@ -338,20 +342,20 @@ const updateSkill=async(req,res)=>{
             })
         }
         const skillIndex=user.skills.findIndex((skill)=>skill._id.toString() === req.params.skillId)
-        if(langIndex ==-1){
+        if(skillIndex ==-1){
             return res.status(404).json({
-                message:"Language information Not Found."
+                message:"skill information Not Found."
             })
         }
         const {name,proficiency}=req.body;
-        if(name) user.skills[langIndex].name=name;
-        if(proficiency) user.skills[langIndex].proficiency=proficiency
+        if(name) user.skills[skillIndex].name=name;
+        if(proficiency) user.skills[skillIndex].proficiency=proficiency
 
 
         await user.save()
         res.json({
             success:true,
-            message:"Language information updated Successfully.",
+            message:"skill information updated Successfully.",
             skills:user.skills
         })
     } catch (error) {
@@ -368,51 +372,60 @@ const updateSkill=async(req,res)=>{
 
 
 const addAcademics = async (req, res) => {
-    try {
-       
-        
-        const user = await Alumni.findById(req.user.id);
+  try {
+    const { university, degree, department, enrollmentYear, graduationYear, cgpa } = req.body;
 
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }   
-        console.log("body",req.body);
-        
-        const { school, degree, fieldOfStudy, startDate, endDate,grade } = req.body;
+    const updatedUser = await Alumni.findByIdAndUpdate(
+      req.user.id,
+      {
+        $push: {
+          Academics: {
+            $each: [
+              {
+                university,
+                degree,
+                department,
+                enrollmentYear,
+                graduationYear,
+                cgpa
+              }
+            ],
+            $position: 0 // adds to the beginning (same as unshift)
+          }
+        }
+      },
+      {
+        new: true,          // return updated document
+        runValidators: true // enforce schema validation
+      }
+    );
 
-        
-
-        user.Academics.unshift({
-            school,
-            degree,
-            fieldOfStudy,
-            startDate,
-            endDate,
-            grade
-        });
-
-        await user.save();
-
-        res.json({
-            success: true,
-            message: 'Education added successfully',
-            Academics: user.Academics[0]
-        });
-
-    } catch (error) {
-        res.status(500).json({
-            message: 'Server error',
-            error: error.message
-        });
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
     }
+
+    res.status(200).json({
+      success: true,
+      message: "Education added successfully",
+      Academics: updatedUser.Academics
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message
+    });
+  }
 };
+
 
 
 
 const updateAcademics = async (req, res) => {
   console.log("Incoming data:", req.body);
   console.log("User ID:", req.user?.id);
-  console.log("Experience ID:", req.params.id);
+  console.log("AcademicId ID:", req.params.academicId);
 
     
     try {
@@ -422,22 +435,23 @@ const updateAcademics = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const eduIndex = user.education.findIndex(
-            edu => edu._id.toString() === req.params.academicId
+        const academicIndex = user.Academics.findIndex(
+            academic => academic._id.toString() === req.params.academicId
         );
 
-        if (eduIndex === -1) {
-            return res.status(404).json({ message: 'Education not found' });
+        if (academicIndex === -1) {
+            return res.status(404).json({ message: 'Academic Information not found' });
         }
 
-        const { school, degree, fieldOfStudy, startDate, endDate,grade } = req.body;
+        const { university, degree, department, enrollmentYear, graduationYear, cgpa } = req.body;
 
-        if (school) user.Academics[eduIndex].school = school;
-        if (degree) user.Academics[eduIndex].degree = degree;
-        if (fieldOfStudy) user.Academics[eduIndex].fieldOfStudy = fieldOfStudy;
-        if (startDate) user.Academics[eduIndex].startDate = startDate;
-        if (endDate) user.Academics[eduIndex].endDate = endDate;
-        if(grade) user.Academics[eduIndex].startDate=grade;
+
+        if (university) user.Academics[academicIndex].university = university;
+        if (degree) user.Academics[academicIndex].degree = degree;
+        if (department) user.Academics[academicIndex].department = department;
+        if (enrollmentYear) user.Academics[academicIndex].enrollmentYear = enrollmentYear;
+        if (graduationYear) user.Academics[academicIndex].graduationYear = graduationYear;
+        if(cgpa) user.Academics[academicIndex].cgpa=cgpa;
 
         await user.save();
 
@@ -525,8 +539,12 @@ const addAcheivement=async(req,res)=>{
     }
 }
 const deleteAcheivement=async(req,res)=>{
+  
+    
     try{
         const user=await Alumni.findById(req.user.id)
+        
+        
         if(!user) return res.status(404).json({
             message:"User not found."
         })
@@ -547,6 +565,8 @@ const deleteAcheivement=async(req,res)=>{
 }
 
 const updateAcheivement=async(req,res)=>{
+    console.log(req.body);
+    
     try{
             const user=await Alumni.findById(req.user.id)
             if(!user) return res.status(404).json({
@@ -571,7 +591,7 @@ const updateAcheivement=async(req,res)=>{
     }catch(error){
 res.status(500).json({
       message: 'Server error',
-      error
+      error:"error"
     });
     }
 }
