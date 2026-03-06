@@ -1,8 +1,8 @@
 import React from "react";
 import { createContext,useContext } from "react";
 import alumniBasicInfo from "../alumniServices/alumniBasicInfo";
-const BasicInfoContext=createContext()
-export const BasicInfoContextProvider=({children})=>{
+const AlumniBasicInfoContext=createContext()
+export const AlumniBasicInfoContextProvider=({children})=>{
     const addBasicInfo=async(basicInfo)=>{
         try {
             const result=await alumniBasicInfo.addAlumniBasicInfo(basicInfo)
@@ -21,12 +21,12 @@ export const BasicInfoContextProvider=({children})=>{
             console.error('Update basicInfo Error:',error)
         }
     }
-}
+
 return (
-    <BasicInfoContext.Provider value={{
+    <AlumniBasicInfoContext.Provider value={{
         addBasicInfo,updateBasicInfo
     }}>
         {children}
-    </BasicInfoContext.Provider>
-)
-export const usebasicInfo=()=>useContext(BasicInfoContext)
+    </AlumniBasicInfoContext.Provider>
+)}
+export const usealumnibasicInfo=()=>useContext(AlumniBasicInfoContext)

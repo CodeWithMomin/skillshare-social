@@ -33,12 +33,13 @@ export const AlumniLanguageContextProvider=({children})=>{
             console.error('Update Language Error:',error)
         }
     }
-}
+
 return (
     <AlumniLanguageContext.Provider value={{
-        addLanguage,deleteLanguage,updatelanguage
+        addLanguage,deleteLanguage,updateLanguage
     }}>
         {children}
     </AlumniLanguageContext.Provider>
 )
+}
 export const useAlumniLanguages=()=> useContext(AlumniLanguageContext)

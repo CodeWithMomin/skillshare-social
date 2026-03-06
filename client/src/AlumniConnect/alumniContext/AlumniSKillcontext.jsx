@@ -37,18 +37,19 @@ export const AlumniSkillContextProvider=({children})=>{
             if(result.success){
                 setAlumniSkills(result)
             }
+            return result;
         }catch(error){
              console.error('Update SKill failed:',error)
         }
     }
-}
+
 return (
     <AlumniSkillContext.Provider value={
         {
-            addSkill,deleteSkill,updateSKill
+            addSkill,deleteSkill,updateSkill
         }
     }>
         {children}
     </AlumniSkillContext.Provider>
-)
+)}
 export const useAlumniSkills=()=>useContext(AlumniSkillContext)

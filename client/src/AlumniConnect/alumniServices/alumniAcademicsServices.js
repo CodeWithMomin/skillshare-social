@@ -1,13 +1,13 @@
-import api from '../../services/api'
+import alumniapi from '../../services/alumniapi'
 
 const alumniAcademicServices={
     addAcademics:async(academicData)=>{
         try {
-            const response=await api.post('/alumni/academics',academicData)
+            const response=await alumniapi.post('/alumni/academics',academicData)
                if(!response) return{ message:"No Data from backend and This error is from Service function"}
                return {
                     success:true,
-                    data:response
+                    data:response.Academics
                     }
         } catch (error) {
             return {
@@ -18,11 +18,13 @@ const alumniAcademicServices={
     },
     updateAcademics:async(academicId,academicData)=>{
         try{
-            const response=await api.put(`/alumni/academics/${academicId}`,academicData)
+            const response=await alumniapi.put(`/alumni/academics/${academicId}`,academicData)
+            console.log(academicData);
+            
                 if(!response) return{message:"No Data from backend and this error is from service function"}
                 return {
                 success:true,
-                data:response
+                data:response.Academics
             }
         }catch(error){
             return {
@@ -33,11 +35,11 @@ const alumniAcademicServices={
     },
     deleteAcademics:async(academicId)=>{
         try{
-            const response=await api.delete(`/alumni/academics/${academicId}`)
+            const response=await alumniapi.delete(`/alumni/academics/${academicId}`)
             if(!response) return{ message:"No Data from backend and This error is from Service function"}
             return {
                 success:true,
-                data:response
+                data:response.Academics
             }
         }catch(error){
             return {
