@@ -30,7 +30,7 @@ alumniRouter.put("/basicinfo/:basicInfoId",alumniProtect,updateAlumniBasicInfo)
 
 alumniRouter.post("/academics",alumniProtect,addAcademics)
 alumniRouter.put("/academics/:academicId",alumniProtect,updateAcademics)
-alumniRouter.delete("/academics/:eduId",alumniProtect,deleteAcademics)
+alumniRouter.delete("/academics/:academicId",alumniProtect,deleteAcademics)
 
 //language
 alumniRouter.post("/language",alumniProtect,addLanguage)
