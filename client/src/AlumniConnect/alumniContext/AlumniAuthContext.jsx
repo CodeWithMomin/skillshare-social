@@ -54,6 +54,7 @@ export const AlumniAuthContextProvider=({children})=>{
         alumniAuthServices.logout();
         setAlumniUser(null)
         setIsAlumniAuthenticated(false)
+        localStorage.removeItem('alumniAuth_Token')
     }
     const getUserProfile=async()=>{
       try {
