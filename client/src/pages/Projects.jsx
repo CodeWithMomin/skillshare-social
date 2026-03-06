@@ -17,6 +17,7 @@ import {
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
+import { projects as dummyprojects } from "../lib/projects";
 
 export default function Projects() {
   const [form, setForm] = useState({
@@ -29,7 +30,7 @@ export default function Projects() {
     photos: [],
   });
 
-  const [projects, setProjects] = useState([]);
+  const [projects, setProjects] = useState(dummyprojects);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
 
@@ -236,189 +237,88 @@ export default function Projects() {
             </Stack>
           </Stack>
         </Paper>
+{projects.map((proj, index) => (
+  <Paper
+    key={proj.id || index}
+    onClick={() => handleCardClick(proj)}
+    elevation={4}
+    sx={{
+      borderRadius: 3,
+      p: 3,
+      cursor: "pointer",
+      overflow: "hidden",
+      transition: "all 0.3s ease",
+      "&:hover": {
+        transform: "translateY(-5px)",
+        boxShadow: "0px 10px 30px rgba(0,0,0,0.1)",
+      },
+    }}
+  >
+    <Box
+      sx={{
+        background:
+          "linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)",
+        borderRadius: 2,
+        p: 2,
+        mb: 2,
+        color: "white",
+      }}
+    >
+      <Typography variant="h6" fontWeight="bold">
+        {proj.title}
+      </Typography>
 
-        {projects.length > 0 && (
-          <Box>
-            <Typography
-              variant="h5"
-              fontWeight="bold"
-              color="primary"
-              align="center"
-              mb={3}
-            >
-              Your Projects
-            </Typography>
+      {(proj.startDate || proj.endDate) && (
+        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+          📅{" "}
+          {proj.startDate
+            ? dayjs(proj.startDate).format("MMM YYYY")
+            : "—"}{" "}
+          –{" "}
+          {proj.endDate
+            ? dayjs(proj.endDate).format("MMM YYYY")
+            : "—"}
+        </Typography>
+      )}
+    </Box>
 
-            <Stack spacing={3}>
-              {projects.map((proj, index) => (
-                <Paper
-                  key={index}
-                  onClick={() => handleCardClick(proj)}
-                  elevation={4}
-                  sx={{
-                    borderRadius: 3,
-                    p: 3,
-                    cursor: "pointer",
-                    overflow: "hidden",
-                    transition: "all 0.3s ease",
-                    "&:hover": {
-                      transform: "translateY(-5px)",
-                      boxShadow: "0px 10px 30px rgba(0,0,0,0.1)",
-                    },
-                  }}
-                >
-                  <Box
-                    sx={{
-                      background:
-                        "linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)",
-                      borderRadius: 2,
-                      p: 2,
-                      mb: 2,
-                      color: "white",
-                    }}
-                  >
-                    <Typography variant="h6" fontWeight="bold">
-                      {proj.title}
-                    </Typography>
-                    {(proj.startDate || proj.endDate) && (
-                      <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                        📅{" "}
-                        {proj.startDate
-                          ? dayjs(proj.startDate).format("MMM YYYY")
-                          : "—"}{" "}
-                        –{" "}
-                        {proj.endDate
-                          ? dayjs(proj.endDate).format("MMM YYYY")
-                          : "—"}
-                      </Typography>
-                    )}
-                  </Box>
+    <Typography variant="body2" color="text.secondary" mb={2}>
+      {proj.description?.length > 180
+        ? proj.description.slice(0, 180) + "..."
+        : proj.description}
+    </Typography>
 
-                  <Typography variant="body2" color="text.secondary" mb={2}>
-                    {proj.description.length > 180
-                      ? proj.description.slice(0, 180) + "..."
-                      : proj.description}
-                  </Typography>
+    {proj.technologies && (
+      <Stack direction="row" flexWrap="wrap" gap={1} mb={2}>
+        {proj.technologies.split(",").map((tech, i) => (
+          <Chip
+            key={i}
+            label={tech.trim()}
+            color="primary"
+            size="small"
+            sx={{
+              borderRadius: 1,
+              fontSize: "0.75rem",
+            }}
+          />
+        ))}
+      </Stack>
+    )}
 
-                  {proj.technologies && (
-                    <Stack direction="row" flexWrap="wrap" gap={1} mb={2}>
-                      {proj.technologies.split(",").map((tech, i) => (
-                        <Chip
-                          key={i}
-                          label={tech.trim()}
-                          color="primary"
-                          size="small"
-                          sx={{
-                            borderRadius: 1,
-                            fontSize: "0.75rem",
-                          }}
-                        />
-                      ))}
-                    </Stack>
-                  )}
-
-                  {proj.link && (
-                    <MuiLink
-                      href={proj.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      underline="hover"
-                      color="primary"
-                      fontWeight="medium"
-                    >
-                      View Project →
-                    </MuiLink>
-                  )}
-                </Paper>
-              ))}
-            </Stack>
-          </Box>
-        )}
-
-        {/* Project Details Dialog */}
-        <Dialog
-          open={openDialog}
-          onClose={() => setOpenDialog(false)}
-          maxWidth="md"
-          fullWidth
-        >
-          {selectedProject && (
-            <>
-              <DialogTitle sx={{ fontWeight: "bold" }}>
-                {selectedProject.title}
-              </DialogTitle>
-              <Divider />
-              <DialogContent dividers>
-                <Typography variant="body1" mb={2}>
-                  {selectedProject.description}
-                </Typography>
-
-                {selectedProject.technologies && (
-                  <Stack direction="row" flexWrap="wrap" gap={1} mb={2}>
-                    {selectedProject.technologies
-                      .split(",")
-                      .map((tech, i) => (
-                        <Chip
-                          key={i}
-                          label={tech.trim()}
-                          color="primary"
-                          size="small"
-                        />
-                      ))}
-                  </Stack>
-                )}
-
-                {(selectedProject.startDate || selectedProject.endDate) && (
-                  <Typography variant="body2" color="text.secondary" mb={2}>
-                    📅{" "}
-                    {selectedProject.startDate
-                      ? dayjs(selectedProject.startDate).format("MMM YYYY")
-                      : "—"}{" "}
-                    –{" "}
-                    {selectedProject.endDate
-                      ? dayjs(selectedProject.endDate).format("MMM YYYY")
-                      : "—"}
-                  </Typography>
-                )}
-
-                {selectedProject.photos.length > 0 && (
-                  <Stack direction="row" flexWrap="wrap" gap={2} mt={2}>
-                    {selectedProject.photos.map((file, i) => (
-                      <Box
-                        key={i}
-                        component="img"
-                        src={URL.createObjectURL(file)}
-                        alt={file.name}
-                        sx={{
-                          width: 150,
-                          height: 150,
-                          objectFit: "cover",
-                          borderRadius: 2,
-                          boxShadow: 1,
-                        }}
-                      />
-                    ))}
-                  </Stack>
-                )}
-              </DialogContent>
-              <DialogActions>
-                {selectedProject.link && (
-                  <MuiLink
-                    href={selectedProject.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    underline="hover"
-                    color="primary"
-                    sx={{ mr: 2 }}
-                  >
-                    Visit Project
-                  </MuiLink>
-                )}
-                <Button onClick={() => setOpenDialog(false)}>Close</Button>
-              </DialogActions>
-            </>
-          )}
-        </Dialog>
+    {proj.link && (
+      <MuiLink
+        href={proj.link}
+        target="_blank"
+        rel="noopener noreferrer"
+        underline="hover"
+        color="primary"
+        fontWeight="medium"
+      >
+        View Project →
+      </MuiLink>
+    )}
+  </Paper>
+))}
       </Box>
     </LocalizationProvider>
   );

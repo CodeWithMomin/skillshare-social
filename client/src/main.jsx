@@ -1,5 +1,6 @@
 // ...existing code...
-import { StrictMode } from 'react';
+
+import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.jsx';
@@ -13,6 +14,12 @@ import { BasicInfoContextProvider } from './context/BasicInfoContext.jsx';
 import { CurrentPositionContextProvider } from './context/CurrentPosContext.jsx';
 import { ProfilePictureContextProvider } from './context/ProfilePictureContext.jsx';
 import {AlumniAuthContextProvider} from './AlumniConnect/alumniContext/AlumniAuthContext.jsx'
+import { AlumniSkillContextProvider } from './AlumniConnect/alumniContext/AlumniSKillcontext.jsx';
+import { AlumniLanguageContextProvider } from './AlumniConnect/alumniContext/AlumniLanguageContext.jsx';
+import { AlumniAcheivementContextProvider } from './AlumniConnect/alumniContext/AlumniAcheivement.jsx';
+import { AlumniAcademicContextProvider } from './AlumniConnect/alumniContext/AlumniAcademicContext.jsx';
+import { AlumniInfoContextProvider } from './AlumniConnect/alumniContext/AlumniInfoContext.jsx';
+import { AlumniBasicInfoContextProvider } from './AlumniConnect/alumniContext/AlumniBasicINfoContext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -26,7 +33,20 @@ createRoot(document.getElementById('root')).render(
                 <CurrentPositionContextProvider>
                   <ProfilePictureContextProvider>
                    <AlumniAuthContextProvider>
-                      <App />
+                    <AlumniSkillContextProvider>
+                    <AlumniLanguageContextProvider>
+                       <AlumniAcheivementContextProvider>
+                        <AlumniAcademicContextProvider>
+                          <AlumniBasicInfoContextProvider>
+                            <AlumniInfoContextProvider>
+                              <App />
+                            </AlumniInfoContextProvider>
+                          </AlumniBasicInfoContextProvider>
+                        </AlumniAcademicContextProvider>
+                       </AlumniAcheivementContextProvider>
+                    </AlumniLanguageContextProvider>
+                    </AlumniSkillContextProvider>
+                     
                    </AlumniAuthContextProvider>
                   </ProfilePictureContextProvider>
                 </CurrentPositionContextProvider>

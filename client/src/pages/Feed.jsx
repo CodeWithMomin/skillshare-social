@@ -4,29 +4,31 @@ import {
   Card,
   CardHeader,
   CardContent,
-  CardMedia,
   Avatar,
   Typography,
   IconButton,
+  Chip,
 } from "@mui/material";
-import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import ShareIcon from "@mui/icons-material/Share";
+import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
+
+import { linkedInPosts } from "../lib/linkedinPosts";
+import AddPost from "./Addpost";
+import { useAuth } from "../context/AuthContext";
 
 const reactions = ["👍", "❤️", "😂", "😮", "😢", "😡"];
-const users = [
-  { name: "Alice", avatar: "https://i.pravatar.cc/150?img=1" },
-  { name: "Bob", avatar: "https://i.pravatar.cc/150?img=2" },
-  { name: "Charlie", avatar: "https://i.pravatar.cc/150?img=3" },
-  { name: "David", avatar: "https://i.pravatar.cc/150?img=4" },
-];
 
 const Feed = () => {
-  const [showEmojis, setShowEmojis] = useState(null); // Which post shows emoji row
-  const [selectedReaction, setSelectedReaction] = useState({}); // emoji per post
-  const [showComment, setShowComment] = useState(null); // Which post shows comment input
-  const [comments, setComments] = useState({}); // store comments per post
-  const [commentInput, setCommentInput] = useState({}); // input text per post
+  const { user } = useAuth();
+
+  const [showEmojis, setShowEmojis] = useState(null);
+  const [selectedReaction, setSelectedReaction] = useState({});
+  const [showComment, setShowComment] = useState(null);
+  const [comments, setComments] = useState({});
+  const [commentInput, setCommentInput] = useState({});
+  const [posts, setPosts] = useState(linkedInPosts);
 
   const handleEmojiClick = (postId, emoji) => {
     setSelectedReaction((prev) => ({ ...prev, [postId]: emoji }));
@@ -36,122 +38,203 @@ const Feed = () => {
   const handlePostComment = (postId) => {
     const text = commentInput[postId];
     if (!text) return;
-    const user = users[Math.floor(Math.random() * users.length)];
-    const newComment = { user, text };
+
+    const newComment = {
+      user: {
+        name: user?.name || "Anonymous",
+        avatar: user?.avatar || "https://i.pravatar.cc/150?img=5",
+      },
+      text,
+    };
+
     setComments((prev) => ({
       ...prev,
-      [postId]: prev[postId] ? [...prev[postId], newComment] : [newComment],
+      [postId]: prev[postId]
+        ? [...prev[postId], newComment]
+        : [newComment],
     }));
-    setCommentInput((prev) => ({ ...prev, [postId]: "" })); // clear input
+
+    setCommentInput((prev) => ({ ...prev, [postId]: "" }));
   };
 
-  const posts = Array.from({ length: 20 }, (_, i) => {
-    const user = users[i % users.length];
-    return {
-      id: i + 1,
-      user,
-      content: `This is post number ${i + 1}`,
-      image: `https://picsum.photos/seed/${i + 1}/600/400`,
-    };
-  });
+  const handleAddPost = (newPost) => {
+    setPosts((prev) => [newPost, ...prev]);
+  };
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 2, p: 2 }}>
-      {posts.map((post) => (
-        <Card key={post.id} sx={{ borderRadius: 2, boxShadow: 2, position: "relative" }}>
-          <CardHeader
-            avatar={<Avatar src={post.user.avatar} />}
-            title={post.user.name}
-          />
-          <CardContent>
-            <Typography>{post.content}</Typography>
-          </CardContent>
-          <CardMedia
-            component="img"
-            image={post.image}
-            alt={`Post ${post.id}`}
-            sx={{ width: "100%", height: 300, objectFit: "cover", borderRadius: 1 }}
-          />
+    <>
+      <AddPost onAddPost={handleAddPost} />
 
-          {/* Interaction Bar */}
-          <Box sx={{ display: "flex", gap: 1, p: 1, alignItems: "center", position: "relative" }}>
-            <IconButton
-              size="small"
-              onMouseEnter={() => setShowEmojis(post.id)}
-              onMouseLeave={() => setShowEmojis(null)}
-            >
-              {selectedReaction[post.id] ? (
-                <Typography fontSize="1.2rem">{selectedReaction[post.id]}</Typography>
-              ) : (
-                <FavoriteBorderIcon fontSize="small" />
-              )}
-            </IconButton>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2, p: 2 }}>
+        {posts.map((post) => (
+          <Card
+            key={post.id}
+            sx={{ borderRadius: 2, boxShadow: 2, position: "relative" }}
+          >
+            {/* Header */}
+            <CardHeader
+              avatar={<Avatar src={post.avatar} />}
+              title={<Typography fontWeight="bold">{post.author}</Typography>}
+              subheader={
+                <Box>
+                  <Typography variant="body2" color="text.secondary">
+                    {post.title}
+                  </Typography>
+                  <Typography variant="caption" color="text.disabled">
+                    {new Date(post.timestamp).toLocaleDateString()}
+                  </Typography>
+                </Box>
+              }
+            />
 
-            <IconButton
-              size="small"
-              onClick={() => setShowComment((prev) => (prev === post.id ? null : post.id))}
-            >
-              <ChatBubbleOutlineIcon fontSize="small" />
-            </IconButton>
+            {/* Content */}
+            <CardContent>
+              <Typography
+                variant="body1"
+                sx={{ whiteSpace: "pre-line" }}
+              >
+                {post.content}
+              </Typography>
 
-            <IconButton size="small">
-              <ShareIcon fontSize="small" />
-            </IconButton>
+              {/* Tags */}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 0.5,
+                  mt: 1,
+                }}
+              >
+                {post.tags?.map((tag) => (
+                  <Chip
+                    key={tag}
+                    label={`#${tag}`}
+                    size="small"
+                    variant="outlined"
+                    color="primary"
+                  />
+                ))}
+              </Box>
+            </CardContent>
 
-            {/* Emoji Row */}
-            {showEmojis === post.id && (
-              <Box sx={{
-                position: "absolute", bottom: 35, left: 0,
-                display: "flex", gap: 1, bgcolor: "white",
-                p: 1, borderRadius: 2, boxShadow: 3, zIndex: 10
-              }}>
-                {reactions.map((emoji) => (
-                  <Box
-                    key={emoji}
-                    sx={{ fontSize: "1.5rem", cursor: "pointer", "&:hover": { transform: "scale(1.4)" } }}
-                    onClick={() => handleEmojiClick(post.id, emoji)}
+            {/* Stats */}
+            <Box sx={{ px: 2, pb: 1, display: "flex", gap: 2 }}>
+              <Typography variant="caption">
+                👍 {post.likes || 0}
+              </Typography>
+              <Typography variant="caption">
+                💬 {post.comments || 0}
+              </Typography>
+              <Typography variant="caption">
+                🔁 {post.shares || 0}
+              </Typography>
+            </Box>
+
+            <Box sx={{ borderTop: "1px solid #e0e0e0", mx: 2 }} />
+
+            {/* Interaction */}
+            <Box sx={{ display: "flex", gap: 1, p: 1 }}>
+              <IconButton
+                size="small"
+                onMouseEnter={() => setShowEmojis(post.id)}
+                onMouseLeave={() => setShowEmojis(null)}
+              >
+                {selectedReaction[post.id] ? (
+                  <Typography fontSize="1.2rem">
+                    {selectedReaction[post.id]}
+                  </Typography>
+                ) : (
+                  <ThumbUpOutlinedIcon fontSize="small" />
+                )}
+              </IconButton>
+
+              <IconButton
+                size="small"
+                onClick={() =>
+                  setShowComment((prev) =>
+                    prev === post.id ? null : post.id
+                  )
+                }
+              >
+                <ChatBubbleOutlineIcon fontSize="small" />
+              </IconButton>
+
+              <IconButton size="small">
+                <ShareIcon fontSize="small" />
+              </IconButton>
+            </Box>
+
+            {/* Comment Section */}
+            {showComment === post.id && (
+              <Box
+                sx={{
+                  p: 2,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 1,
+                }}
+              >
+                <Box sx={{ display: "flex", gap: 1 }}>
+                  <input
+                    type="text"
+                    placeholder="Write a comment..."
+                    value={commentInput[post.id] || ""}
+                    onChange={(e) =>
+                      setCommentInput((prev) => ({
+                        ...prev,
+                        [post.id]: e.target.value,
+                      }))
+                    }
+                    style={{
+                      flex: 1,
+                      padding: "8px",
+                      borderRadius: "8px",
+                      border: "1px solid #ccc",
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter")
+                        handlePostComment(post.id);
+                    }}
+                  />
+
+                  <button
+                    onClick={() => handlePostComment(post.id)}
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: "8px",
+                      background: "#1976d2",
+                      color: "white",
+                      border: "none",
+                    }}
                   >
-                    {emoji}
+                    Post
+                  </button>
+                </Box>
+
+                {comments[post.id]?.map((cmt, idx) => (
+                  <Box
+                    key={idx}
+                    sx={{
+                      display: "flex",
+                      gap: 1,
+                      alignItems: "center",
+                    }}
+                  >
+                    <Avatar
+                      src={cmt.user.avatar}
+                      sx={{ width: 24, height: 24 }}
+                    />
+                    <Typography variant="body2">
+                      <strong>{cmt.user.name}:</strong> {cmt.text}
+                    </Typography>
                   </Box>
                 ))}
               </Box>
             )}
-          </Box>
-
-          {/* Comment Input */}
-          {showComment === post.id && (
-            <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 1 }}>
-              <Box sx={{ display: "flex", gap: 1 }}>
-                <input
-                  type="text"
-                  placeholder="Write a comment..."
-                  value={commentInput[post.id] || ""}
-                  onChange={(e) =>
-                    setCommentInput((prev) => ({ ...prev, [post.id]: e.target.value }))
-                  }
-                  style={{ flex: 1, padding: "8px", borderRadius: "8px", border: "1px solid #ccc" }}
-                  onKeyDown={(e) => { if (e.key === "Enter") handlePostComment(post.id); }}
-                />
-                <button
-                  style={{ padding: "8px 12px", borderRadius: "8px", background: "#1976d2", color: "white", border: "none" }}
-                  onClick={() => handlePostComment(post.id)}
-                >
-                  Post
-                </button>
-              </Box>
-
-              {/* Show all comments */}
-              {comments[post.id] && comments[post.id].map((cmt, idx) => (
-                <Box key={idx} sx={{ display: "flex", gap: 1, alignItems: "center", mt: 1 }}>
-                  <Avatar src={cmt.user.avatar} sx={{ width: 24, height: 24 }} />
-                  <Typography variant="body2"><strong>{cmt.user.name}:</strong> {cmt.text}</Typography>
-                </Box>
-              ))}
-            </Box>
-          )}
-        </Card>
-      ))}
-    </Box>
+          </Card>
+        ))}
+      </Box>
+    </>
   );
 };
 

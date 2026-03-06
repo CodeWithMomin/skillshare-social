@@ -32,12 +32,12 @@ export const AlumniAcademicContextProvider=({children})=>{
                 console.error('update Academics Error:',error)
         }
     }
-}
+
 return (
     <AlumniAcademicContext.Provider value={{
         addAcademics,deleteAcademics,updateAcademics
     }}>
         {children}
     </AlumniAcademicContext.Provider>
-)
+)}
 export const useAlumniAcademics=()=>useContext(AlumniAcademicContext)

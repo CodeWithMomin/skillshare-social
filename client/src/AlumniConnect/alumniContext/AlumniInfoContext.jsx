@@ -32,7 +32,7 @@ import alumniInfoServices from "../alumniServices/alumniInfoServices";
              console.error('Update Info Error:',error)
         }
         }
-    }
+   
  
 return (
     <AlumniInfoContext.Provider value={{
@@ -40,5 +40,5 @@ return (
     }}>
         {children}
     </AlumniInfoContext.Provider>
-)
+) }
 export const useAlumniInfo=()=>useContext(AlumniInfoContext)
