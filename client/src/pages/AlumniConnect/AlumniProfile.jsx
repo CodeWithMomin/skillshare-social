@@ -23,8 +23,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { useNavigate } from "react-router-dom";
 import { useAlumniAuth } from "../../AlumniConnect/alumniContext/AlumniAuthContext";
-import { useMediaQuery } from "@mui/material";
-
+import SettingsIcon from '@mui/icons-material/Settings';
 const AlumniProfile = () => {
   const localTheme = createTheme({
     palette: {
@@ -1075,6 +1074,39 @@ const AlumniProfile = () => {
                 key={sec.id}
                 sx={{ width: isMobile ? "auto" : "100%" }}
               >
+                <ListItemText primary={sec.name} />
+              </ListItemButton>
+            </ListItem>
+          ))}
+        </List>
+
+        <Button
+          variant="outlined"
+          color="primary"
+          fullWidth
+          onClick={() => navigate("/profile")}
+        >
+          Go Back
+        </Button>
+        <Button
+  sx={{
+    minWidth: "auto",
+    p: 1,
+    m: 3,
+    display: "flex",
+    justifyContent: "center",
+  }}
+  onClick={() => navigate("/alumniconnect/alumnisettings")}
+>
+  
+  <SettingsIcon
+    sx={{
+      fontSize: 28,
+    }}
+  />
+</Button>
+
+      </Box>
 
                 <ListItemButton
                   selected={activeSection === sec.id}
