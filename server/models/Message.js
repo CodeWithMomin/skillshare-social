@@ -20,6 +20,18 @@ const messageSchema = new mongoose.Schema(
             type: String,
             default: ""
         },
+        fileUrl: {
+            type: String,
+            default: ""
+        },
+        fileType: {
+            type: String,   // 'image' | 'video' | 'document'
+            default: ""
+        },
+        fileName: {
+            type: String,
+            default: ""
+        },
         status: {
             type: String,
             enum: ['sent', 'delivered', 'read'],
