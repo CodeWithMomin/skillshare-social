@@ -24,7 +24,7 @@ import {
   DialogActions,
   Button
 } from "@mui/material";
-import { Send, Search, MoreVert, Phone, Videocam, VideocamOff, ArrowBack, Check, DoneAll, AttachFile, Close, Download, Share, Image, InsertDriveFile, PlayCircle } from "@mui/icons-material";
+import { Send, Search, MoreVert, Phone, Videocam, VideocamOff, ArrowBack, Check, DoneAll, AttachFile, Close, Download, Share, Image, InsertDriveFile, PlayCircle, Delete, Block } from "@mui/icons-material";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import socket from "../socket";
@@ -137,10 +137,16 @@ const UserChat = () => {
         setTypingUsers(prev => ({ ...prev, [senderId]: false }));
       });
 
-      socket.on("messagesRead", ({ readerId }) => {
+      socket.on("messageDeleted", ({ messageId }) => {
+        setChatHistory(prev => prev.map(msg =>
+          msg._id === messageId ? { ...msg, isDeleted: true, message: "", imageUrl: "", fileUrl: "" } : msg
+        ));
+      });
+
+      socket.on("messagesRead", ({ readerId, readAt }) => {
         setChatHistory((prev) =>
           prev.map(msg =>
-            (msg.senderId === myUserId && msg.status !== 'read') ? { ...msg, status: 'read' } : msg
+            (msg.senderId === myUserId && msg.status !== 'read') ? { ...msg, status: 'read', readAt } : msg
           )
         );
       });
@@ -164,6 +170,7 @@ const UserChat = () => {
       socket.off("getOnlineUsers");
       socket.off("typing");
       socket.off("stopTyping");
+      socket.off("messageDeleted");
       socket.off("incomingCall");
       socket.disconnect();
     };
@@ -270,6 +277,19 @@ const UserChat = () => {
       setMessage(msgText);
       setSelectedImage(imgFile);
       setImagePreview(previewBackup);
+    }
+  };
+
+  const handleDeleteMessage = async (messageId) => {
+    try {
+      const res = await api.delete(`/messages/${messageId}`);
+      if (res.success) {
+        setChatHistory(prev => prev.map(msg =>
+          msg._id === messageId ? { ...msg, isDeleted: true, message: "", imageUrl: "", fileUrl: "" } : msg
+        ));
+      }
+    } catch (error) {
+      console.error("Failed to delete message:", error);
     }
   };
 
@@ -418,66 +438,101 @@ const UserChat = () => {
                       flexDirection: "column",
                       alignSelf: isMe ? "flex-end" : "flex-start",
                       maxWidth: "70%",
+                      position: 'relative',
+                      '&:hover .delete-btn': { opacity: 1 }
                     }}
                   >
+                    {isMe && !chat.isDeleted && (
+                      <IconButton
+                        className="delete-btn"
+                        size="small"
+                        onClick={() => handleDeleteMessage(chat._id || chat.id)}
+                        sx={{
+                          position: 'absolute',
+                          left: -35,
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          opacity: 0,
+                          transition: 'opacity 0.2s',
+                          color: '#d32f2f',
+                          bgcolor: 'rgba(211, 47, 47, 0.05)',
+                          '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.15)' }
+                        }}
+                      >
+                        <Delete fontSize="small" />
+                      </IconButton>
+                    )}
                     <Paper
                       elevation={1}
                       sx={{
                         p: 1.5,
                         px: 2,
                         borderRadius: 2,
-                        bgcolor: isMe ? "#0a66c2" : "#fff",
-                        color: isMe ? "#fff" : "text.primary",
+                        bgcolor: chat.isDeleted ? "#f0f0f0" : (isMe ? "#0a66c2" : "#fff"),
+                        color: chat.isDeleted ? "#888" : (isMe ? "#fff" : "text.primary"),
                         borderTopRightRadius: isMe ? 0 : 8,
                         borderTopLeftRadius: isMe ? 8 : 0,
+                        fontStyle: chat.isDeleted ? "italic" : "normal",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1
                       }}
                     >
-                      {/* IMAGE bubble */}
-                      {chat.imageUrl && (
-                        <Box sx={{ mb: (chat.message || chat.text) ? 1 : 0 }}>
-                          <img
-                            src={chat.imageUrl}
-                            alt="attachment"
-                            onClick={() => setViewerImage(chat.imageUrl)}
-                            style={{ maxWidth: "100%", maxHeight: 250, borderRadius: 8, objectFit: "cover", cursor: "pointer" }}
-                          />
+                      {chat.isDeleted ? (
+                        <>
+                          <Block sx={{ fontSize: 16, opacity: 0.6 }} />
+                          <Typography variant="body2">This message was deleted</Typography>
+                        </>
+                      ) : (
+                        <Box sx={{ width: "100%" }}>
+                          {/* IMAGE bubble */}
+                          {chat.imageUrl && (
+                            <Box sx={{ mb: (chat.message || chat.text) ? 1 : 0 }}>
+                              <img
+                                src={chat.imageUrl}
+                                alt="attachment"
+                                onClick={() => setViewerImage(chat.imageUrl)}
+                                style={{ maxWidth: "100%", maxHeight: 250, borderRadius: 8, objectFit: "cover", cursor: "pointer" }}
+                              />
+                            </Box>
+                          )}
+                          {/* VIDEO bubble */}
+                          {chat.fileType === "video" && chat.fileUrl && (
+                            <Box sx={{ mb: (chat.message || chat.text) ? 1 : 0 }}>
+                              <video
+                                src={chat.fileUrl}
+                                controls
+                                style={{ maxWidth: "100%", maxHeight: 250, borderRadius: 8 }}
+                              />
+                            </Box>
+                          )}
+                          {/* DOCUMENT bubble */}
+                          {chat.fileType === "document" && chat.fileUrl && (
+                            <Box
+                              sx={{
+                                mb: (chat.message || chat.text) ? 1 : 0,
+                                display: "flex", alignItems: "center", gap: 1,
+                                bgcolor: isMe ? "rgba(255,255,255,0.15)" : "#f0f0f0",
+                                borderRadius: 2, p: 1.5, cursor: "pointer",
+                              }}
+                              onClick={() => window.open(chat.fileUrl, "_blank")}
+                            >
+                              <InsertDriveFile sx={{ fontSize: 32, color: isMe ? "#fff" : "#1976d2" }} />
+                              <Box sx={{ overflow: "hidden" }}>
+                                <Typography variant="body2" fontWeight="bold" noWrap sx={{ maxWidth: 180 }}>
+                                  {chat.fileName || "Document"}
+                                </Typography>
+                                <Typography variant="caption" sx={{ opacity: 0.7 }}>
+                                  Tap to open
+                                </Typography>
+                              </Box>
+                              <Download sx={{ ml: "auto", opacity: 0.7, fontSize: 18, color: isMe ? "#fff" : "inherit" }} />
+                            </Box>
+                          )}
+                          {(chat.message || chat.text) && (
+                            <Typography variant="body2">{chat.message || chat.text}</Typography>
+                          )}
                         </Box>
-                      )}
-                      {/* VIDEO bubble */}
-                      {chat.fileType === "video" && chat.fileUrl && (
-                        <Box sx={{ mb: (chat.message || chat.text) ? 1 : 0 }}>
-                          <video
-                            src={chat.fileUrl}
-                            controls
-                            style={{ maxWidth: "100%", maxHeight: 250, borderRadius: 8 }}
-                          />
-                        </Box>
-                      )}
-                      {/* DOCUMENT bubble */}
-                      {chat.fileType === "document" && chat.fileUrl && (
-                        <Box
-                          sx={{
-                            mb: (chat.message || chat.text) ? 1 : 0,
-                            display: "flex", alignItems: "center", gap: 1,
-                            bgcolor: isMe ? "rgba(255,255,255,0.15)" : "#f0f0f0",
-                            borderRadius: 2, p: 1.5, cursor: "pointer",
-                          }}
-                          onClick={() => window.open(chat.fileUrl, "_blank")}
-                        >
-                          <InsertDriveFile sx={{ fontSize: 32, color: isMe ? "#fff" : "#1976d2" }} />
-                          <Box sx={{ overflow: "hidden" }}>
-                            <Typography variant="body2" fontWeight="bold" noWrap sx={{ maxWidth: 180 }}>
-                              {chat.fileName || "Document"}
-                            </Typography>
-                            <Typography variant="caption" sx={{ opacity: 0.7 }}>
-                              Tap to open
-                            </Typography>
-                          </Box>
-                          <Download sx={{ ml: "auto", opacity: 0.7, fontSize: 18, color: isMe ? "#fff" : "inherit" }} />
-                        </Box>
-                      )}
-                      {(chat.message || chat.text) && (
-                        <Typography variant="body2">{chat.message || chat.text}</Typography>
                       )}
                     </Paper>
                     <Typography
@@ -486,10 +541,16 @@ const UserChat = () => {
                       sx={{ mt: 0.5, alignSelf: isMe ? "flex-end" : "flex-start", display: "flex", alignItems: "center", gap: 0.5 }}
                     >
                       {timeStr}
-                      {isMe && (
-                        chat.status === "read" ? <DoneAll sx={{ fontSize: 16, color: "#4fc3f7" }} /> :
-                          chat.status === "delivered" ? <DoneAll sx={{ fontSize: 16 }} /> :
-                            <Check sx={{ fontSize: 16 }} />
+                      {isMe && !chat.isDeleted && (
+                        <Box component="span" sx={{ display: 'flex', alignItems: 'center' }} title={chat.status === "read" && chat.readAt ? `Seen ${new Date(chat.readAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ""}>
+                          {chat.status === "read" ? (
+                            <DoneAll sx={{ fontSize: 16, color: "#4fc3f7" }} />
+                          ) : chat.status === "delivered" ? (
+                            <DoneAll sx={{ fontSize: 16, color: "text.secondary" }} />
+                          ) : (
+                            <Check sx={{ fontSize: 16, color: "text.secondary" }} />
+                          )}
+                        </Box>
                       )}
                     </Typography>
                   </Box>
