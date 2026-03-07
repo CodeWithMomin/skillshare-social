@@ -57,6 +57,41 @@ io.on("connection", (socket) => {
     }
   });
 
+  // ── WebRTC Signaling ────────────────────────────────────────────────────────
+
+  // Caller sends an offer to the callee
+  socket.on("callUser", ({ to, from, caller, callType, offer }) => {
+    const targetSocket = userSocketMap[to];
+    if (targetSocket) {
+      io.to(targetSocket).emit("incomingCall", { from, caller, callType, offer });
+    }
+  });
+
+  // Callee sends answer back to caller
+  socket.on("callAccepted", ({ to, answer }) => {
+    const targetSocket = userSocketMap[to];
+    if (targetSocket) {
+      io.to(targetSocket).emit("callAnswered", { answer });
+    }
+  });
+
+  // Either side rejects / hangs up
+  socket.on("callRejected", ({ to }) => {
+    const targetSocket = userSocketMap[to];
+    if (targetSocket) io.to(targetSocket).emit("callRejected");
+  });
+
+  socket.on("callEnded", ({ to }) => {
+    const targetSocket = userSocketMap[to];
+    if (targetSocket) io.to(targetSocket).emit("callEnded");
+  });
+
+  // ICE candidates relay
+  socket.on("iceCandidate", ({ to, candidate }) => {
+    const targetSocket = userSocketMap[to];
+    if (targetSocket) io.to(targetSocket).emit("iceCandidate", { candidate });
+  });
+
   // Handle peer disconnect
   socket.on("disconnect", () => {
     if (userId) {

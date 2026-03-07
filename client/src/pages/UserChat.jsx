@@ -28,6 +28,7 @@ import { Send, Search, MoreVert, Phone, Videocam, ArrowBack, Check, DoneAll, Att
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import socket from "../socket";
+import VideoCall from "./VideoCall";
 
 const UserChat = () => {
   const { getUserProfile } = useAuth();
@@ -46,6 +47,12 @@ const UserChat = () => {
   const [forwardDialogOpen, setForwardDialogOpen] = useState(false);
   const [sharingFriendId, setSharingFriendId] = useState(null);
   const [shareSuccess, setShareSuccess] = useState(false);
+
+  // ── Calling State ──────────────────────────────────────────────────────────
+  const [callState, setCallState] = useState(null);
+  // callState shape: { isIncoming, isOutgoing, isActive, callType, caller, callee, offer }
+
+  const myProfileRef = useRef(null);
 
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -84,6 +91,17 @@ const UserChat = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Fetch own profile for showing caller info
+  useEffect(() => {
+    if (myUserId) {
+      const token = localStorage.getItem("authToken");
+      fetch("http://localhost:5000/api/users/profile", { headers: { Authorization: `Bearer ${token}` } })
+        .then(r => r.json())
+        .then(data => { myProfileRef.current = data; })
+        .catch(console.error);
+    }
+  }, [myUserId]);
+
   // Socket Connection & Listener
   useEffect(() => {
     if (myUserId) {
@@ -118,12 +136,21 @@ const UserChat = () => {
       socket.on("getOnlineUsers", (users) => {
         setOnlineUsers(users);
       });
+
+      // ── Incoming Call ──────────────────────────────────────────────────────
+      socket.on("incomingCall", ({ from, caller, callType, offer }) => {
+        setCallState({
+          isIncoming: true, isOutgoing: false, isActive: false,
+          callType, caller, callee: null, offer,
+        });
+      });
     }
 
     return () => {
       socket.off("newMessage");
       socket.off("messagesRead");
       socket.off("getOnlineUsers");
+      socket.off("incomingCall");
       socket.disconnect();
     };
   }, [myUserId]);
@@ -320,8 +347,24 @@ const UserChat = () => {
                 </Box>
               </Box>
               <Box>
-                <IconButton color="primary"><Videocam /></IconButton>
-                <IconButton color="primary"><Phone /></IconButton>
+                <IconButton color="primary" onClick={() => {
+                  setCallState({
+                    isIncoming: false, isOutgoing: true, isActive: false,
+                    callType: "video",
+                    caller: myProfileRef.current ? { userId: myUserId, name: myProfileRef.current.name, profilePic: myProfileRef.current.profilePic } : { userId: myUserId, name: "You" },
+                    callee: { userId: selectedFriend.userId, name: selectedFriend.name, profilePic: selectedFriend.profilePic },
+                    offer: null,
+                  });
+                }}><Videocam /></IconButton>
+                <IconButton color="primary" onClick={() => {
+                  setCallState({
+                    isIncoming: false, isOutgoing: true, isActive: false,
+                    callType: "audio",
+                    caller: myProfileRef.current ? { userId: myUserId, name: myProfileRef.current.name, profilePic: myProfileRef.current.profilePic } : { userId: myUserId, name: "You" },
+                    callee: { userId: selectedFriend.userId, name: selectedFriend.name, profilePic: selectedFriend.profilePic },
+                    offer: null,
+                  });
+                }}><Phone /></IconButton>
                 <IconButton><MoreVert /></IconButton>
               </Box>
             </Box>
@@ -588,6 +631,15 @@ const UserChat = () => {
           Image shared successfully!
         </Alert>
       </Snackbar>
+
+      {/* ── VIDEO / AUDIO CALL OVERLAY ── */}
+      {callState && (
+        <VideoCall
+          callState={callState}
+          myUserId={myUserId}
+          onCallEnd={() => setCallState(null)}
+        />
+      )}
 
     </Box>
   );
