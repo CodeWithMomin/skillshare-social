@@ -11,6 +11,16 @@ const storage = new CloudinaryStorage({
   },
 });
 
-const upload = multer({ storage });
+const chatStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "chat_media",
+    allowed_formats: ["jpg", "jpeg", "png", "gif", "webp", "mp4"],
+    resource_type: "auto",
+  },
+});
 
-module.exports = { upload };
+const upload = multer({ storage });
+const chatUpload = multer({ storage: chatStorage });
+
+module.exports = { upload, chatUpload };
