@@ -77,13 +77,14 @@ const getMessages = async (req, res) => {
         // Mark unread messages as read
         const unreadMessages = messages.filter(m => m.receiverId.toString() === senderId && m.status !== 'read');
         if (unreadMessages.length > 0) {
+            const now = new Date();
             await Message.updateMany(
                 { senderId: userToChatId, receiverId: senderId, status: { $ne: 'read' } },
-                { $set: { status: 'read' } }
+                { $set: { status: 'read', readAt: now } }
             );
             const senderSocketId = req.app.locals.userSocketMap[userToChatId];
             if (senderSocketId) {
-                req.io.to(senderSocketId).emit("messagesRead", { readerId: senderId });
+                req.io.to(senderSocketId).emit("messagesRead", { readerId: senderId, readAt: now });
             }
         }
 
@@ -115,8 +116,44 @@ const getUnreadCounts = async (req, res) => {
     }
 };
 
+const deleteMessage = async (req, res) => {
+    try {
+        const { messageId } = req.params;
+        const userId = req.user.id;
+
+        const message = await Message.findById(messageId);
+        if (!message) {
+            return res.status(404).json({ error: "Message not found" });
+        }
+
+        // Only the sender can delete the message
+        if (message.senderId.toString() !== userId) {
+            return res.status(403).json({ error: "You can only delete your own messages" });
+        }
+
+        // Soft delete: clear content and set isDeleted flag
+        message.message = "";
+        message.imageUrl = "";
+        message.fileUrl = "";
+        message.isDeleted = true;
+        await message.save();
+
+        // Notify the receiver if they are online
+        const receiverSocketId = req.app.locals.userSocketMap[message.receiverId];
+        if (receiverSocketId) {
+            req.io.to(receiverSocketId).emit("messageDeleted", { messageId, isDeleted: true });
+        }
+
+        res.status(200).json({ success: true, messageId, isDeleted: true });
+    } catch (error) {
+        console.error("Error in deleteMessage controller: ", error.message);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
 module.exports = {
     sendMessage,
     getMessages,
-    getUnreadCounts
+    getUnreadCounts,
+    deleteMessage
 };

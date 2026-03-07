@@ -47,13 +47,14 @@ io.on("connection", (socket) => {
   socket.on("markAsRead", async ({ senderId, receiverId }) => {
     try {
       const Message = require('./models/Message');
+      const now = new Date();
       await Message.updateMany(
         { senderId, receiverId, status: { $ne: 'read' } },
-        { $set: { status: 'read' } }
+        { $set: { status: 'read', readAt: now } }
       );
       const senderSocketId = userSocketMap[senderId];
       if (senderSocketId) {
-        io.to(senderSocketId).emit("messagesRead", { readerId: receiverId });
+        io.to(senderSocketId).emit("messagesRead", { readerId: receiverId, readAt: now });
       }
     } catch (err) {
       console.error(err);

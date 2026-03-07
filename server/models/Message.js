@@ -36,6 +36,14 @@ const messageSchema = new mongoose.Schema(
             type: String,
             enum: ['sent', 'delivered', 'read'],
             default: 'sent'
+        },
+        isDeleted: {
+            type: Boolean,
+            default: false
+        },
+        readAt: {
+            type: Date,
+            default: null
         }
     },
     { timestamps: true }
