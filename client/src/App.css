@@ -758,8 +758,9 @@ body {
 
   /* Reduce logo size on mobile */
   .logobox {
-    font-size: 1rem;
+    font-size: 1.3rem;
     width: auto;
+    margin-left: 10px;
   }
 
   /* Hide EVERYTHING inside header by default */

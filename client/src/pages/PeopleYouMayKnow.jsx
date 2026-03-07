@@ -124,11 +124,19 @@ const PeopleYouMayKnow = () => {
   };
 
   return (
-    <Card sx={{ borderRadius: 2, boxShadow: 2 }}>
+    <Card 
+      elevation={0}
+      sx={{ 
+        borderRadius: 3, 
+        border: "1px solid #e0e0e0",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+        overflow: "hidden"
+      }}
+    >
       {/* Header */}
-      <CardContent sx={{ pb: 0 }}>
+      <CardContent sx={{ pb: 1, pt: 2, px: 2 }}>
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <Typography variant="subtitle1" fontWeight="bold">
+          <Typography variant="subtitle1" fontWeight={600} color="#333">
             People you may know
           </Typography>
           <Typography variant="caption" color="text.secondary">
@@ -137,38 +145,61 @@ const PeopleYouMayKnow = () => {
         </Box>
       </CardContent>
 
+      <Divider sx={{ opacity: 0.6 }} />
+
       {/* People List */}
+      <Box sx={{ py: 1 }}>
       {visiblePeople.map((person, index) => (
-        <Box key={person.id}>
+        <React.Fragment key={person.id}>
           <Box
             sx={{
               display: "flex",
-              alignItems: "flex-start",
-              gap: 1.5,
+              alignItems: "stretch",
+              gap: 2,
               px: 2,
               py: 1.5,
               position: "relative",
-              "&:hover": { bgcolor: "#f9f9f9" },
+              transition: "all 0.2s ease",
+              "&:hover": { 
+                bgcolor: "#f9f9f9",
+                "& .dismiss-bt": { opacity: 1 } 
+              },
             }}
           >
             {/* Dismiss */}
             <IconButton
               size="small"
+              className="dismiss-bt"
               onClick={() => handleDismiss(person.id)}
-              sx={{ position: "absolute", top: 6, right: 6 }}
+              sx={{ 
+                position: "absolute", 
+                top: 6, 
+                right: 6, 
+                opacity: 0, 
+                transition: "0.2s",
+                bgcolor: "white",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.06)",
+                "&:hover": { bgcolor: "#f3f2ef" }
+              }}
             >
-              <CloseIcon fontSize="small" />
+              <CloseIcon sx={{ fontSize: 16, color: "#666" }} />
             </IconButton>
 
             {/* Avatar */}
             <Avatar
               src={person.avatar}
-              sx={{ width: 48, height: 48, border: "2px solid #e0e0e0" }}
+              sx={{ 
+                width: 50, 
+                height: 50, 
+                border: "1px solid #eee",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+                mt: 0.5
+              }}
             />
 
             {/* Info */}
-            <Box sx={{ flex: 1, pr: 3 }}>
-              <Typography variant="body2" fontWeight="bold" noWrap>
+            <Box sx={{ flex: 1, pr: 2, display: "flex", flexDirection: "column" }}>
+              <Typography variant="body2" fontWeight={600} color="#333" noWrap sx={{ fontSize: "0.9rem" }}>
                 {person.name}
               </Typography>
               <Typography
@@ -179,45 +210,53 @@ const PeopleYouMayKnow = () => {
                   WebkitLineClamp: 2,
                   WebkitBoxOrient: "vertical",
                   overflow: "hidden",
+                  lineHeight: 1.3,
+                  mt: 0.2,
+                  mb: 0.5
                 }}
               >
                 {person.title}
               </Typography>
-              <Typography variant="caption" color="text.disabled" display="block">
-                👥 {person.mutualConnections} mutual connections
+              <Typography variant="caption" sx={{ color: "#777", display: "flex", alignItems: "center", gap: 0.5 }}>
+                 👥 {person.mutualConnections} mutual connections
               </Typography>
 
               <Button
                 size="small"
                 variant={connected[person.id] ? "contained" : "outlined"}
-                startIcon={!connected[person.id] && <PersonAddAltIcon fontSize="small" />}
+                startIcon={!connected[person.id] && <PersonAddAltIcon sx={{ fontSize: "16px !important" }} />}
                 onClick={() => handleConnect(person.id)}
                 disabled={connected[person.id]}
+                disableElevation
                 sx={{
-                  mt: 0.5,
+                  mt: 1,
+                  alignSelf: "flex-start",
                   borderRadius: "20px",
                   textTransform: "none",
+                  fontWeight: 600,
                   fontSize: "0.75rem",
                   px: 2,
-                  borderColor: "#0a66c2",
-                  color: connected[person.id] ? "white" : "#0a66c2",
-                  "&:hover": { borderColor: "#0a66c2", bgcolor: "#e8f0fe" },
+                  py: 0.25,
+                  ...(connected[person.id]
+                    ? { bgcolor: "#e0e0e0", color: "#666" }
+                    : { borderColor: "#0a66c2", color: "#0a66c2", "&:hover": { bgcolor: "#e8f0fe", borderColor: "#0a66c2" } }
+                  ),
                 }}
               >
-                {connected[person.id] ? "✓ Pending" : "Connect"}
+                {connected[person.id] ? "Request Sent" : "Connect"}
               </Button>
             </Box>
           </Box>
-
-          {index < visiblePeople.length - 1 && <Divider sx={{ mx: 2 }} />}
-        </Box>
+          {index < visiblePeople.length - 1 && <Divider sx={{ opacity: 0.4, mx: 2 }} />}
+        </React.Fragment>
       ))}
+      </Box>
 
       {/* Empty State */}
       {people.length === 0 && (
-        <Box sx={{ textAlign: "center", py: 3 }}>
-          <Typography variant="body2" color="text.secondary">
-            No suggestions at the moment
+        <Box sx={{ textAlign: "center", py: 5 }}>
+          <Typography variant="body2" color="text.secondary" fontWeight={500}>
+            No suggestions at the moment.
           </Typography>
         </Box>
       )}
@@ -225,14 +264,15 @@ const PeopleYouMayKnow = () => {
       {/* Pagination Footer */}
       {people.length > 0 && (
         <>
-          <Divider />
+          <Divider sx={{ opacity: 0.6 }} />
           <Box
             sx={{
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              gap: 1,
-              py: 1,
+              gap: 1.5,
+              py: 2,
+              bgcolor: "#fafbfc"
             }}
           >
             {/* Prev */}
@@ -240,8 +280,9 @@ const PeopleYouMayKnow = () => {
               size="small"
               onClick={() => setCurrentPage((prev) => prev - 1)}
               disabled={currentPage === 1}
+              sx={{ bgcolor: currentPage === 1 ? "transparent" : "#fff", boxShadow: currentPage === 1 ? "none" : "0 2px 6px rgba(0,0,0,0.05)" }}
             >
-              <ArrowBackIosNewIcon fontSize="small" />
+              <ArrowBackIosNewIcon sx={{ fontSize: 14 }} />
             </IconButton>
 
             {/* Page Numbers */}
@@ -271,13 +312,14 @@ const PeopleYouMayKnow = () => {
                     onClick={() => setCurrentPage(page)}
                     sx={{
                       minWidth: 32,
+                      width: 32,
                       height: 32,
                       borderRadius: "50%",
                       fontWeight: currentPage === page ? "bold" : "normal",
-                      bgcolor: currentPage === page ? "#0a66c2" : "transparent",
+                      bgcolor: currentPage === page ? "#ee9917" : "transparent",
                       color: currentPage === page ? "white" : "text.secondary",
                       "&:hover": {
-                        bgcolor: currentPage === page ? "#0a66c2" : "#f0f0f0",
+                        bgcolor: currentPage === page ? "#d9860b" : "#f0f0f0",
                       },
                     }}
                   >
@@ -292,8 +334,9 @@ const PeopleYouMayKnow = () => {
               size="small"
               onClick={() => setCurrentPage((prev) => prev + 1)}
               disabled={currentPage === totalPages}
+              sx={{ bgcolor: currentPage === totalPages ? "transparent" : "#fff", boxShadow: currentPage === totalPages ? "none" : "0 2px 6px rgba(0,0,0,0.05)" }}
             >
-              <ArrowForwardIosIcon fontSize="small" />
+              <ArrowForwardIosIcon sx={{ fontSize: 14 }} />
             </IconButton>
           </Box>
         </>

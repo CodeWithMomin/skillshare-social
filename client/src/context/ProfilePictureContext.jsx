@@ -5,7 +5,7 @@ import profileService from "../services/profileService";
 const ProfilePictureContext = createContext();
 
 export const ProfilePictureContextProvider = ({ children }) => {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, updateUser } = useAuth();
   const [profilePic, setProfilePic] = useState("");
 
   const uploadProfilePicture = async (file) => {
@@ -21,6 +21,9 @@ export const ProfilePictureContextProvider = ({ children }) => {
 
       if (imageUrl) {
         setProfilePic(imageUrl);  // update context state
+        if (updateUser) {
+           updateUser({ profilePic: imageUrl });
+        }
 
         return {
           success: true,

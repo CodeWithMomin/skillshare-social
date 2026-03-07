@@ -22,7 +22,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Button
+  Button,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { Send, Search, MoreVert, Phone, Videocam, VideocamOff, ArrowBack, Check, DoneAll, AttachFile, Close, Download, Share, Image, InsertDriveFile, PlayCircle } from "@mui/icons-material";
 import { useAuth } from "../context/AuthContext";
@@ -31,14 +33,16 @@ import socket from "../socket";
 import VideoCall from "./VideoCall";
 
 const UserChat = () => {
-  const { getUserProfile } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  
+  const { getUserProfile, globalUnreadCounts, setGlobalUnreadCounts } = useAuth();
   const navigate = useNavigate();
   const [friends, setFriends] = useState([]);
   const [selectedFriend, setSelectedFriend] = useState(null);
   const [message, setMessage] = useState("");
   const [chatHistory, setChatHistory] = useState([]);
   const [myUserId, setMyUserId] = useState(null);
-  const [unreadCounts, setUnreadCounts] = useState({});
   const [onlineUsers, setOnlineUsers] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -71,18 +75,6 @@ const UserChat = () => {
           if (res.friends) {
             setFriends(res.friends);
           }
-          // Fetch initial unread counts
-          const token = localStorage.getItem("authToken");
-          if (token) {
-            fetch("http://localhost:5000/api/messages/unread-counts", {
-              headers: { "Authorization": `Bearer ${token}` }
-            })
-              .then(res => res.json())
-              .then(data => {
-                if (!data.error) setUnreadCounts(data);
-              })
-              .catch(console.error);
-          }
         }
       } catch (error) {
         console.error("Failed to load friends for chat", error);
@@ -114,12 +106,8 @@ const UserChat = () => {
         const currSelected = selectedFriendRef.current;
         if (currSelected && currSelected.userId === msg.senderId) {
           socket.emit("markAsRead", { senderId: msg.senderId, receiverId: myUserId });
-        } else {
-          setUnreadCounts(counts => ({
-            ...counts,
-            [msg.senderId]: (counts[msg.senderId] || 0) + 1
-          }));
         }
+        // AuthContext now handles incrementing globalUnreadCounts globally.
 
         // Only append if it belongs to the currently selected friend
         setChatHistory((prev) => {
@@ -170,7 +158,7 @@ const UserChat = () => {
         setChatHistory(data);
 
         // Clear local unread counts for this friend
-        setUnreadCounts(prev => {
+        setGlobalUnreadCounts(prev => {
           if (!prev[selectedFriend.userId]) return prev;
           const updated = { ...prev };
           delete updated[selectedFriend.userId];
@@ -183,7 +171,7 @@ const UserChat = () => {
     };
 
     fetchChatHistory();
-  }, [selectedFriend]);
+  }, [selectedFriend, setGlobalUnreadCounts]);
 
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
@@ -202,7 +190,7 @@ const UserChat = () => {
   const clearImage = () => {
     setSelectedImage(null);
     setImagePreview(null);
-  };
+  }
 
   const handleSendMessage = async () => {
     if (message.trim() === "" && !selectedImage) return;
@@ -254,13 +242,17 @@ const UserChat = () => {
     scrollToBottom();
   }, [chatHistory, selectedFriend]);
 
+  const showContactsList = !isMobile || !selectedFriend;
+  const showChatArea = !isMobile || selectedFriend;
+
   return (
-    <Box sx={{ display: "flex", width: "100vw", height: "100vh", position: "fixed", top: 0, left: 0, zIndex: 9999, bgcolor: "#fff", overflow: "hidden" }}>
+    <Box sx={{ display: "flex", width: "100%", height: "100vh", position: "fixed", top: 0, left: 0, zIndex: 9999, bgcolor: "#fff", overflow: "hidden" }}>
 
       {/* LEFT SIDEBAR - FRIENDS LIST */}
-      <Box sx={{ width: 320, borderRight: "1px solid #e0e0e0", display: "flex", flexDirection: "column", bgcolor: "#fff" }}>
-
-        {/* Search Header */}
+      {showContactsList && (
+        <Box sx={{ width: isMobile ? "100%" : 320, borderRight: "1px solid #e0e0e0", display: "flex", flexDirection: "column", bgcolor: "#fff" }}>
+          
+          {/* Search Header */}
         <Box sx={{ p: 2, borderBottom: "1px solid #e0e0e0" }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
             <IconButton size="small" onClick={() => navigate(-1)} sx={{ color: "#555" }}>
@@ -325,8 +317,8 @@ const UserChat = () => {
                       {onlineUsers.includes(friend.userId) ? "Online" : "Offline"}
                     </Typography>}
                   />
-                  {unreadCounts[friend.userId] > 0 && (
-                    <Badge badgeContent={unreadCounts[friend.userId]} color="primary" sx={{ mr: 1 }} />
+                  {globalUnreadCounts[friend.userId] > 0 && (
+                    <Badge badgeContent={globalUnreadCounts[friend.userId]} color="primary" sx={{ mr: 1 }} />
                   )}
                 </ListItem>
                 <Divider component="li" />
@@ -334,16 +326,23 @@ const UserChat = () => {
             ))
           )}
         </List>
-      </Box>
+        </Box>
+      )}
 
       {/* RIGHT PANEL - CHAT INTERFACE */}
-      <Box sx={{ flex: 1, display: "flex", flexDirection: "column", bgcolor: "#f9f9f9" }}>
+      {showChatArea && (
+        <Box sx={{ flex: 1, width: isMobile ? "100%" : "auto", display: "flex", flexDirection: "column", bgcolor: "#f9f9f9" }}>
 
         {selectedFriend ? (
           <>
             {/* Chat Header */}
             <Box sx={{ p: 2, borderBottom: "1px solid #e0e0e0", bgcolor: "#fff", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                {isMobile && (
+                  <IconButton edge="start" sx={{ mr: 1, color: "#555" }} onClick={() => setSelectedFriend(null)}>
+                    <ArrowBack />
+                  </IconButton>
+                )}
                 <Avatar src={selectedFriend.profilePic} />
                 <Box>
                   <Typography variant="subtitle1" fontWeight="bold">
@@ -571,6 +570,7 @@ const UserChat = () => {
           </Box>
         )}
       </Box>
+      )}
 
       {/* FULL-SCREEN IMAGE VIEWER MODAL */}
       <Dialog
