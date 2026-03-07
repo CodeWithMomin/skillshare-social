@@ -126,11 +126,14 @@ const Feed = () => {
     }
   };
 
+  console.log("Feed - current user:", user?.fullName || user?.username, user?.profilePic);
+  console.log("Feed - posts[0]:", posts[0]?.author, posts[0]?.avatar);
+
   return (
     <>
-      <AddPost onAddPost={handleAddPost} />
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2, px: 2, pt: 2, pb: 4 }}>
+        <AddPost onAddPost={handleAddPost} />
 
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 2, p: 2 }}>
         {posts.map((post) => (
           <Card
             key={post._id || post.id}
@@ -138,7 +141,11 @@ const Feed = () => {
           >
             {/* Header */}
             <CardHeader
-              avatar={<Avatar src={post.avatar} />}
+              avatar={<Avatar src={
+                (post.author === user?.fullName || post.author === user?.username || post.author === user?.name) 
+                  ? (user?.profilePic || user?.avatar || post.avatar) 
+                  : post.avatar
+              } />}
               title={<Typography fontWeight="bold">{post.author}</Typography>}
               subheader={
                 <Box>
@@ -161,7 +168,7 @@ const Feed = () => {
                 {post.content}
               </Typography>
 
-              {/* Tags */}
+        {/* Tags */}
               <Box
                 sx={{
                   display: "flex",
@@ -180,6 +187,24 @@ const Feed = () => {
                   />
                 ))}
               </Box>
+
+              {post.mediaUrl && (
+                <Box sx={{ mt: 2, mx: -2, mb: -2, bgcolor: "#f8f9fa" }}>
+                  {post.mediaType === "video" ? (
+                    <video 
+                      src={post.mediaUrl} 
+                      controls 
+                      style={{ width: "100%", maxHeight: "600px", objectFit: "contain", backgroundColor: "#000", display: "block" }} 
+                    />
+                  ) : (
+                    <img 
+                      src={post.mediaUrl} 
+                      alt="Post media" 
+                      style={{ width: "100%", maxHeight: "600px", objectFit: "contain", display: "block" }} 
+                    />
+                  )}
+                </Box>
+              )}
             </CardContent>
 
             {/* Stats */}

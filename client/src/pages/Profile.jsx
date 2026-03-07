@@ -84,7 +84,8 @@ const Profile = () => {
 
   return (
     <Container maxWidth="md" sx={{
-      mt: 6, mb: 10,
+      minHeight: "100%",
+      py: { xs: 2, md: 4 }
     }}>
       <Paper
         elevation={0}
@@ -121,8 +122,8 @@ const Profile = () => {
           />
           <label htmlFor="upload-photo">
             <Avatar
-              src={`http://localhost:5173${profilePic}`}
-              alt={user.fullName}
+              src={preview || profilePic || user?.profilePic || ""}
+              alt={user?.fullName || "Profile Picture"}
               sx={{
                 width: { xs: 90, sm: 130 },
                 height: { xs: 90, sm: 130 },
