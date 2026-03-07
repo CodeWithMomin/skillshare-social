@@ -24,7 +24,7 @@ import {
   DialogActions,
   Button
 } from "@mui/material";
-import { Send, Search, MoreVert, Phone, Videocam, ArrowBack, Check, DoneAll, AttachFile, Close, Download, Share } from "@mui/icons-material";
+import { Send, Search, MoreVert, Phone, Videocam, VideocamOff, ArrowBack, Check, DoneAll, AttachFile, Close, Download, Share, Image, InsertDriveFile, PlayCircle } from "@mui/icons-material";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import socket from "../socket";
@@ -44,17 +44,18 @@ const UserChat = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [viewerImage, setViewerImage] = useState(null);
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+  const [attachMenuOpen, setAttachMenuOpen] = useState(false);
   const [forwardDialogOpen, setForwardDialogOpen] = useState(false);
   const [sharingFriendId, setSharingFriendId] = useState(null);
   const [shareSuccess, setShareSuccess] = useState(false);
 
-  // ── Calling State ──────────────────────────────────────────────────────────
+  // ── Calling State ──────────────────────────
   const [callState, setCallState] = useState(null);
-  // callState shape: { isIncoming, isOutgoing, isActive, callType, caller, callee, offer }
-
   const myProfileRef = useRef(null);
 
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef(null); // images
+  const videoInputRef = useRef(null); // videos
+  const docInputRef = useRef(null); // documents
   const messagesEndRef = useRef(null);
   const selectedFriendRef = useRef(selectedFriend);
   useEffect(() => {
@@ -187,7 +188,13 @@ const UserChat = () => {
     const file = e.target.files[0];
     if (file) {
       setSelectedImage(file);
-      setImagePreview(URL.createObjectURL(file));
+      // Show preview only for images
+      if (file.type.startsWith("image/")) {
+        setImagePreview(URL.createObjectURL(file));
+      } else {
+        // For videos and docs, show file name as preview
+        setImagePreview(file.name);
+      }
     }
   };
 
@@ -397,6 +404,7 @@ const UserChat = () => {
                         borderTopLeftRadius: isMe ? 8 : 0,
                       }}
                     >
+                      {/* IMAGE bubble */}
                       {chat.imageUrl && (
                         <Box sx={{ mb: (chat.message || chat.text) ? 1 : 0 }}>
                           <img
@@ -405,6 +413,39 @@ const UserChat = () => {
                             onClick={() => setViewerImage(chat.imageUrl)}
                             style={{ maxWidth: "100%", maxHeight: 250, borderRadius: 8, objectFit: "cover", cursor: "pointer" }}
                           />
+                        </Box>
+                      )}
+                      {/* VIDEO bubble */}
+                      {chat.fileType === "video" && chat.fileUrl && (
+                        <Box sx={{ mb: (chat.message || chat.text) ? 1 : 0 }}>
+                          <video
+                            src={chat.fileUrl}
+                            controls
+                            style={{ maxWidth: "100%", maxHeight: 250, borderRadius: 8 }}
+                          />
+                        </Box>
+                      )}
+                      {/* DOCUMENT bubble */}
+                      {chat.fileType === "document" && chat.fileUrl && (
+                        <Box
+                          sx={{
+                            mb: (chat.message || chat.text) ? 1 : 0,
+                            display: "flex", alignItems: "center", gap: 1,
+                            bgcolor: isMe ? "rgba(255,255,255,0.15)" : "#f0f0f0",
+                            borderRadius: 2, p: 1.5, cursor: "pointer",
+                          }}
+                          onClick={() => window.open(chat.fileUrl, "_blank")}
+                        >
+                          <InsertDriveFile sx={{ fontSize: 32, color: isMe ? "#fff" : "#1976d2" }} />
+                          <Box sx={{ overflow: "hidden" }}>
+                            <Typography variant="body2" fontWeight="bold" noWrap sx={{ maxWidth: 180 }}>
+                              {chat.fileName || "Document"}
+                            </Typography>
+                            <Typography variant="caption" sx={{ opacity: 0.7 }}>
+                              Tap to open
+                            </Typography>
+                          </Box>
+                          <Download sx={{ ml: "auto", opacity: 0.7, fontSize: 18, color: isMe ? "#fff" : "inherit" }} />
                         </Box>
                       )}
                       {(chat.message || chat.text) && (
@@ -432,31 +473,73 @@ const UserChat = () => {
             {/* Message Input Box */}
             <Box sx={{ p: 2, bgcolor: "#fff", borderTop: "1px solid #e0e0e0", display: "flex", flexDirection: "column", gap: 1 }}>
 
-              {/* Image Preview Area */}
+              {/* Attachment menu */}
               {imagePreview && (
-                <Box sx={{ position: "relative", width: "fit-content", mb: 1, p: 1, border: "1px solid #ddd", borderRadius: 2, bgcolor: "#f9f9f9" }}>
-                  <IconButton
-                    size="small"
-                    onClick={clearImage}
-                    sx={{ position: "absolute", top: -10, right: -10, bgcolor: "black", color: "white", "&:hover": { bgcolor: "gray" }, width: 22, height: 22 }}
-                  >
+                <Box sx={{ position: "relative", width: "fit-content", mb: 1, p: 1, border: "1px solid #ddd", borderRadius: 2, bgcolor: "#f9f9f9", display: "flex", alignItems: "center", gap: 1 }}>
+                  <IconButton size="small" onClick={clearImage} sx={{ position: "absolute", top: -10, right: -10, bgcolor: "black", color: "white", "&:hover": { bgcolor: "gray" }, width: 22, height: 22 }}>
                     <Close sx={{ fontSize: 14 }} />
                   </IconButton>
-                  <img src={imagePreview} alt="Preview" style={{ maxHeight: 100, borderRadius: 4 }} />
+                  {selectedImage?.type?.startsWith("image/") ? (
+                    <img src={imagePreview} alt="Preview" style={{ maxHeight: 80, borderRadius: 4 }} />
+                  ) : selectedImage?.type?.startsWith("video/") ? (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, px: 1 }}>
+                      <PlayCircle sx={{ color: "#1976d2", fontSize: 28 }} />
+                      <Typography variant="caption" noWrap sx={{ maxWidth: 160 }}>{selectedImage.name}</Typography>
+                    </Box>
+                  ) : (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, px: 1 }}>
+                      <InsertDriveFile sx={{ color: "#1976d2", fontSize: 28 }} />
+                      <Typography variant="caption" noWrap sx={{ maxWidth: 160 }}>{selectedImage?.name}</Typography>
+                    </Box>
+                  )}
                 </Box>
               )}
 
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <input
-                  type="file"
-                  accept="image/*,video/*"
-                  hidden
-                  ref={fileInputRef}
-                  onChange={handleImageSelect}
-                />
-                <IconButton onClick={() => fileInputRef.current.click()} color="primary" sx={{ color: "#555" }}>
-                  <AttachFile />
-                </IconButton>
+
+                {/* ── Always-mounted hidden inputs (must stay in DOM) ── */}
+                <input id="chat-image-input" type="file" accept="image/*" style={{ display: 'none' }} ref={fileInputRef} onChange={(e) => { handleImageSelect(e); setAttachMenuOpen(false); }} />
+                <input id="chat-video-input" type="file" accept="video/*" style={{ display: 'none' }} ref={videoInputRef} onChange={(e) => { handleImageSelect(e); setAttachMenuOpen(false); }} />
+                <input id="chat-doc-input" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" style={{ display: 'none' }} ref={docInputRef} onChange={(e) => { handleImageSelect(e); setAttachMenuOpen(false); }} />
+
+                {/* ── ATTACH BUTTON with popup ── */}
+                <Box sx={{ position: 'relative' }}>
+                  <IconButton onClick={() => setAttachMenuOpen(o => !o)} sx={{ color: attachMenuOpen ? "#1976d2" : "#555" }}>
+                    <AttachFile />
+                  </IconButton>
+
+                  {attachMenuOpen && (
+                    <Box
+                      sx={{
+                        position: 'absolute', bottom: '110%', left: 0,
+                        bgcolor: '#fff', borderRadius: 2,
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                        p: 0.5, minWidth: 145, zIndex: 9999,
+                      }}
+                    >
+                      <label htmlFor="chat-image-input" style={{ cursor: 'pointer', display: 'block' }}>
+                        <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.75, borderRadius: 1, '&:hover': { bgcolor: '#f5f5f5' } }}>
+                          <Image sx={{ color: '#43a047', fontSize: 20 }} />
+                          <Typography variant="body2">Photo</Typography>
+                        </Box>
+                      </label>
+
+                      <label htmlFor="chat-video-input" style={{ cursor: 'pointer', display: 'block' }}>
+                        <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.75, borderRadius: 1, '&:hover': { bgcolor: '#f5f5f5' } }}>
+                          <Videocam sx={{ color: '#1976d2', fontSize: 20 }} />
+                          <Typography variant="body2">Video</Typography>
+                        </Box>
+                      </label>
+
+                      <label htmlFor="chat-doc-input" style={{ cursor: 'pointer', display: 'block' }}>
+                        <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.75, borderRadius: 1, '&:hover': { bgcolor: '#f5f5f5' } }}>
+                          <InsertDriveFile sx={{ color: '#e65100', fontSize: 20 }} />
+                          <Typography variant="body2">Document</Typography>
+                        </Box>
+                      </label>
+                    </Box>
+                  )}
+                </Box>
 
                 <TextField
                   fullWidth

@@ -5,13 +5,34 @@ const sendMessage = async (req, res) => {
         const { message } = req.body;
         const { id: receiverId } = req.params;
         const senderId = req.user.id;
-        const imageUrl = req.file ? req.file.path : "";
 
-        if (!message && !imageUrl) {
-            return res.status(400).json({ error: "Message content or image is required." });
+        // Detect what kind of file was uploaded
+        let imageUrl = "";
+        let fileUrl = "";
+        let fileType = "";
+        let fileName = "";
+
+        if (req.file) {
+            const mime = req.file.mimetype || "";
+            fileName = req.file.originalname || "file";
+
+            if (mime.startsWith("image/")) {
+                imageUrl = req.file.path;
+                fileType = "image";
+            } else if (mime.startsWith("video/")) {
+                fileUrl = req.file.path;
+                fileType = "video";
+            } else {
+                // Documents: PDF, DOCX, XLSX, etc.
+                fileUrl = req.file.path;
+                fileType = "document";
+            }
         }
 
-        // SOCKET.IO functionality to emit the message to the receiver
+        if (!message && !imageUrl && !fileUrl) {
+            return res.status(400).json({ error: "Message content or a file is required." });
+        }
+
         const receiverSocketId = req.app.locals.userSocketMap[receiverId];
         const status = receiverSocketId ? 'delivered' : 'sent';
 
@@ -20,6 +41,9 @@ const sendMessage = async (req, res) => {
             receiverId,
             message: message || "",
             imageUrl,
+            fileUrl,
+            fileType,
+            fileName,
             status
         });
 
@@ -35,6 +59,7 @@ const sendMessage = async (req, res) => {
         res.status(500).json({ error: "Internal server error" });
     }
 };
+
 
 const getMessages = async (req, res) => {
     try {
