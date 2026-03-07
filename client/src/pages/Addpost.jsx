@@ -23,7 +23,9 @@ const AddPost = ({ onAddPost }) => {
   const { user } = useAuth();
 
   const currentUser = {
-    name: user?.name || user?.username || "Anonymous",
+    user_id: user?._id,
+    name: user?.fullName || user?.username || "Anonymous",
+    email: user?.email,
     avatar: user?.avatar || "https://i.pravatar.cc/150?img=5",
     title: user?.title || user?.role || "Software Engineer",
   };

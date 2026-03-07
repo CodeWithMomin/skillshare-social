@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Card,
@@ -13,16 +13,80 @@ import CloseIcon from "@mui/icons-material/Close";
 import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import { useAuth } from "../context/AuthContext";
 import { users } from "../lib/users";
 
 const PAGE_SIZE = 4;
 
 const PeopleYouMayKnow = () => {
-  const [people, setPeople] = useState(users);
+  const [people, setPeople] = useState([]);
   const [connected, setConnected] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalPages = Math.ceil(people.length / PAGE_SIZE);
+  const { getUserProfile } = useAuth();
+
+  useEffect(() => {
+    const fetchRealUsers = async () => {
+      try {
+        const profileRes = await getUserProfile();
+        let myFriends = [];
+        let mySentRequests = [];
+        let myFriendRequests = [];
+        let myId = null;
+        if (profileRes && profileRes._id) {
+          myFriends = profileRes.friends || [];
+          mySentRequests = profileRes.sentRequests || [];
+          myFriendRequests = profileRes.friendRequests || [];
+          myId = profileRes._id;
+        }
+
+        const response = await fetch("http://localhost:5000/api/users");
+        const data = await response.json();
+        if (data.success && data.users) {
+          // Filter out current user, accepted friends, and people who sent us a request
+          const filteredUsers = data.users.filter(u => {
+            if (u._id === myId) return false;
+            if (myFriends.some(f => f.userId === u._id)) return false;
+            // Also don't show people we need to accept/decline in the sidebar
+            if (myFriendRequests.some(f => f.userId === u._id)) return false;
+            return true;
+          });
+
+          const mapUserStatus = {};
+
+          const mappedUsers = filteredUsers.map((u, i) => {
+            if (mySentRequests.some(f => f.userId === u._id)) {
+              mapUserStatus[u._id] = true;
+            }
+
+            return {
+              id: u._id,
+              name: u.fullName || "Unknown",
+              title: u.headline || (u.basicInfo && u.basicInfo[0] && u.basicInfo[0].bio) || "Member",
+              avatar: u.profilePic || `https://i.pravatar.cc/150?img=${(i % 50) + 1}`,
+              mutualConnections: Math.floor(Math.random() * 20)
+            };
+          });
+
+          setPeople(mappedUsers);
+          setConnected(mapUserStatus);
+        }
+      } catch (error) {
+        console.error("Failed to load users:", error);
+      }
+    };
+
+    fetchRealUsers();
+
+    const handleUpdate = () => {
+      fetchRealUsers();
+    };
+
+    window.addEventListener('connectionsUpdated', handleUpdate);
+    return () => window.removeEventListener('connectionsUpdated', handleUpdate);
+  }, []);
+
+  const totalPages = Math.ceil(people.length / PAGE_SIZE) || 1;
   const startIndex = (currentPage - 1) * PAGE_SIZE;
   const visiblePeople = people.slice(startIndex, startIndex + PAGE_SIZE);
 
@@ -37,8 +101,26 @@ const PeopleYouMayKnow = () => {
     }
   };
 
-  const handleConnect = (id) => {
-    setConnected((prev) => ({ ...prev, [id]: true }));
+  const handleConnect = async (targetId) => {
+    setConnected((prev) => ({ ...prev, [targetId]: true }));
+    try {
+      const token = localStorage.getItem("authToken");
+      const response = await fetch(`http://localhost:5000/api/users/${targetId}/connect`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        window.dispatchEvent(new Event('connectionsUpdated'));
+      }
+    } catch (error) {
+      console.error("Failed to connect:", error);
+      // Revert optimism if failed
+      setConnected((prev) => ({ ...prev, [targetId]: false }));
+    }
   };
 
   return (
@@ -122,7 +204,7 @@ const PeopleYouMayKnow = () => {
                   "&:hover": { borderColor: "#0a66c2", bgcolor: "#e8f0fe" },
                 }}
               >
-                {connected[person.id] ? "✓ Requested" : "Connect"}
+                {connected[person.id] ? "✓ Pending" : "Connect"}
               </Button>
             </Box>
           </Box>

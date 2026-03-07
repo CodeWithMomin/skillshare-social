@@ -11,6 +11,11 @@ dotenv.config();
 // Connect to database
 connectDB();
 
+// Fix any legacy posts with numbers instead of arrays
+const Post = require('./models/Post');
+Post.updateMany({ likes: { $type: "number" } }, { $set: { likes: [] } }).catch(console.error);
+Post.updateMany({ comments: { $type: "number" } }, { $set: { comments: [] } }).catch(console.error);
+
 // Initialize express app
 const app = express();
 
@@ -27,7 +32,8 @@ app.get('/', (req, res) => {
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-app.use('/api/alumni',require('./routes/alumniRoutes'))
+app.use('/api/alumni', require('./routes/alumniRoutes'))
+app.use('/api/posts', require('./routes/postRoutes'));
 
 // Error handler middleware for Multer errors, etc.
 app.use((err, req, res, next) => {

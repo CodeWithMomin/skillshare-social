@@ -1,115 +1,115 @@
 // register user
-const User=require('../models/User')
-const bcrypt=require('bcryptjs')
-const jwt=require('jsonwebtoken')
- const { sendWelcomeEmail } =require('../utilis/mailer')
-const genrationToken=(id)=>{
-    return jwt.sign({id},process.env.JWT_SECRET,{  expiresIn: "30d" });
+const User = require('../models/User')
+const bcrypt = require('bcryptjs')
+const jwt = require('jsonwebtoken')
+const { sendWelcomeEmail } = require('../utilis/mailer')
+const genrationToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
 }
 
 
-const registerUser=async (req,res)=>{
-    //400 -: Bad Request
-    // salt-: gives us random string 
-    try{
-        const{fullName,email,password}=req.body;
-        if(!fullName || !email || !password){
-            return res.status(400).json({
-              message:  "Please Provide all the detials"
-            });
-        }
-
-        const userExists=await User.findOne({email})
-        if(userExists){
-            return res.status(400).json({
-                message:"User Already Exists with this email"
-            })
-        }
-        const salt=await bcrypt.genSalt(10)
-        const hashedPassword=await bcrypt.hash(password,salt)
-        const user=await User.create({
-            fullName,
-            email,
-            password:hashedPassword
-        })
-        
-        if(user){
-            
-            res.status(201).json({
-                success:true,
-                message:"user registered successfully",
-                user:{
-                    _id:user._id,
-                    fullName:user.fullName,
-                    email:user.email,
-                    token:genrationToken(user._id)
-                }
-            });
-            await sendWelcomeEmail(email, fullName,password);
-        } else{
-            res.status(400).json({
-                message:"Invalid user Data"
-            })
-        }
-        
-
-    } catch(error){
-        res.status(500).json({
-            message:"Server Error",
-            error:error.message
-        })
+const registerUser = async (req, res) => {
+  //400 -: Bad Request
+  // salt-: gives us random string 
+  try {
+    const { fullName, email, password } = req.body;
+    if (!fullName || !email || !password) {
+      return res.status(400).json({
+        message: "Please Provide all the detials"
+      });
     }
-}
 
-
-
-const loginUser= async (req,res)=>{
-    try{
-        const {email,password}=req.body;
-        if(!email || !password){
-            return res.status(400).json({
-                message:"Please provide email and password"
-            });
-        }
-        const user=await User.findOne({email})
-        if(!user){
-            return res.status(401).json({
-                message:"Invalid email or password"
-            });
-
-        }
-        const isPasswordMatch=await bcrypt.compare(password,user.password)
-        if(isPasswordMatch){
-            res.status(200).json({
-                message:'Login Successfully',
-                user:{
-                    _id:user._id,
-                    fullName:user.fullName,
-                    email:user.email,
-                    token:genrationToken(user._id)
-                }
-            });
-        } else{
-            res.status(401).json({
-                message:"Invalid email or password"
-            });
-        }
-    } catch(error){
-        res.status(500).json({
-            message:"Server Error",
-            error:error.message
-        })
+    const userExists = await User.findOne({ email })
+    if (userExists) {
+      return res.status(400).json({
+        message: "User Already Exists with this email"
+      })
     }
+    const salt = await bcrypt.genSalt(10)
+    const hashedPassword = await bcrypt.hash(password, salt)
+    const user = await User.create({
+      fullName,
+      email,
+      password: hashedPassword
+    })
+
+    if (user) {
+
+      res.status(201).json({
+        success: true,
+        message: "user registered successfully",
+        user: {
+          _id: user._id,
+          fullName: user.fullName,
+          email: user.email,
+          token: genrationToken(user._id)
+        }
+      });
+      await sendWelcomeEmail(email, fullName, password);
+    } else {
+      res.status(400).json({
+        message: "Invalid user Data"
+      })
+    }
+
+
+  } catch (error) {
+    res.status(500).json({
+      message: "Server Error",
+      error: error.message
+    })
+  }
 }
 
 
 
-const getUserProfile=async (req,res)=>{
-    try{
-        const user=await User.findById(req.user.id).select('-password')
-        
-        
-        if (user) {
+const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Please provide email and password"
+      });
+    }
+    const user = await User.findOne({ email })
+    if (!user) {
+      return res.status(401).json({
+        message: "Invalid email or password"
+      });
+
+    }
+    const isPasswordMatch = await bcrypt.compare(password, user.password)
+    if (isPasswordMatch) {
+      res.status(200).json({
+        message: 'Login Successfully',
+        user: {
+          _id: user._id,
+          fullName: user.fullName,
+          email: user.email,
+          token: genrationToken(user._id)
+        }
+      });
+    } else {
+      res.status(401).json({
+        message: "Invalid email or password"
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: "Server Error",
+      error: error.message
+    })
+  }
+}
+
+
+
+const getUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password')
+
+
+    if (user) {
       res.json({
         success: true,
         user
@@ -119,9 +119,9 @@ const getUserProfile=async (req,res)=>{
     }
 
   } catch (error) {
-    res.status(500).json({ 
-      message: 'Server error', 
-      error: error.message 
+    res.status(500).json({
+      message: 'Server error',
+      error: error.message
     });
   }
 };
@@ -129,42 +129,42 @@ const getUserProfile=async (req,res)=>{
 
 
 const completeProfile = async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id);
+  try {
+    const user = await User.findById(req.user.id);
 
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        // Update basic info
-        user.fullName = req.body.fullName || user.fullName;
-        user.headline = req.body.headline || user.headline;
-        user.bio = req.body.bio || user.bio;
-        user.location = req.body.location || user.location;
-        user.photo = req.body.photo || user.photo;
-        user.phone=req.body.phone || user.phone;
-        // Update arrays (replace entire arrays)
-        if (req.body.education) user.education = req.body.education;
-        if (req.body.experience) user.experience = req.body.experience;
-        if (req.body.internships) user.internships = req.body.internships;
-        if (req.body.projects) user.projects = req.body.projects;
-        if (req.body.skills) user.skills = req.body.skills;
-        if (req.body.languages) user.languages = req.body.languages;
-
-        const updatedUser = await user.save();
-
-        res.json({
-            success: true,
-            message: 'Profile completed successfully',
-            user: updatedUser
-        });
-
-    } catch (error) {
-        res.status(500).json({
-            message: 'Server error',
-            error: error.message
-        });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
+
+    // Update basic info
+    user.fullName = req.body.fullName || user.fullName;
+    user.headline = req.body.headline || user.headline;
+    user.bio = req.body.bio || user.bio;
+    user.location = req.body.location || user.location;
+    user.photo = req.body.photo || user.photo;
+    user.phone = req.body.phone || user.phone;
+    // Update arrays (replace entire arrays)
+    if (req.body.education) user.education = req.body.education;
+    if (req.body.experience) user.experience = req.body.experience;
+    if (req.body.internships) user.internships = req.body.internships;
+    if (req.body.projects) user.projects = req.body.projects;
+    if (req.body.skills) user.skills = req.body.skills;
+    if (req.body.languages) user.languages = req.body.languages;
+
+    const updatedUser = await user.save();
+
+    res.json({
+      success: true,
+      message: 'Profile completed successfully',
+      user: updatedUser
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error',
+      error: error.message
+    });
+  }
 };
 //   get education pendging
 const getEducation = async (req, res) => {
@@ -179,7 +179,7 @@ const getEducation = async (req, res) => {
       success: true,
       education: user.education
     });
-        } catch (error) {
+  } catch (error) {
     res.status(500).json({
       message: 'Server error',
       error: error.message
@@ -188,42 +188,42 @@ const getEducation = async (req, res) => {
 };
 
 const addEducation = async (req, res) => {
-    try {
-       
-        
-        const user = await User.findById(req.user.id);
+  try {
 
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }   
-        console.log("body",req.body);
-        
-        const { school, degree, fieldOfStudy, startDate, endDate } = req.body;
 
-        
+    const user = await User.findById(req.user.id);
 
-        user.education.unshift({
-            school,
-            degree,
-            fieldOfStudy,
-            startDate,
-            endDate
-        });
-
-        await user.save();
-
-        res.json({
-            success: true,
-            message: 'Education added successfully',
-            data: user.education[0]
-        });
-
-    } catch (error) {
-        res.status(500).json({
-            message: 'Server error',
-            error: error.message
-        });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
+    console.log("body", req.body);
+
+    const { school, degree, fieldOfStudy, startDate, endDate } = req.body;
+
+
+
+    user.education.unshift({
+      school,
+      degree,
+      fieldOfStudy,
+      startDate,
+      endDate
+    });
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Education added successfully',
+      data: user.education[0]
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error',
+      error: error.message
+    });
+  }
 };
 
 
@@ -233,44 +233,44 @@ const updateEducation = async (req, res) => {
   console.log("User ID:", req.user?.id);
   console.log("Experience ID:", req.params.id);
 
-    
-    try {
-        const user = await User.findById(req.user.id);
 
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
+  try {
+    const user = await User.findById(req.user.id);
 
-        const eduIndex = user.education.findIndex(
-            edu => edu._id.toString() === req.params.id
-        );
-
-        if (eduIndex === -1) {
-            return res.status(404).json({ message: 'Education not found' });
-        }
-
-        const { school, degree, fieldOfStudy, startDate, endDate } = req.body;
-
-        if (school) user.education[eduIndex].school = school;
-        if (degree) user.education[eduIndex].degree = degree;
-        if (fieldOfStudy) user.education[eduIndex].fieldOfStudy = fieldOfStudy;
-        if (startDate) user.education[eduIndex].startDate = startDate;
-        if (endDate) user.education[eduIndex].endDate = endDate;
-
-        await user.save();
-
-        res.json({
-            success: true,
-            message: 'Education updated successfully',
-            education: user.education
-        });
-
-    } catch (error) {
-        res.status(500).json({
-            message: 'Server error',
-            error: error.message
-        });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
+
+    const eduIndex = user.education.findIndex(
+      edu => edu._id.toString() === req.params.id
+    );
+
+    if (eduIndex === -1) {
+      return res.status(404).json({ message: 'Education not found' });
+    }
+
+    const { school, degree, fieldOfStudy, startDate, endDate } = req.body;
+
+    if (school) user.education[eduIndex].school = school;
+    if (degree) user.education[eduIndex].degree = degree;
+    if (fieldOfStudy) user.education[eduIndex].fieldOfStudy = fieldOfStudy;
+    if (startDate) user.education[eduIndex].startDate = startDate;
+    if (endDate) user.education[eduIndex].endDate = endDate;
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Education updated successfully',
+      education: user.education
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error',
+      error: error.message
+    });
+  }
 };
 
 
@@ -286,9 +286,9 @@ const deleteEducation = async (req, res) => {
       edu => edu._id.toString() !== req.params.eduId
     );
     console.log("User ID in request param:", req.params.id);
-console.log("User ID in token:", req.user.id);
-console.log("Education ID to delete:", req.params.eduId);
-console.log("Current education IDs:", user.education.map(e => e._id.toString()));
+    console.log("User ID in token:", req.user.id);
+    console.log("Education ID to delete:", req.params.eduId);
+    console.log("Current education IDs:", user.education.map(e => e._id.toString()));
 
     await user.save();
 
@@ -318,14 +318,14 @@ const getExperience = async (req, res) => {
       success: true,
       experience: user.experience
     });
-        } catch (error) {
+  } catch (error) {
     res.status(500).json({
       message: 'Server error',
       error: error.message
     });
   }
 };
-      
+
 
 
 const addExperience = async (req, res) => {
@@ -334,7 +334,7 @@ const addExperience = async (req, res) => {
       company, title, employmentType, location, startDate, endDate, description,
     } = req.body;
     console.log(req.body);
-    
+
 
     if (!company || !title) {
       return res.status(400).json({ message: 'Company and title are required' });
@@ -429,340 +429,340 @@ const updateExperience = async (req, res) => {
 
 
 const deleteExperience = async (req, res) => {
-    // console.log(req.body)
-    
-    try {
+  // console.log(req.body)
 
-        const user = await User.findById(req.user.id);
+  try {
 
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
+    const user = await User.findById(req.user.id);
 
-        user.experience = user.experience.filter(
-            exp => exp._id.toString() !== req.params.expId
-        );
-
-        await user.save();
-
-        res.json({
-            success: true,
-            message: 'Experience deleted successfully',
-            data: user.experience
-        });
-
-    } catch (error) {
-        res.status(500).json({
-            message: 'Server error',
-            error: error.message
-        });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
+
+    user.experience = user.experience.filter(
+      exp => exp._id.toString() !== req.params.expId
+    );
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Experience deleted successfully',
+      data: user.experience
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error',
+      error: error.message
+    });
+  }
 };
 
 
 
 // Internships
-const addInternships=async (req,res)=>{
-    
-    try{
-        const {company,role,startDate,endDate,description}=req.body;
-        if(!company || !role || !startDate || !endDate || !description){
-            return res.status(400).json(
-                {
-                    message:"All Fields are required."
-                }
-            )
-        }
-        const updatedUser=await User.findByIdAndUpdate(req.user.id,{
-            $push:{
-                internships:{
-                    company,role,startDate,endDate,description
-                },
-            },
-        },
+const addInternships = async (req, res) => {
+
+  try {
+    const { company, role, startDate, endDate, description } = req.body;
+    if (!company || !role || !startDate || !endDate || !description) {
+      return res.status(400).json(
         {
-            new:true,runValidators:true
+          message: "All Fields are required."
         }
+      )
+    }
+    const updatedUser = await User.findByIdAndUpdate(req.user.id, {
+      $push: {
+        internships: {
+          company, role, startDate, endDate, description
+        },
+      },
+    },
+      {
+        new: true, runValidators: true
+      }
     );
 
-    if(!updatedUser){
-        return res.status(404).json(
-            {
-                message:"User Not Found."
-            }
-        )
+    if (!updatedUser) {
+      return res.status(404).json(
+        {
+          message: "User Not Found."
+        }
+      )
     }
     res.json({
-        success:true,
-        message:'Internship Information Added Successfully.',
-        internships:updatedUser.internships,
+      success: true,
+      message: 'Internship Information Added Successfully.',
+      internships: updatedUser.internships,
     });
-    } catch(error){
-            res.status(500).json({
-                message:"Server Error.",
-                error:error.message
-            })
-    }
-}
-const deleteInternships=async(req,res)=>{
-    try {
-        const user=await User.findById(req.user.id)
-        if(!user){
-            return res.status(404).json({
-                message:'User not found'
-            })
-        }
-        user.internships=user.internships.filter(
-            internship=>internship._id.toString() !== req.params.internshipId
-        );
-        await user.save();
-        res.json({
-            success:true,
-            message:'Internship Information Deleted Successfully.',
-            internships:user.internships
-        })
-    } catch (error) {
-         res.status(500).json({
-            message: 'Server error',
-            error: error.message
-        });
-    }
-}
-const updateInternships=async(req,res)=>{
-    try {
-        const user=await User.findById(req.user.id)
-        if(!user){
-            return res.status(404).json({
-                message:'User Not Found.'
-            })
-        }
-        const internshipIndex=user.internships.findIndex(
-        (internship)=> internship._id.toString()===req.params.internshipId
-        )
-        if(internshipIndex== -1){
-            return res.status(404).json({
-                message:"Internship Information Not Found."
-            })
-        }
-        const { company,role,startDate,endDate,description}=req.body;
-        if(company) user.internships[internshipIndex].company=company;
-        if(role) user.internships[internshipIndex].role=role;
-        if(startDate) user.internships[internshipIndex].startDate=startDate;
-        if(endDate) user.internships[internshipIndex].endDate=endDate;
-        if(description) user.internships[internshipIndex].description=description;
-        await user.save();
-        
-
-        res.json({
-            success:true,
-            message:"Internship Information Updated Successfully.",
-            internships:user.internships
-        })
-
-    } catch (error) {
-        res.status(500).json({
-      message: 'Server error',
-      error: error.message,
-    });
-    }
- }
-
-const addLanguage=async(req,res)=>{
-    try{
-            const {name,proficiency}=req.body;
-            if(!name || !proficiency){
-                return res.status(400).json({message:"All Fields are required."})
-            }
-            const updatedUser=await User.findByIdAndUpdate(req.user.id,{
-                $push:{
-                    languages:{
-                        name,proficiency
-                    },
-                },
-            },{
-                new:true,runValidators:true
-            })
-            if(!updatedUser){
-                return res.status(404).json({
-                    message:"User not found."
-                })
-            }
-            res.json({
-                success:true,
-                message:"Language is added Successfully.",
-                languages:updatedUser.languages
-            })
-    } catch(error){
-            res.status(500).json({
-                message:"Server Error.",
-                error:error.message
-            })
-    }
-}
-const deleteLanguage=async(req,res)=>{
-    try {
-        const user=await User.findById(req.user.id)
-        if(!user){
-            return res.status(404).json({
-                message:"User not found."
-            })
-        }
-        user.languages=user.languages.filter(lang=>lang._id.toString()!== req.params.langId)
-        await user.save();
-        res.json({
-            success:true,
-            message:"Language Information Deleted Successfully.",
-            languages:user.languages
-
-        })
-    } catch (error) {
-                 res.status(500).json({
-                message:"Server Error.",
-                error:error.message
-            })
-        
-    }
+  } catch (error) {
+    res.status(500).json({
+      message: "Server Error.",
+      error: error.message
+    })
   }
-const updateLanguage=async(req,res)=>{
-    
-    
-    try {
-        const user= await User.findById(req.user.id)
-        if(!user){
-            return res.status(404).json({
-                message:"User not found."
-            })
-        }
-        const langIndex=user.languages.findIndex((language)=>language._id.toString() === req.params.langId)
-        if(langIndex ==-1){
-            return res.status(404).json({
-                message:"Language information Not Found."
-            })
-        }
-        const {name,proficiency}=req.body;
-        if(name) user.languages[langIndex].name=name;
-        if(proficiency) user.languages[langIndex].proficiency=proficiency
+}
+const deleteInternships = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id)
+    if (!user) {
+      return res.status(404).json({
+        message: 'User not found'
+      })
+    }
+    user.internships = user.internships.filter(
+      internship => internship._id.toString() !== req.params.internshipId
+    );
+    await user.save();
+    res.json({
+      success: true,
+      message: 'Internship Information Deleted Successfully.',
+      internships: user.internships
+    })
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error',
+      error: error.message
+    });
+  }
+}
+const updateInternships = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id)
+    if (!user) {
+      return res.status(404).json({
+        message: 'User Not Found.'
+      })
+    }
+    const internshipIndex = user.internships.findIndex(
+      (internship) => internship._id.toString() === req.params.internshipId
+    )
+    if (internshipIndex == -1) {
+      return res.status(404).json({
+        message: "Internship Information Not Found."
+      })
+    }
+    const { company, role, startDate, endDate, description } = req.body;
+    if (company) user.internships[internshipIndex].company = company;
+    if (role) user.internships[internshipIndex].role = role;
+    if (startDate) user.internships[internshipIndex].startDate = startDate;
+    if (endDate) user.internships[internshipIndex].endDate = endDate;
+    if (description) user.internships[internshipIndex].description = description;
+    await user.save();
 
 
-        await user.save()
-        res.json({
-            success:true,
-            message:"Language information updated Successfully.",
-            languages:user.languages
-        })
-    } catch (error) {
-             res.status(500).json({
+    res.json({
+      success: true,
+      message: "Internship Information Updated Successfully.",
+      internships: user.internships
+    })
+
+  } catch (error) {
+    res.status(500).json({
       message: 'Server error',
       error: error.message,
     });
+  }
+}
+
+const addLanguage = async (req, res) => {
+  try {
+    const { name, proficiency } = req.body;
+    if (!name || !proficiency) {
+      return res.status(400).json({ message: "All Fields are required." })
     }
+    const updatedUser = await User.findByIdAndUpdate(req.user.id, {
+      $push: {
+        languages: {
+          name, proficiency
+        },
+      },
+    }, {
+      new: true, runValidators: true
+    })
+    if (!updatedUser) {
+      return res.status(404).json({
+        message: "User not found."
+      })
+    }
+    res.json({
+      success: true,
+      message: "Language is added Successfully.",
+      languages: updatedUser.languages
+    })
+  } catch (error) {
+    res.status(500).json({
+      message: "Server Error.",
+      error: error.message
+    })
+  }
+}
+const deleteLanguage = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id)
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found."
+      })
+    }
+    user.languages = user.languages.filter(lang => lang._id.toString() !== req.params.langId)
+    await user.save();
+    res.json({
+      success: true,
+      message: "Language Information Deleted Successfully.",
+      languages: user.languages
+
+    })
+  } catch (error) {
+    res.status(500).json({
+      message: "Server Error.",
+      error: error.message
+    })
+
+  }
+}
+const updateLanguage = async (req, res) => {
+
+
+  try {
+    const user = await User.findById(req.user.id)
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found."
+      })
+    }
+    const langIndex = user.languages.findIndex((language) => language._id.toString() === req.params.langId)
+    if (langIndex == -1) {
+      return res.status(404).json({
+        message: "Language information Not Found."
+      })
+    }
+    const { name, proficiency } = req.body;
+    if (name) user.languages[langIndex].name = name;
+    if (proficiency) user.languages[langIndex].proficiency = proficiency
+
+
+    await user.save()
+    res.json({
+      success: true,
+      message: "Language information updated Successfully.",
+      languages: user.languages
+    })
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error',
+      error: error.message,
+    });
+  }
 }
 const addSkill = async (req, res) => {
-    try {
-       
+  try {
 
-        const { name, level } = req.body;
 
-        if (!name || !level) {
-            return res.status(400).json({ message: 'Skill name and Level is required' });
-        }
+    const { name, level } = req.body;
 
-        const updatedUser=await User.findByIdAndUpdate(req.user.id,{
-            $push:{
-                skills:{
-                    name,level
-                },
-            },
+    if (!name || !level) {
+      return res.status(400).json({ message: 'Skill name and Level is required' });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(req.user.id, {
+      $push: {
+        skills: {
+          name, level
         },
-    {
-        new:true,runValidators:true
-    })
-    if(!updatedUser){
-        return res.status(404).json({
-                    message:"User not found."
-                })
+      },
+    },
+      {
+        new: true, runValidators: true
+      })
+    if (!updatedUser) {
+      return res.status(404).json({
+        message: "User not found."
+      })
     }
 
-        res.json({
-            success: true,
-            message: 'Skill added successfully',
-            skills: updatedUser.skills
-        });
+    res.json({
+      success: true,
+      message: 'Skill added successfully',
+      skills: updatedUser.skills
+    });
 
-    } catch (error) {
-        res.status(500).json({
-            message: 'Server error',
-            error: error.message
-        });
-    }
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error',
+      error: error.message
+    });
+  }
 };
 
 const deleteSkill = async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id);
+  try {
+    const user = await User.findById(req.user.id);
 
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        user.skills = user.skills.filter(
-            skill => skill._id.toString() !== req.params.skillId
-        );
-
-        await user.save();
-
-        res.json({
-            success: true,
-            message: 'Skill deleted successfully',
-            skills: user.skills
-        });
-
-    } catch (error) {
-        res.status(500).json({
-            message: 'Server error',
-            error: error.message
-        });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
     }
+
+    user.skills = user.skills.filter(
+      skill => skill._id.toString() !== req.params.skillId
+    );
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Skill deleted successfully',
+      skills: user.skills
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error',
+      error: error.message
+    });
+  }
 };
 
-const updateSkill=async(req,res)=>{
-    console.log(req.body)
-try {
-    const user=await User.findById(req.user.id)
-    if(!user){
-         return res.status(404).json({
-                message:"User not found."
-            })
-    }
-    const skillIndex=user.skills.findIndex((skill)=>skill._id.toString()=== req.params.skillId)
-    if(skillIndex==-1){
+const updateSkill = async (req, res) => {
+  console.log(req.body)
+  try {
+    const user = await User.findById(req.user.id)
+    if (!user) {
       return res.status(404).json({
-        message:"Skill Not found."
+        message: "User not found."
       })
     }
-    const {name,level}=req.body;
-    if(name) user.skills[skillIndex].name=name;
-    if(level) user.skills[skillIndex].level=level;
+    const skillIndex = user.skills.findIndex((skill) => skill._id.toString() === req.params.skillId)
+    if (skillIndex == -1) {
+      return res.status(404).json({
+        message: "Skill Not found."
+      })
+    }
+    const { name, level } = req.body;
+    if (name) user.skills[skillIndex].name = name;
+    if (level) user.skills[skillIndex].level = level;
     await user.save();
     res.json({
-            success:true,
-            message:"Skill is information updated Successfully.",
-            skills:user.skills
-        })
-} catch (error) {
-     res.status(500).json({
+      success: true,
+      message: "Skill is information updated Successfully.",
+      skills: user.skills
+    })
+  } catch (error) {
+    res.status(500).json({
       message: 'Server error',
       error: error.message,
     });
-}
+  }
 }
 const addBasicInfo = async (req, res) => {
   console.log(req.body);
-  
+
   try {
     const { fullName, phoneNo, location, bio, portfolioLink } = req.body;
-    
-    
+
+
     if (!fullName || !phoneNo || !location || !bio || !portfolioLink) {
       return res.status(400).json({ message: "All fields are required." });
     }
@@ -882,69 +882,69 @@ const addCurrentPosition = async (req, res) => {
   }
 };
 
-const deleteCurrentPostion=async(req,res)=>{
-    try {
-        const user=await User.findById(req.user.id);
-        if(!user){
-            return res.status(404).json({
-                message:'User not found'
-            })
-        }
-        user.current=user.current.filter(currentPosition=>currentPosition._id.toString() !== req.params.currentPositionId)
-        await user.save();
-        res.json({
-            success:true,
-            message:"Current Position Deleted Successfully.",
-            current:user.current
-        })
-    } catch (error) {
-        res.status(500).json({
-            message: 'Server error',
-            error: error.message
-        });
+const deleteCurrentPostion = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        message: 'User not found'
+      })
     }
+    user.current = user.current.filter(currentPosition => currentPosition._id.toString() !== req.params.currentPositionId)
+    await user.save();
+    res.json({
+      success: true,
+      message: "Current Position Deleted Successfully.",
+      current: user.current
+    })
+  } catch (error) {
+    res.status(500).json({
+      message: 'Server error',
+      error: error.message
+    });
+  }
 }
-const updateCurrentPosition=async(req,res)=>{
-    try {
-        const user=await User.findById(req.user.id)
-        if(!user){
-             return res.status(404).json({
-                message:'User Not Found.'
-            })
-        }
-        const currentPositionIndex=user.current.findIndex((position)=>position._id.toString()===req.params.currentPositionId)
-        if(currentPositionIndex==-1){
+const updateCurrentPosition = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id)
+    if (!user) {
+      return res.status(404).json({
+        message: 'User Not Found.'
+      })
+    }
+    const currentPositionIndex = user.current.findIndex((position) => position._id.toString() === req.params.currentPositionId)
+    if (currentPositionIndex == -1) {
 
-        return res.status(404).json({
-                message:"Internship Information Not Found."
-            })
-        }
-       const {company,role,startDate,employmentType,location,description}=req.body;
-        if(company) user.current[currentPositionIndex].company=company
-        if(role) user.current[currentPositionIndex].role=role
-        if(startDate) user.current[currentPositionIndex].startDate=startDate
-        if(employmentType) user.current[currentPositionIndex].employmentType=employmentType
-        if(location) user.current[currentPositionIndex].location=location
-        if(description) user.current[currentPositionIndex].description=description
-        await user.save();
-        res.json({
-            success:true,
-            message:"CurrentPosition Updated Successfully.",
-            current:user.current
-        })
+      return res.status(404).json({
+        message: "Internship Information Not Found."
+      })
+    }
+    const { company, role, startDate, employmentType, location, description } = req.body;
+    if (company) user.current[currentPositionIndex].company = company
+    if (role) user.current[currentPositionIndex].role = role
+    if (startDate) user.current[currentPositionIndex].startDate = startDate
+    if (employmentType) user.current[currentPositionIndex].employmentType = employmentType
+    if (location) user.current[currentPositionIndex].location = location
+    if (description) user.current[currentPositionIndex].description = description
+    await user.save();
+    res.json({
+      success: true,
+      message: "CurrentPosition Updated Successfully.",
+      current: user.current
+    })
 
-    } catch (error) {
-        res.status(500).json({
+  } catch (error) {
+    res.status(500).json({
       message: 'Server error',
       error: error.message,
     });
-    }
+  }
 }
 
 
 const uploadProfilePhoto = async (req, res) => {
-  console.log("i got clicked ",req.file);
-  
+  console.log("i got clicked ", req.file);
+
   try {
     // Cloudinary multer ALWAYS gives a req.file with .path = Cloudinary URL
     if (!req.file) {
@@ -975,32 +975,175 @@ const uploadProfilePhoto = async (req, res) => {
   }
 };
 
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find().select('-password').limit(30);
+    res.status(200).json({ success: true, users });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+const connectUser = async (req, res) => {
+  try {
+    const targetUserId = req.params.id;
+    const currentUserId = req.user.id; // from protect middleware
+
+    if (targetUserId === currentUserId) {
+      return res.status(400).json({ message: "Cannot connect with yourself" });
+    }
+
+    const currentUser = await User.findById(currentUserId);
+    const targetUser = await User.findById(targetUserId);
+
+    if (!currentUser || !targetUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Check if already friends
+    if (currentUser.friends.some(f => f.userId.toString() === targetUserId)) {
+      return res.status(400).json({ message: "Already connected" });
+    }
+
+    // Check if request is already sent
+    if (currentUser.sentRequests.some(r => r.userId.toString() === targetUserId)) {
+      return res.status(400).json({ message: "Request already sent" });
+    }
+
+    // Add to current user's sent requests
+    currentUser.sentRequests.push({ userId: targetUser._id });
+    await currentUser.save();
+
+    // Add to target user's incoming requests
+    targetUser.friendRequests.push({
+      userId: currentUser._id,
+      name: currentUser.fullName,
+      email: currentUser.email,
+      profilePic: currentUser.profilePic
+    });
+    await targetUser.save();
+
+    res.json({
+      success: true,
+      message: "Connection request sent successfully",
+      sentRequests: currentUser.sentRequests
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+const acceptConnection = async (req, res) => {
+  try {
+    const targetUserId = req.params.id; // ID of the person who sent the request
+    const currentUserId = req.user.id; // You
+
+    const currentUser = await User.findById(currentUserId);
+    const targetUser = await User.findById(targetUserId);
+
+    if (!currentUser || !targetUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Find the request in your incoming requests
+    const myRequestObj = currentUser.friendRequests.find(f => f.userId.toString() === targetUserId);
+    if (!myRequestObj) {
+      return res.status(404).json({ message: "Connection request not found" });
+    }
+
+    // Remove from YOUR friendRequests
+    currentUser.friendRequests = currentUser.friendRequests.filter(f => f.userId.toString() !== targetUserId);
+
+    // Add to YOUR friends
+    currentUser.friends.push({
+      userId: targetUser._id,
+      name: targetUser.fullName,
+      email: targetUser.email,
+      profilePic: targetUser.profilePic
+    });
+    await currentUser.save();
+
+    // Remove from THEIR sentRequests
+    targetUser.sentRequests = targetUser.sentRequests.filter(r => r.userId.toString() !== currentUserId);
+
+    // Add to THEIR friends
+    targetUser.friends.push({
+      userId: currentUser._id,
+      name: currentUser.fullName,
+      email: currentUser.email,
+      profilePic: currentUser.profilePic
+    });
+    await targetUser.save();
+
+    res.json({
+      success: true,
+      message: "Connection request accepted!",
+      friends: currentUser.friends
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+const declineConnection = async (req, res) => {
+  try {
+    const targetUserId = req.params.id; // ID of the person who sent the request
+    const currentUserId = req.user.id; // You
+
+    const currentUser = await User.findById(currentUserId);
+    const targetUser = await User.findById(targetUserId);
+
+    if (!currentUser || !targetUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Remove from YOUR friendRequests
+    currentUser.friendRequests = currentUser.friendRequests.filter(f => f.userId.toString() !== targetUserId);
+    await currentUser.save();
+
+    // Remove from THEIR sentRequests
+    targetUser.sentRequests = targetUser.sentRequests.filter(r => r.userId.toString() !== currentUserId);
+    await targetUser.save();
+
+    res.json({
+      success: true,
+      message: "Connection request declined"
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 module.exports = {
-    registerUser,
-    loginUser,
-    getUserProfile,
-    completeProfile,
-    getEducation,
-    addEducation,
-    updateEducation,
-    deleteEducation,
-    getExperience,
-    addExperience,
-    updateExperience,
-    deleteExperience,
-    addInternships,
-    deleteInternships,
-    updateInternships,
-    addLanguage,
-    deleteLanguage,
-    updateLanguage,
-    addSkill,
-    deleteSkill,
-    updateSkill,
-    addBasicInfo,
-    updateBasicInfo,
-    addCurrentPosition,
-    deleteCurrentPostion,
-    updateCurrentPosition,
-    uploadProfilePhoto,
+  registerUser,
+  loginUser,
+  getUserProfile,
+  completeProfile,
+  getEducation,
+  addEducation,
+  updateEducation,
+  deleteEducation,
+  getExperience,
+  addExperience,
+  updateExperience,
+  deleteExperience,
+  addInternships,
+  deleteInternships,
+  updateInternships,
+  addLanguage,
+  deleteLanguage,
+  updateLanguage,
+  addSkill,
+  deleteSkill,
+  updateSkill,
+  addBasicInfo,
+  updateBasicInfo,
+  addCurrentPosition,
+  deleteCurrentPostion,
+  updateCurrentPosition,
+  uploadProfilePhoto,
+  getAllUsers,
+  connectUser,
+  acceptConnection,
+  declineConnection
 };
