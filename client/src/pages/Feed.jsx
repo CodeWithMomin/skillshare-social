@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Card,
@@ -8,6 +8,8 @@ import {
   Typography,
   IconButton,
   Chip,
+  Snackbar,
+  Alert
 } from "@mui/material";
 
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
@@ -29,36 +31,99 @@ const Feed = () => {
   const [comments, setComments] = useState({});
   const [commentInput, setCommentInput] = useState({});
   const [posts, setPosts] = useState(linkedInPosts);
+  const [toast, setToast] = useState({ open: false, message: "", severity: "success" });
 
-  const handleEmojiClick = (postId, emoji) => {
-    setSelectedReaction((prev) => ({ ...prev, [postId]: emoji }));
-    setShowEmojis(null);
+  const handleCloseToast = () => setToast((prev) => ({ ...prev, open: false }));
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/posts');
+        const data = await response.json();
+        if (data.length > 0) {
+          setPosts(data);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchPosts();
+  }, []);
+
+  const handleLikePost = async (postId) => {
+    try {
+      const uId = user?._id || user?.id || "anonymous";
+      const response = await fetch(`http://localhost:5000/api/posts/${postId}/like`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: uId })
+      });
+      if (response.ok) {
+        const updatedPost = await response.json();
+        setPosts(prev => prev.map(p => (p._id === postId || p.id === postId) ? updatedPost : p));
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handlePostComment = (postId) => {
+  const handlePostComment = async (postId) => {
     const text = commentInput[postId];
     if (!text) return;
 
-    const newComment = {
-      user: {
-        name: user?.name || "Anonymous",
-        avatar: user?.avatar || "https://i.pravatar.cc/150?img=5",
-      },
-      text,
+    const newCommentUser = {
+      name: user?.name || "Anonymous",
+      avatar: user?.avatar || "https://i.pravatar.cc/150?img=5",
     };
 
+    // Optimistic UI update
     setComments((prev) => ({
       ...prev,
       [postId]: prev[postId]
-        ? [...prev[postId], newComment]
-        : [newComment],
+        ? [...prev[postId], { user: newCommentUser, text }]
+        : [{ user: newCommentUser, text }],
     }));
-
     setCommentInput((prev) => ({ ...prev, [postId]: "" }));
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/posts/${postId}/comment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user: newCommentUser, text })
+      });
+      if (response.ok) {
+        const updatedPost = await response.json();
+        setPosts(prev => prev.map(p => (p._id === postId || p.id === postId) ? updatedPost : p));
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleAddPost = (newPost) => {
-    setPosts((prev) => [newPost, ...prev]);
+  const handleAddPost = async (newPost) => {
+    console.log("newPost", newPost);
+
+    try {
+      const response = await fetch('http://localhost:5000/api/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newPost)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save post');
+      }
+
+      const savedPost = await response.json();
+      setPosts((prev) => [savedPost, ...prev]);
+      setToast({ open: true, message: "Post saved successfully!", severity: "success" });
+    } catch (error) {
+      console.error("Error saving post:", error);
+      setToast({ open: true, message: "Failed to save post", severity: "error" });
+      setPosts((prev) => [newPost, ...prev]); // Update UI regardless of backend error for demo
+    }
   };
 
   return (
@@ -68,7 +133,7 @@ const Feed = () => {
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2, p: 2 }}>
         {posts.map((post) => (
           <Card
-            key={post.id}
+            key={post._id || post.id}
             sx={{ borderRadius: 2, boxShadow: 2, position: "relative" }}
           >
             {/* Header */}
@@ -120,10 +185,10 @@ const Feed = () => {
             {/* Stats */}
             <Box sx={{ px: 2, pb: 1, display: "flex", gap: 2 }}>
               <Typography variant="caption">
-                👍 {post.likes || 0}
+                👍 {Array.isArray(post.likes) ? post.likes.length : (post.likes || 0)}
               </Typography>
               <Typography variant="caption">
-                💬 {post.comments || 0}
+                💬 {Array.isArray(post.comments) ? post.comments.length : (post.comments || 0)}
               </Typography>
               <Typography variant="caption">
                 🔁 {post.shares || 0}
@@ -136,23 +201,16 @@ const Feed = () => {
             <Box sx={{ display: "flex", gap: 1, p: 1 }}>
               <IconButton
                 size="small"
-                onMouseEnter={() => setShowEmojis(post.id)}
-                onMouseLeave={() => setShowEmojis(null)}
+                onClick={() => handleLikePost(post._id || post.id)}
               >
-                {selectedReaction[post.id] ? (
-                  <Typography fontSize="1.2rem">
-                    {selectedReaction[post.id]}
-                  </Typography>
-                ) : (
-                  <ThumbUpOutlinedIcon fontSize="small" />
-                )}
+                <ThumbUpOutlinedIcon fontSize="small" color={Array.isArray(post.likes) && post.likes.includes(user?._id || user?.id || "anonymous") ? "primary" : "inherit"} />
               </IconButton>
 
               <IconButton
                 size="small"
                 onClick={() =>
                   setShowComment((prev) =>
-                    prev === post.id ? null : post.id
+                    prev === (post._id || post.id) ? null : (post._id || post.id)
                   )
                 }
               >
@@ -165,7 +223,7 @@ const Feed = () => {
             </Box>
 
             {/* Comment Section */}
-            {showComment === post.id && (
+            {showComment === (post._id || post.id) && (
               <Box
                 sx={{
                   p: 2,
@@ -178,11 +236,11 @@ const Feed = () => {
                   <input
                     type="text"
                     placeholder="Write a comment..."
-                    value={commentInput[post.id] || ""}
+                    value={commentInput[post._id || post.id] || ""}
                     onChange={(e) =>
                       setCommentInput((prev) => ({
                         ...prev,
-                        [post.id]: e.target.value,
+                        [post._id || post.id]: e.target.value,
                       }))
                     }
                     style={{
@@ -193,12 +251,12 @@ const Feed = () => {
                     }}
                     onKeyDown={(e) => {
                       if (e.key === "Enter")
-                        handlePostComment(post.id);
+                        handlePostComment(post._id || post.id);
                     }}
                   />
 
                   <button
-                    onClick={() => handlePostComment(post.id)}
+                    onClick={() => handlePostComment(post._id || post.id)}
                     style={{
                       padding: "8px 12px",
                       borderRadius: "8px",
@@ -211,7 +269,7 @@ const Feed = () => {
                   </button>
                 </Box>
 
-                {comments[post.id]?.map((cmt, idx) => (
+                {(Array.isArray(post.comments) ? post.comments : comments[post._id || post.id] || []).map((cmt, idx) => (
                   <Box
                     key={idx}
                     sx={{
@@ -234,6 +292,12 @@ const Feed = () => {
           </Card>
         ))}
       </Box>
+
+      <Snackbar anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} open={toast.open} autoHideDuration={4000} onClose={handleCloseToast}>
+        <Alert onClose={handleCloseToast} severity={toast.severity} sx={{ width: '100%' }}>
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

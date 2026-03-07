@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema(
     // Basic Authentication
     email: {
       type: String,
-      required:false,
+      required: false,
       unique: true,
       lowercase: true,
       trim: true
@@ -15,16 +15,16 @@ const userSchema = new mongoose.Schema(
       required: true,
       minlength: 6
     },
-   phone: {
-  type: String,
-  required: false,  // or set to true only if you always ensure value exists
-  validate: {
-    validator: function(v) {
-      return !v || /^\d{10}$/.test(v);  // allow empty or valid phone format
+    phone: {
+      type: String,
+      required: false,  // or set to true only if you always ensure value exists
+      validate: {
+        validator: function (v) {
+          return !v || /^\d{10}$/.test(v);  // allow empty or valid phone format
+        },
+        message: 'Please fill a valid phone number'
+      }
     },
-    message: 'Please fill a valid phone number'
-  }
-},
 
     // Profile Information
     fullName: {
@@ -56,9 +56,9 @@ const userSchema = new mongoose.Schema(
     languages: [
       {
         name: { type: String },
-        proficiency: { 
-          type: String, 
-          enum: ["Beginner", "Intermediate", "Advanced","Fluent", "Native"]
+        proficiency: {
+          type: String,
+          enum: ["Beginner", "Intermediate", "Advanced", "Fluent", "Native"]
         }
       }
     ],
@@ -67,12 +67,12 @@ const userSchema = new mongoose.Schema(
     education: [
       {
         school: { type: String, required: true },
-        degree: { type: String ,required:true},
+        degree: { type: String, required: true },
         fieldOfStudy: { type: String },
         startDate: { type: String },
         endDate: { type: String },
         grade: { type: String },
-        
+
       }
     ],
 
@@ -81,8 +81,8 @@ const userSchema = new mongoose.Schema(
       {
         company: { type: String, required: true },
         title: { type: String, required: true },
-        employmentType: { 
-          type: String, 
+        employmentType: {
+          type: String,
           enum: ["Full-time", "Part-time", "Self-employed", "Freelance", "Contract", "Internship"]  //Used for fields with specific allowed values (like employment type, proficiency level)
         },
         location: { type: String },
@@ -119,8 +119,8 @@ const userSchema = new mongoose.Schema(
     skills: [
       {
         name: { type: String, required: true },
-        level: { 
-          type: String, 
+        level: {
+          type: String,
           enum: ["Beginner", "Intermediate", "Advanced", "Expert"]
         }
       }
@@ -128,17 +128,19 @@ const userSchema = new mongoose.Schema(
 
     // Current Position
     current: [
-      {company: { type: String, default: "" },
-      role: { type: String, default: "" },
-      startDate: { type: String, default: "" },
-      employmentType: { 
-        type: String, 
-        enum: ["Full-time","Part-time","Internship","Freelance"],
-        default: "Full-time"
-      },
-      location:{type: String, default: ""},
-      description:{type: String, default: ""
-      }
+      {
+        company: { type: String, default: "" },
+        role: { type: String, default: "" },
+        startDate: { type: String, default: "" },
+        employmentType: {
+          type: String,
+          enum: ["Full-time", "Part-time", "Internship", "Freelance"],
+          default: "Full-time"
+        },
+        location: { type: String, default: "" },
+        description: {
+          type: String, default: ""
+        }
       }
     ],
 
@@ -150,36 +152,60 @@ const userSchema = new mongoose.Schema(
       portfolio: { type: String, default: "" } // Could be LinkedIn, portfolio, etc.
     },
     basicInfo: [
-  {
-    fullName: {
-      type: String,
-      required: true,
-      trim: true
-    },
-   
-    phoneNo: {
-      type: String,
-      default: "",
-      trim: true
-    },
-    location: {
-      type: String,
-      default: "",
-      trim: true
-    },
-    portfolioLink: {
-      type: String,
-      default: "",
-      trim: true
-    },
-    bio: {
-      type: String,
-      default: "",
-      trim: true,
-      maxlength: 500
-    }
-  }
-]
+      {
+        fullName: {
+          type: String,
+          required: true,
+          trim: true
+        },
+
+        phoneNo: {
+          type: String,
+          default: "",
+          trim: true
+        },
+        location: {
+          type: String,
+          default: "",
+          trim: true
+        },
+        portfolioLink: {
+          type: String,
+          default: "",
+          trim: true
+        },
+        bio: {
+          type: String,
+          default: "",
+          trim: true,
+          maxlength: 500
+        }
+      }
+    ],
+    // Friends / Connections
+    friends: [
+      {
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        name: { type: String },
+        email: { type: String },
+        profilePic: { type: String }
+      }
+    ],
+    // Pending requests received
+    friendRequests: [
+      {
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        name: { type: String },
+        email: { type: String },
+        profilePic: { type: String }
+      }
+    ],
+    // Requests you have sent
+    sentRequests: [
+      {
+        userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+      }
+    ]
 
   },
   {

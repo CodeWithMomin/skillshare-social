@@ -5,7 +5,7 @@ import FeedIcon from "@mui/icons-material/Home";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import FolderIcon from "@mui/icons-material/Folder";
 import SettingsIcon from "@mui/icons-material/Settings";
-import { Explore, Hub, People } from "@mui/icons-material";
+import { Explore, Hub, People, PersonAdd } from "@mui/icons-material";
 
 const navItems = [
   { label: "Feed", icon: <FeedIcon />, path: "/feed" },
@@ -13,6 +13,7 @@ const navItems = [
   { label: "Projects", icon: <FolderIcon />, path: "/projects" },
   { label: "Network", icon: <Hub />, path: "/mynetwork" },
   { label: "Alumni Connect", icon: <People />, path: "/alumniconnect" },
+  { label: "Requests", icon: <PersonAdd />, path: "/friend-requests" },
   { label: "AI Features", icon: <SmartToyIcon />, path: "/aifeatures" },
 ];
 
