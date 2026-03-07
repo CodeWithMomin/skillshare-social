@@ -13,7 +13,7 @@ import { SkillContextProvider } from './context/SkillsContext.jsx';
 import { BasicInfoContextProvider } from './context/BasicInfoContext.jsx';
 import { CurrentPositionContextProvider } from './context/CurrentPosContext.jsx';
 import { ProfilePictureContextProvider } from './context/ProfilePictureContext.jsx';
-import {AlumniAuthContextProvider} from './AlumniConnect/alumniContext/AlumniAuthContext.jsx'
+import { AlumniAuthContextProvider } from './AlumniConnect/alumniContext/AlumniAuthContext.jsx'
 import { AlumniSkillContextProvider } from './AlumniConnect/alumniContext/AlumniSKillcontext.jsx';
 import { AlumniLanguageContextProvider } from './AlumniConnect/alumniContext/AlumniLanguageContext.jsx';
 import { AlumniAcheivementContextProvider } from './AlumniConnect/alumniContext/AlumniAcheivement.jsx';
@@ -22,42 +22,42 @@ import { AlumniInfoContextProvider } from './AlumniConnect/alumniContext/AlumniI
 import { AlumniBasicInfoContextProvider } from './AlumniConnect/alumniContext/AlumniBasicINfoContext.jsx';
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <AuthProvider>
-      <EduContextProvider>
-         <ExpContextProvider>
-          <InternshipContextProvider>
-            <LanguageContextProvider>
+
+  <AuthProvider>
+    <EduContextProvider>
+      <ExpContextProvider>
+        <InternshipContextProvider>
+          <LanguageContextProvider>
             <SkillContextProvider>
-               <BasicInfoContextProvider>
+              <BasicInfoContextProvider>
                 <CurrentPositionContextProvider>
                   <ProfilePictureContextProvider>
-                   <AlumniAuthContextProvider>
-                    <AlumniSkillContextProvider>
-                    <AlumniLanguageContextProvider>
-                       <AlumniAcheivementContextProvider>
-                        <AlumniAcademicContextProvider>
-                          <AlumniBasicInfoContextProvider>
-                            <AlumniInfoContextProvider>
-                              <App />
-                            </AlumniInfoContextProvider>
-                          </AlumniBasicInfoContextProvider>
-                        </AlumniAcademicContextProvider>
-                       </AlumniAcheivementContextProvider>
-                    </AlumniLanguageContextProvider>
-                    </AlumniSkillContextProvider>
-                     
-                   </AlumniAuthContextProvider>
+                    <AlumniAuthContextProvider>
+                      <AlumniSkillContextProvider>
+                        <AlumniLanguageContextProvider>
+                          <AlumniAcheivementContextProvider>
+                            <AlumniAcademicContextProvider>
+                              <AlumniBasicInfoContextProvider>
+                                <AlumniInfoContextProvider>
+                                  <App />
+                                </AlumniInfoContextProvider>
+                              </AlumniBasicInfoContextProvider>
+                            </AlumniAcademicContextProvider>
+                          </AlumniAcheivementContextProvider>
+                        </AlumniLanguageContextProvider>
+                      </AlumniSkillContextProvider>
+
+                    </AlumniAuthContextProvider>
                   </ProfilePictureContextProvider>
                 </CurrentPositionContextProvider>
-               </BasicInfoContextProvider>
+              </BasicInfoContextProvider>
             </SkillContextProvider>
-            </LanguageContextProvider>
-          </InternshipContextProvider>
-         </ExpContextProvider>
-      </EduContextProvider>
-     
-    </AuthProvider>
-  </StrictMode>
+          </LanguageContextProvider>
+        </InternshipContextProvider>
+      </ExpContextProvider>
+    </EduContextProvider>
+
+  </AuthProvider>
+
 );
 // ...existing code...
