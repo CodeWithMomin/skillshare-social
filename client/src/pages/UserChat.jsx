@@ -103,11 +103,12 @@ const UserChat = () => {
     }
   }, [myUserId]);
 
-  // Socket Connection & Listener
+  // Socket Event Listeners (connection managed globally by AuthContext)
   useEffect(() => {
     if (myUserId) {
+      // Ensure the socket has the correct userId in case it reconnects
       socket.io.opts.query = { userId: myUserId };
-      socket.connect();
+      if (!socket.connected) socket.connect();
 
       socket.on("newMessage", (msg) => {
         const currSelected = selectedFriendRef.current;
@@ -148,11 +149,11 @@ const UserChat = () => {
     }
 
     return () => {
+      // Only remove listeners — do NOT disconnect (AuthContext manages connection)
       socket.off("newMessage");
       socket.off("messagesRead");
       socket.off("getOnlineUsers");
       socket.off("incomingCall");
-      socket.disconnect();
     };
   }, [myUserId]);
 
