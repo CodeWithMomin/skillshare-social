@@ -9,7 +9,10 @@ import {
   IconButton,
   Chip,
   Snackbar,
-  Alert
+  Alert,
+  Tabs,
+  Tab,
+  Button
 } from "@mui/material";
 
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
@@ -19,14 +22,16 @@ import ThumbUpOutlinedIcon from "@mui/icons-material/ThumbUpOutlined";
 import { linkedInPosts } from "../lib/linkedinPosts";
 import AddPost from "./Addpost";
 import { useAuth } from "../context/AuthContext";
-
-const reactions = ["👍", "❤️", "😂", "😮", "😢", "😡"];
+import api from "../services/api";
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import CheckIcon from '@mui/icons-material/Check';
 
 const Feed = () => {
-  const { user } = useAuth();
+  const { user, getUserProfile } = useAuth();
+  const [feedFilter, setFeedFilter] = useState("all");
+  const [friendsList, setFriendsList] = useState([]);
+  const [sentRequests, setSentRequests] = useState([]);
 
-  const [showEmojis, setShowEmojis] = useState(null);
-  const [selectedReaction, setSelectedReaction] = useState({});
   const [showComment, setShowComment] = useState(null);
   const [comments, setComments] = useState({});
   const [commentInput, setCommentInput] = useState({});
@@ -47,7 +52,17 @@ const Feed = () => {
         console.error(err);
       }
     };
+    const fetchFriends = async () => {
+      try {
+        const profile = await getUserProfile();
+        if (profile) {
+          setFriendsList(profile.friends || []);
+          setSentRequests(profile.sentRequests || []);
+        }
+      } catch (e) { console.error(e) }
+    };
     fetchPosts();
+    fetchFriends();
   }, []);
 
   const handleLikePost = async (postId) => {
@@ -126,15 +141,41 @@ const Feed = () => {
     }
   };
 
-  console.log("Feed - current user:", user?.fullName || user?.username, user?.profilePic);
-  console.log("Feed - posts[0]:", posts[0]?.author, posts[0]?.avatar);
+  const handleConnect = async (postUserId) => {
+    try {
+      if (!postUserId) return;
+      const response = await api.post(`/users/${postUserId}/connect`);
+      if (response && response.success) {
+        setToast({ open: true, message: "Friend request sent!", severity: "success" });
+        setSentRequests(prev => [...prev, { userId: postUserId }]);
+      }
+    } catch {
+      setToast({ open: true, message: "Error sending request", severity: "error" });
+    }
+  };
+
+  const filteredPosts = posts.filter(post => {
+    if (feedFilter === "all") return true;
+    if (feedFilter === "friends") {
+      const isMyPost = post.userId === user?._id || post.author === user?.fullName;
+      const isFriend = friendsList.some(f => f.userId === post.userId) || friendsList.some(f => f.name === post.author);
+      return isFriend || isMyPost;
+    }
+    return true;
+  });
 
   return (
     <>
       <Box sx={{ display: "flex", flexDirection: "column", gap: 2, px: 2, pt: 2, pb: 4 }}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 1 }}>
+          <Tabs value={feedFilter} onChange={(e, val) => setFeedFilter(val)} aria-label="feed tabs">
+            <Tab label="All Posts" value="all" />
+            <Tab label="Friends Only" value="friends" />
+          </Tabs>
+        </Box>
         <AddPost onAddPost={handleAddPost} />
 
-        {posts.map((post) => (
+        {filteredPosts.map((post) => (
           <Card
             key={post._id || post.id}
             sx={{ borderRadius: 2, boxShadow: 2, position: "relative" }}
@@ -142,8 +183,8 @@ const Feed = () => {
             {/* Header */}
             <CardHeader
               avatar={<Avatar src={
-                (post.author === user?.fullName || post.author === user?.username || post.author === user?.name) 
-                  ? (user?.profilePic || user?.avatar || post.avatar) 
+                (post.author === user?.fullName || post.author === user?.username || post.author === user?.name)
+                  ? (user?.profilePic || user?.avatar || post.avatar)
                   : post.avatar
               } />}
               title={<Typography fontWeight="bold">{post.author}</Typography>}
@@ -157,6 +198,22 @@ const Feed = () => {
                   </Typography>
                 </Box>
               }
+              action={
+                post.userId && post.userId !== (user?._id || user?.id) &&
+                !friendsList.some(f => f.userId === post.userId) && (
+                  <Button
+                    size="small"
+                    startIcon={sentRequests.some(r => r.userId === post.userId) ? <CheckIcon /> : <PersonAddIcon />}
+                    onClick={() => handleConnect(post.userId)}
+                    disabled={sentRequests.some(r => r.userId === post.userId)}
+                    sx={{ textTransform: 'none', mt: 1, mr: 1 }}
+                    color="primary"
+                    variant="outlined"
+                  >
+                    {sentRequests.some(r => r.userId === post.userId) ? "Pending" : "Add Friend"}
+                  </Button>
+                )
+              }
             />
 
             {/* Content */}
@@ -168,7 +225,7 @@ const Feed = () => {
                 {post.content}
               </Typography>
 
-        {/* Tags */}
+              {/* Tags */}
               <Box
                 sx={{
                   display: "flex",
@@ -191,16 +248,16 @@ const Feed = () => {
               {post.mediaUrl && (
                 <Box sx={{ mt: 2, mx: -2, mb: -2, bgcolor: "#f8f9fa" }}>
                   {post.mediaType === "video" ? (
-                    <video 
-                      src={post.mediaUrl} 
-                      controls 
-                      style={{ width: "100%", maxHeight: "600px", objectFit: "contain", backgroundColor: "#000", display: "block" }} 
+                    <video
+                      src={post.mediaUrl}
+                      controls
+                      style={{ width: "100%", maxHeight: "600px", objectFit: "contain", backgroundColor: "#000", display: "block" }}
                     />
                   ) : (
-                    <img 
-                      src={post.mediaUrl} 
-                      alt="Post media" 
-                      style={{ width: "100%", maxHeight: "600px", objectFit: "contain", display: "block" }} 
+                    <img
+                      src={post.mediaUrl}
+                      alt="Post media"
+                      style={{ width: "100%", maxHeight: "600px", objectFit: "contain", display: "block" }}
                     />
                   )}
                 </Box>

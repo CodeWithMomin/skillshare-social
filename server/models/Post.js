@@ -5,6 +5,10 @@ const postSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    userId: {
+        type: String, // Added to map posts to the actual user
+        default: "",
+    },
     title: {
         type: String,
         default: "",

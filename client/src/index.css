@@ -1,1 +1,15 @@
 @import "tailwindcss";
+
+@theme {
+  --color-background: #ffffff;
+  --color-foreground: #191919;
+  --color-muted-foreground: #666666;
+  --color-primary: #0a66c2;
+  --color-primary-foreground: #ffffff;
+  --color-input: #e0e0e0;
+  --color-ring: #0a66c2;
+}
+
+.gradient-hero {
+  background: linear-gradient(135deg, #0a66c2 0%, #004182 100%);
+}

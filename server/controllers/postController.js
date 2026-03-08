@@ -4,10 +4,11 @@ const Post = require('../models/Post');
 // @route   POST /api/posts
 const createPost = async (req, res) => {
     try {
-        const { author, title, avatar, timestamp, content, likes, comments, shares, tags, mediaUrl, mediaType } = req.body;
+        const { author, userId, title, avatar, timestamp, content, likes, comments, shares, tags, mediaUrl, mediaType } = req.body;
 
         const newPost = new Post({
             author,
+            userId: userId || "", // Explicitly save userId
             title,
             avatar,
             timestamp: timestamp || Date.now(),

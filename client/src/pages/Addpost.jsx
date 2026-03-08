@@ -36,7 +36,7 @@ const AddPost = ({ onAddPost }) => {
   const [content, setContent] = useState("");
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState([]);
-  
+
   // Media States
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
@@ -97,7 +97,7 @@ const AddPost = ({ onAddPost }) => {
           },
           body: formData,
         });
-        
+
         const data = await res.json();
         if (data.success) {
           finalMediaUrl = data.mediaUrl;
@@ -112,6 +112,7 @@ const AddPost = ({ onAddPost }) => {
       const newPost = {
         id: Date.now(),
         author: currentUser.name,
+        userId: currentUser.user_id,
         title: currentUser.title,
         avatar: currentUser.avatar,
         timestamp: new Date().toISOString(),
@@ -140,22 +141,22 @@ const AddPost = ({ onAddPost }) => {
   };
 
   return (
-    <Card 
+    <Card
       elevation={0}
-      sx={{ 
-        borderRadius: 3, 
+      sx={{
+        borderRadius: 3,
         border: "1px solid #e0e0e0",
         boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
         mb: 2,
         overflow: "hidden"
       }}
     >
-      <input 
-        type="file" 
-        hidden 
-        ref={fileInputRef} 
-        onChange={handleFileChange} 
-        accept="image/*,video/*" 
+      <input
+        type="file"
+        hidden
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept="image/*,video/*"
       />
       <CardContent sx={{ p: '0 !important' }}>
         {!open ? (
@@ -186,22 +187,22 @@ const AddPost = ({ onAddPost }) => {
             </Box>
 
             <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1.5, px: 1 }}>
-              <Button 
-                startIcon={<ImageIcon sx={{ color: "#378fe9" }} />} 
+              <Button
+                startIcon={<ImageIcon sx={{ color: "#378fe9" }} />}
                 sx={{ textTransform: "none", color: "#5e6c77", fontWeight: 600, "&:hover": { bgcolor: "#f3f2ef" }, px: 2, borderRadius: 2 }}
                 onClick={() => fileInputRef.current.click()}
               >
                 Media
               </Button>
-              <Button 
-                startIcon={<VideoLibraryIcon sx={{ color: "#5f9b41" }} />} 
+              <Button
+                startIcon={<VideoLibraryIcon sx={{ color: "#5f9b41" }} />}
                 sx={{ textTransform: "none", color: "#5e6c77", fontWeight: 600, "&:hover": { bgcolor: "#f3f2ef" }, px: 2, borderRadius: 2 }}
                 onClick={() => fileInputRef.current.click()}
               >
                 Video
               </Button>
-              <Button 
-                startIcon={<ArticleIcon sx={{ color: "#e16745" }} />} 
+              <Button
+                startIcon={<ArticleIcon sx={{ color: "#e16745" }} />}
                 sx={{ textTransform: "none", color: "#5e6c77", fontWeight: 600, "&:hover": { bgcolor: "#f3f2ef" }, px: 2, borderRadius: 2 }}
                 onClick={() => setOpen(true)}
               >
@@ -236,7 +237,7 @@ const AddPost = ({ onAddPost }) => {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               variant="standard"
-              InputProps={{ 
+              InputProps={{
                 disableUnderline: true,
                 sx: { fontSize: "1.1rem", lineHeight: 1.5, color: "#111" }
               }}
@@ -248,11 +249,11 @@ const AddPost = ({ onAddPost }) => {
                 <IconButton
                   size="small"
                   onClick={handleRemoveMedia}
-                  sx={{ 
-                    position: "absolute", 
-                    top: 8, 
-                    right: 8, 
-                    bgcolor: "rgba(0,0,0,0.6)", 
+                  sx={{
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    bgcolor: "rgba(0,0,0,0.6)",
                     color: "#fff",
                     "&:hover": { bgcolor: "rgba(0,0,0,0.8)" },
                     zIndex: 10

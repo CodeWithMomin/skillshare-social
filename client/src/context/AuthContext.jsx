@@ -15,18 +15,24 @@ export const AuthProvider = ({ children }) => {
     if (storedUser) {
       setUser(storedUser)
       setIsAuthenticated(true)
-      
+
       // Fetch initial unread counts
       const token = localStorage.getItem("authToken");
       if (token) {
         fetch("http://localhost:5000/api/messages/unread-counts", {
           headers: { "Authorization": `Bearer ${token}` }
         })
-          .then(res => res.json())
-          .then(data => {
-            if (!data.error) setGlobalUnreadCounts(data);
+          .then(async res => {
+            if (!res.ok) throw new Error("Failed to fetch unread counts");
+            return res.json();
           })
-          .catch(console.error);
+          .then(data => {
+            if (data && !data.error && !data.message) setGlobalUnreadCounts(data);
+          })
+          .catch(err => {
+            console.error("Unread counts fetch error:", err);
+            // Optionally clear token if unauthorized
+          });
       }
     }
   }, []);
@@ -85,11 +91,11 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false)
   }
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      isAuthenticated, 
-      register, 
-      login, 
+    <AuthContext.Provider value={{
+      user,
+      isAuthenticated,
+      register,
+      login,
       logout,
       updateUser,
       getUserProfile,

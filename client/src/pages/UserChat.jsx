@@ -32,11 +32,12 @@ import { useNavigate } from "react-router-dom";
 import socket from "../socket";
 import VideoCall from "./VideoCall";
 import api from "../services/api";
+import { generateKeyPair, encryptMessage, decryptMessage } from "../utils/crypto";
 
 const UserChat = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  
+
   const { getUserProfile, globalUnreadCounts, setGlobalUnreadCounts } = useAuth();
   const navigate = useNavigate();
   const [friends, setFriends] = useState([]);
@@ -55,6 +56,23 @@ const UserChat = () => {
   const [shareSuccess, setShareSuccess] = useState(false);
   const [typingUsers, setTypingUsers] = useState({}); // { [friendId]: boolean }
   const typingTimeoutRef = useRef({}); // { [friendId]: timeoutId }
+  const [friendPublicKey, setFriendPublicKey] = useState(null);
+  const friendPublicKeyRef = useRef(null);
+
+  useEffect(() => {
+    friendPublicKeyRef.current = friendPublicKey;
+  }, [friendPublicKey]);
+
+  useEffect(() => {
+    if (myUserId) {
+      if (!localStorage.getItem("e2ee_secretKey") || !localStorage.getItem("e2ee_publicKey")) {
+        const { publicKey, secretKey } = generateKeyPair();
+        localStorage.setItem("e2ee_publicKey", publicKey);
+        localStorage.setItem("e2ee_secretKey", secretKey);
+        api.put("/users/profile/complete", { publicKey }).catch(console.error);
+      }
+    }
+  }, [myUserId]);
 
   // ── Calling State ──────────────────────────
   const [callState, setCallState] = useState(null);
@@ -80,7 +98,7 @@ const UserChat = () => {
           }
           // Fetch initial unread counts via centralized API service
           const data = await api.get("/messages/unread-counts");
-          if (data && !data.error) setUnreadCounts(data);
+          if (data && !data.error) setGlobalUnreadCounts(data);
         }
       } catch (error) {
         console.error("Failed to load friends for chat", error);
@@ -120,10 +138,17 @@ const UserChat = () => {
           socket.emit("markAsRead", { senderId: msg.senderId, receiverId: myUserId });
         }
         // AuthContext now handles incrementing globalUnreadCounts globally.
+        let msgToAppend = msg;
+        const fPubKey = friendPublicKeyRef.current;
+        const mySecKey = localStorage.getItem("e2ee_secretKey");
+        if (msg.message && mySecKey && fPubKey) {
+          const decMsg = decryptMessage(msg.message, mySecKey, fPubKey);
+          if (decMsg) msgToAppend.message = decMsg;
+        }
 
         // Only append if it belongs to the currently selected friend
         setChatHistory((prev) => {
-          return prev.some(existingMsg => existingMsg._id === msg._id) ? prev : [...prev, msg];
+          return prev.some(existingMsg => existingMsg._id === msgToAppend._id) ? prev : [...prev, msgToAppend];
         });
       });
 
@@ -143,7 +168,7 @@ const UserChat = () => {
         ));
       });
 
-      socket.on("messagesRead", ({ readerId, readAt }) => {
+      socket.on("messagesRead", ({ readAt }) => {
         setChatHistory((prev) =>
           prev.map(msg =>
             (msg.senderId === myUserId && msg.status !== 'read') ? { ...msg, status: 'read', readAt } : msg
@@ -156,7 +181,7 @@ const UserChat = () => {
       });
 
       // ── Incoming Call ──────────────────────────────────────────────────────
-      socket.on("incomingCall", ({ from, caller, callType, offer }) => {
+      socket.on("incomingCall", ({ caller, callType, offer }) => {
         setCallState({
           isIncoming: true, isOutgoing: false, isActive: false,
           callType, caller, callee: null, offer,
@@ -181,8 +206,37 @@ const UserChat = () => {
     const fetchChatHistory = async () => {
       if (!selectedFriend) return;
       try {
+        let fPubKey = null;
+        try {
+          const friendRes = await api.get("/users/user/" + selectedFriend.userId);
+          if (friendRes?.data?.user?.publicKey) {
+            fPubKey = friendRes.data.user.publicKey;
+          } else if (friendRes?.user?.publicKey) {
+            fPubKey = friendRes.user.publicKey;
+          }
+          setFriendPublicKey(fPubKey);
+        } catch (err) {
+          console.error("Could not fetch friend public key", err);
+          setFriendPublicKey(null);
+        }
+
         const data = await api.get(`/messages/${selectedFriend.userId}`);
-        setChatHistory(data);
+        const mySecKey = localStorage.getItem("e2ee_secretKey");
+
+        let displayHistory = data;
+        if (Array.isArray(data)) {
+          displayHistory = data.map(msg => {
+            if (msg.message && fPubKey && mySecKey) {
+              const decMsg = decryptMessage(msg.message, mySecKey, fPubKey);
+              if (decMsg && decMsg !== msg.message) {
+                return { ...msg, message: decMsg };
+              }
+            }
+            return msg;
+          });
+        }
+
+        setChatHistory(displayHistory || []);
 
         // Clear local unread counts for this friend
         setGlobalUnreadCounts(prev => {
@@ -259,14 +313,23 @@ const UserChat = () => {
 
     try {
       const formData = new FormData();
-      if (msgText) formData.append("message", msgText);
+      let finalMsg = msgText;
+      const mySecKey = localStorage.getItem("e2ee_secretKey");
+
+      if (finalMsg && mySecKey && friendPublicKey) {
+        finalMsg = encryptMessage(finalMsg, mySecKey, friendPublicKey) || finalMsg;
+      }
+
+      if (finalMsg) formData.append("message", finalMsg);
       if (imgFile) formData.append("image", imgFile);
 
       // Using our centralized api instance
       const data = await api.post(`/messages/send/${selectedFriend.userId}`, formData);
 
       if (data) {
-        setChatHistory((prev) => [...prev, data]);
+        // Render plaintext in current user's UI instantly instead of ciphertext
+        const msgToRender = { ...data, message: msgText };
+        setChatHistory((prev) => [...prev, msgToRender]);
       } else {
         setMessage(msgText);
         setSelectedImage(imgFile);
@@ -310,81 +373,81 @@ const UserChat = () => {
       {/* LEFT SIDEBAR - FRIENDS LIST */}
       {showContactsList && (
         <Box sx={{ width: isMobile ? "100%" : 320, borderRight: "1px solid #e0e0e0", display: "flex", flexDirection: "column", bgcolor: "#fff" }}>
-          
-          {/* Search Header */}
-        <Box sx={{ p: 2, borderBottom: "1px solid #e0e0e0" }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
-            <IconButton size="small" onClick={() => navigate(-1)} sx={{ color: "#555" }}>
-              <ArrowBack />
-            </IconButton>
-            <Typography variant="h6" fontWeight="bold">
-              Messaging
-            </Typography>
-          </Box>
-          <Box sx={{ display: "flex", alignItems: "center", bgcolor: "#f3f2ef", borderRadius: "8px", px: 1.5, py: 0.5 }}>
-            <Search sx={{ color: "#555", mr: 1 }} fontSize="small" />
-            <TextField
-              placeholder="Search messages"
-              variant="standard"
-              InputProps={{ disableUnderline: true }}
-              fullWidth
-              sx={{ fontSize: "0.9rem" }}
-            />
-          </Box>
-        </Box>
 
-        {/* Contacts List */}
-        <List sx={{ flex: 1, overflowY: "auto", p: 0 }}>
-          {friends.length === 0 ? (
-            <Box sx={{ p: 3, textAlign: "center", color: "text.secondary" }}>
-              <Typography variant="body2">No connections available to chat.</Typography>
+          {/* Search Header */}
+          <Box sx={{ p: 2, borderBottom: "1px solid #e0e0e0" }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
+              <IconButton size="small" onClick={() => navigate(-1)} sx={{ color: "#555" }}>
+                <ArrowBack />
+              </IconButton>
+              <Typography variant="h6" fontWeight="bold">
+                Messaging
+              </Typography>
             </Box>
-          ) : (
-            friends.map((friend) => (
-              <React.Fragment key={friend.userId}>
-                <ListItem
-                  button
-                  onClick={() => setSelectedFriend(friend)}
-                  sx={{
-                    py: 1.5,
-                    px: 2,
-                    bgcolor: selectedFriend?.userId === friend.userId ? "#f3f2ef" : "transparent",
-                    borderLeft: selectedFriend?.userId === friend.userId ? "4px solid #0a66c2" : "4px solid transparent",
-                    cursor: "pointer",
-                    "&:hover": { bgcolor: "#f3f2ef" },
-                  }}
-                >
-                  <ListItemAvatar>
-                    <Badge
-                      overlap="circular"
-                      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                      variant="dot"
-                      sx={{
-                        "& .MuiBadge-badge": {
-                          backgroundColor: onlineUsers.includes(friend.userId) ? "#44b700" : "#d3d3d3",
-                          color: onlineUsers.includes(friend.userId) ? "#44b700" : "#d3d3d3",
-                          boxShadow: `0 0 0 2px #fff`,
-                        }
-                      }}
-                    >
-                      <Avatar src={friend.profilePic} />
-                    </Badge>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={<Typography variant="subtitle2" fontWeight={selectedFriend?.userId === friend.userId ? "bold" : "medium"}>{friend.name}</Typography>}
-                    secondary={<Typography variant="caption" color="text.secondary" noWrap>
-                      {onlineUsers.includes(friend.userId) ? "Online" : "Offline"}
-                    </Typography>}
-                  />
-                  {globalUnreadCounts[friend.userId] > 0 && (
-                    <Badge badgeContent={globalUnreadCounts[friend.userId]} color="primary" sx={{ mr: 1 }} />
-                  )}
-                </ListItem>
-                <Divider component="li" />
-              </React.Fragment>
-            ))
-          )}
-        </List>
+            <Box sx={{ display: "flex", alignItems: "center", bgcolor: "#f3f2ef", borderRadius: "8px", px: 1.5, py: 0.5 }}>
+              <Search sx={{ color: "#555", mr: 1 }} fontSize="small" />
+              <TextField
+                placeholder="Search messages"
+                variant="standard"
+                InputProps={{ disableUnderline: true }}
+                fullWidth
+                sx={{ fontSize: "0.9rem" }}
+              />
+            </Box>
+          </Box>
+
+          {/* Contacts List */}
+          <List sx={{ flex: 1, overflowY: "auto", p: 0 }}>
+            {friends.length === 0 ? (
+              <Box sx={{ p: 3, textAlign: "center", color: "text.secondary" }}>
+                <Typography variant="body2">No connections available to chat.</Typography>
+              </Box>
+            ) : (
+              friends.map((friend) => (
+                <React.Fragment key={friend.userId}>
+                  <ListItem
+                    button
+                    onClick={() => setSelectedFriend(friend)}
+                    sx={{
+                      py: 1.5,
+                      px: 2,
+                      bgcolor: selectedFriend?.userId === friend.userId ? "#f3f2ef" : "transparent",
+                      borderLeft: selectedFriend?.userId === friend.userId ? "4px solid #0a66c2" : "4px solid transparent",
+                      cursor: "pointer",
+                      "&:hover": { bgcolor: "#f3f2ef" },
+                    }}
+                  >
+                    <ListItemAvatar>
+                      <Badge
+                        overlap="circular"
+                        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                        variant="dot"
+                        sx={{
+                          "& .MuiBadge-badge": {
+                            backgroundColor: onlineUsers.includes(friend.userId) ? "#44b700" : "#d3d3d3",
+                            color: onlineUsers.includes(friend.userId) ? "#44b700" : "#d3d3d3",
+                            boxShadow: `0 0 0 2px #fff`,
+                          }
+                        }}
+                      >
+                        <Avatar src={friend.profilePic} />
+                      </Badge>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={<Typography variant="subtitle2" fontWeight={selectedFriend?.userId === friend.userId ? "bold" : "medium"}>{friend.name}</Typography>}
+                      secondary={<Typography variant="caption" color="text.secondary" noWrap>
+                        {onlineUsers.includes(friend.userId) ? "Online" : "Offline"}
+                      </Typography>}
+                    />
+                    {globalUnreadCounts[friend.userId] > 0 && (
+                      <Badge badgeContent={globalUnreadCounts[friend.userId]} color="primary" sx={{ mr: 1 }} />
+                    )}
+                  </ListItem>
+                  <Divider component="li" />
+                </React.Fragment>
+              ))
+            )}
+          </List>
         </Box>
       )}
 
@@ -392,291 +455,294 @@ const UserChat = () => {
       {showChatArea && (
         <Box sx={{ flex: 1, width: isMobile ? "100%" : "auto", display: "flex", flexDirection: "column", bgcolor: "#f9f9f9" }}>
 
-        {selectedFriend ? (
-          <>
-            {/* Chat Header */}
-            <Box sx={{ p: 2, borderBottom: "1px solid #e0e0e0", bgcolor: "#fff", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                {isMobile && (
-                  <IconButton edge="start" sx={{ mr: 1, color: "#555" }} onClick={() => setSelectedFriend(null)}>
-                    <ArrowBack />
-                  </IconButton>
-                )}
-                <Avatar src={selectedFriend.profilePic} />
-                <Box>
-                  <Typography variant="subtitle1" fontWeight="bold">
-                    {selectedFriend.name}
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: typingUsers[selectedFriend.userId] ? "#0a66c2" : onlineUsers.includes(selectedFriend.userId) ? "green" : "text.secondary", fontWeight: typingUsers[selectedFriend.userId] ? "bold" : "normal" }}>
-                    {typingUsers[selectedFriend.userId] ? "typing..." : (onlineUsers.includes(selectedFriend.userId) ? "Online" : "Offline")}
-                  </Typography>
-                </Box>
-              </Box>
-              <Box>
-                <IconButton color="primary" onClick={() => {
-                  setCallState({
-                    isIncoming: false, isOutgoing: true, isActive: false,
-                    callType: "video",
-                    caller: myProfileRef.current ? { userId: myUserId, name: myProfileRef.current.name, profilePic: myProfileRef.current.profilePic } : { userId: myUserId, name: "You" },
-                    callee: { userId: selectedFriend.userId, name: selectedFriend.name, profilePic: selectedFriend.profilePic },
-                    offer: null,
-                  });
-                }}><Videocam /></IconButton>
-                <IconButton color="primary" onClick={() => {
-                  setCallState({
-                    isIncoming: false, isOutgoing: true, isActive: false,
-                    callType: "audio",
-                    caller: myProfileRef.current ? { userId: myUserId, name: myProfileRef.current.name, profilePic: myProfileRef.current.profilePic } : { userId: myUserId, name: "You" },
-                    callee: { userId: selectedFriend.userId, name: selectedFriend.name, profilePic: selectedFriend.profilePic },
-                    offer: null,
-                  });
-                }}><Phone /></IconButton>
-                <IconButton><MoreVert /></IconButton>
-              </Box>
-            </Box>
-
-            {/* Chat Messages */}
-            <Box sx={{ flex: 1, p: 3, overflowY: "auto", display: "flex", flexDirection: "column", gap: 2 }}>
-              {chatHistory.map((chat) => {
-                const isMe = chat.senderId === myUserId;
-                const timeStr = new Date(chat.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-                return (
-                  <Box
-                    key={chat._id || chat.id}
-                    sx={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignSelf: isMe ? "flex-end" : "flex-start",
-                      maxWidth: "70%",
-                      position: 'relative',
-                      '&:hover .delete-btn': { opacity: 1 }
-                    }}
-                  >
-                    {isMe && !chat.isDeleted && (
-                      <IconButton
-                        className="delete-btn"
-                        size="small"
-                        onClick={() => handleDeleteMessage(chat._id || chat.id)}
-                        sx={{
-                          position: 'absolute',
-                          left: -35,
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          opacity: 0,
-                          transition: 'opacity 0.2s',
-                          color: '#d32f2f',
-                          bgcolor: 'rgba(211, 47, 47, 0.05)',
-                          '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.15)' }
-                        }}
-                      >
-                        <Delete fontSize="small" />
-                      </IconButton>
-                    )}
-                    <Paper
-                      elevation={1}
-                      sx={{
-                        p: 1.5,
-                        px: 2,
-                        borderRadius: 2,
-                        bgcolor: chat.isDeleted ? "#f0f0f0" : (isMe ? "#0a66c2" : "#fff"),
-                        color: chat.isDeleted ? "#888" : (isMe ? "#fff" : "text.primary"),
-                        borderTopRightRadius: isMe ? 0 : 8,
-                        borderTopLeftRadius: isMe ? 8 : 0,
-                        fontStyle: chat.isDeleted ? "italic" : "normal",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1
-                      }}
-                    >
-                      {chat.isDeleted ? (
-                        <>
-                          <Block sx={{ fontSize: 16, opacity: 0.6 }} />
-                          <Typography variant="body2">This message was deleted</Typography>
-                        </>
-                      ) : (
-                        <Box sx={{ width: "100%" }}>
-                          {/* IMAGE bubble */}
-                          {chat.imageUrl && (
-                            <Box sx={{ mb: (chat.message || chat.text) ? 1 : 0 }}>
-                              <img
-                                src={chat.imageUrl}
-                                alt="attachment"
-                                onClick={() => setViewerImage(chat.imageUrl)}
-                                style={{ maxWidth: "100%", maxHeight: 250, borderRadius: 8, objectFit: "cover", cursor: "pointer" }}
-                              />
-                            </Box>
-                          )}
-                          {/* VIDEO bubble */}
-                          {chat.fileType === "video" && chat.fileUrl && (
-                            <Box sx={{ mb: (chat.message || chat.text) ? 1 : 0 }}>
-                              <video
-                                src={chat.fileUrl}
-                                controls
-                                style={{ maxWidth: "100%", maxHeight: 250, borderRadius: 8 }}
-                              />
-                            </Box>
-                          )}
-                          {/* DOCUMENT bubble */}
-                          {chat.fileType === "document" && chat.fileUrl && (
-                            <Box
-                              sx={{
-                                mb: (chat.message || chat.text) ? 1 : 0,
-                                display: "flex", alignItems: "center", gap: 1,
-                                bgcolor: isMe ? "rgba(255,255,255,0.15)" : "#f0f0f0",
-                                borderRadius: 2, p: 1.5, cursor: "pointer",
-                              }}
-                              onClick={() => window.open(chat.fileUrl, "_blank")}
-                            >
-                              <InsertDriveFile sx={{ fontSize: 32, color: isMe ? "#fff" : "#1976d2" }} />
-                              <Box sx={{ overflow: "hidden" }}>
-                                <Typography variant="body2" fontWeight="bold" noWrap sx={{ maxWidth: 180 }}>
-                                  {chat.fileName || "Document"}
-                                </Typography>
-                                <Typography variant="caption" sx={{ opacity: 0.7 }}>
-                                  Tap to open
-                                </Typography>
-                              </Box>
-                              <Download sx={{ ml: "auto", opacity: 0.7, fontSize: 18, color: isMe ? "#fff" : "inherit" }} />
-                            </Box>
-                          )}
-                          {(chat.message || chat.text) && (
-                            <Typography variant="body2">{chat.message || chat.text}</Typography>
-                          )}
-                        </Box>
-                      )}
-                    </Paper>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ mt: 0.5, alignSelf: isMe ? "flex-end" : "flex-start", display: "flex", alignItems: "center", gap: 0.5 }}
-                    >
-                      {timeStr}
-                      {isMe && !chat.isDeleted && (
-                        <Box component="span" sx={{ display: 'flex', alignItems: 'center' }} title={chat.status === "read" && chat.readAt ? `Seen ${new Date(chat.readAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ""}>
-                          {chat.status === "read" ? (
-                            <DoneAll sx={{ fontSize: 16, color: "#4fc3f7" }} />
-                          ) : chat.status === "delivered" ? (
-                            <DoneAll sx={{ fontSize: 16, color: "text.secondary" }} />
-                          ) : (
-                            <Check sx={{ fontSize: 16, color: "text.secondary" }} />
-                          )}
-                        </Box>
-                      )}
+          {selectedFriend ? (
+            <>
+              {/* Chat Header */}
+              <Box sx={{ p: 2, borderBottom: "1px solid #e0e0e0", bgcolor: "#fff", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                  {isMobile && (
+                    <IconButton edge="start" sx={{ mr: 1, color: "#555" }} onClick={() => setSelectedFriend(null)}>
+                      <ArrowBack />
+                    </IconButton>
+                  )}
+                  <Avatar src={selectedFriend.profilePic} />
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      {selectedFriend.name}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: typingUsers[selectedFriend.userId] ? "#0a66c2" : onlineUsers.includes(selectedFriend.userId) ? "green" : "text.secondary", fontWeight: typingUsers[selectedFriend.userId] ? "bold" : "normal" }}>
+                      {typingUsers[selectedFriend.userId] ? "typing..." : (onlineUsers.includes(selectedFriend.userId) ? "Online" : "Offline")}
                     </Typography>
                   </Box>
-                )
-              })}
-              {typingUsers[selectedFriend.userId] && (
-                <Box sx={{ alignSelf: "flex-start", ml: 1, p: 1, bgcolor: "#fff", borderRadius: 2, borderBottomLeftRadius: 0, boxShadow: 1, display: "flex", gap: 0.5, alignItems: "center" }}>
-                  <Box sx={{ width: 6, height: 6, bgcolor: "#9e9e9e", borderRadius: "50%", animation: "typingDot 1.4s infinite", animationDelay: "0s" }} />
-                  <Box sx={{ width: 6, height: 6, bgcolor: "#9e9e9e", borderRadius: "50%", animation: "typingDot 1.4s infinite", animationDelay: "0.2s" }} />
-                  <Box sx={{ width: 6, height: 6, bgcolor: "#9e9e9e", borderRadius: "50%", animation: "typingDot 1.4s infinite", animationDelay: "0.4s" }} />
                 </Box>
-              )}
-              <div ref={messagesEndRef} />
-            </Box>
-
-            {/* Message Input Box */}
-            <Box sx={{ p: 2, bgcolor: "#fff", borderTop: "1px solid #e0e0e0", display: "flex", flexDirection: "column", gap: 1 }}>
-
-              {/* Attachment menu */}
-              {imagePreview && (
-                <Box sx={{ position: "relative", width: "fit-content", mb: 1, p: 1, border: "1px solid #ddd", borderRadius: 2, bgcolor: "#f9f9f9", display: "flex", alignItems: "center", gap: 1 }}>
-                  <IconButton size="small" onClick={clearImage} sx={{ position: "absolute", top: -10, right: -10, bgcolor: "black", color: "white", "&:hover": { bgcolor: "gray" }, width: 22, height: 22 }}>
-                    <Close sx={{ fontSize: 14 }} />
-                  </IconButton>
-                  {selectedImage?.type?.startsWith("image/") ? (
-                    <img src={imagePreview} alt="Preview" style={{ maxHeight: 80, borderRadius: 4 }} />
-                  ) : selectedImage?.type?.startsWith("video/") ? (
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, px: 1 }}>
-                      <PlayCircle sx={{ color: "#1976d2", fontSize: 28 }} />
-                      <Typography variant="caption" noWrap sx={{ maxWidth: 160 }}>{selectedImage.name}</Typography>
-                    </Box>
-                  ) : (
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, px: 1 }}>
-                      <InsertDriveFile sx={{ color: "#1976d2", fontSize: 28 }} />
-                      <Typography variant="caption" noWrap sx={{ maxWidth: 160 }}>{selectedImage?.name}</Typography>
-                    </Box>
-                  )}
+                <Box>
+                  <IconButton color="primary" onClick={() => {
+                    setCallState({
+                      isIncoming: false, isOutgoing: true, isActive: false,
+                      callType: "video",
+                      caller: myProfileRef.current ? { userId: myUserId, name: myProfileRef.current.name, profilePic: myProfileRef.current.profilePic } : { userId: myUserId, name: "You" },
+                      callee: { userId: selectedFriend.userId, name: selectedFriend.name, profilePic: selectedFriend.profilePic },
+                      offer: null,
+                    });
+                  }}><Videocam /></IconButton>
+                  <IconButton color="primary" onClick={() => {
+                    setCallState({
+                      isIncoming: false, isOutgoing: true, isActive: false,
+                      callType: "audio",
+                      caller: myProfileRef.current ? { userId: myUserId, name: myProfileRef.current.name, profilePic: myProfileRef.current.profilePic } : { userId: myUserId, name: "You" },
+                      callee: { userId: selectedFriend.userId, name: selectedFriend.name, profilePic: selectedFriend.profilePic },
+                      offer: null,
+                    });
+                  }}><Phone /></IconButton>
+                  <IconButton><MoreVert /></IconButton>
                 </Box>
-              )}
+              </Box>
 
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              {/* Chat Messages */}
+              <Box sx={{ flex: 1, p: 3, overflowY: "auto", display: "flex", flexDirection: "column", gap: 2 }}>
+                <Box sx={{ alignSelf: "center", bgcolor: "#fff3cd", color: "#856404", px: 2, py: 1, borderRadius: 2, fontSize: "0.8rem", textAlign: "center", maxWidth: "80%", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}>
+                  🔒 Messages are end-to-end encrypted. No one outside of this chat, not even SkillShare Social, can read them.
+                </Box>
+                {chatHistory.map((chat) => {
+                  const isMe = chat.senderId === myUserId;
+                  const timeStr = new Date(chat.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-                {/* ── Always-mounted hidden inputs (must stay in DOM) ── */}
-                <input id="chat-image-input" type="file" accept="image/*" style={{ display: 'none' }} ref={fileInputRef} onChange={(e) => { handleImageSelect(e); setAttachMenuOpen(false); }} />
-                <input id="chat-video-input" type="file" accept="video/*" style={{ display: 'none' }} ref={videoInputRef} onChange={(e) => { handleImageSelect(e); setAttachMenuOpen(false); }} />
-                <input id="chat-doc-input" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" style={{ display: 'none' }} ref={docInputRef} onChange={(e) => { handleImageSelect(e); setAttachMenuOpen(false); }} />
-
-                {/* ── ATTACH BUTTON with popup ── */}
-                <Box sx={{ position: 'relative' }}>
-                  <IconButton onClick={() => setAttachMenuOpen(o => !o)} sx={{ color: attachMenuOpen ? "#1976d2" : "#555" }}>
-                    <AttachFile />
-                  </IconButton>
-
-                  {attachMenuOpen && (
+                  return (
                     <Box
+                      key={chat._id || chat.id}
                       sx={{
-                        position: 'absolute', bottom: '110%', left: 0,
-                        bgcolor: '#fff', borderRadius: 2,
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-                        p: 0.5, minWidth: 145, zIndex: 9999,
+                        display: "flex",
+                        flexDirection: "column",
+                        alignSelf: isMe ? "flex-end" : "flex-start",
+                        maxWidth: "70%",
+                        position: 'relative',
+                        '&:hover .delete-btn': { opacity: 1 }
                       }}
                     >
-                      <label htmlFor="chat-image-input" style={{ cursor: 'pointer', display: 'block' }}>
-                        <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.75, borderRadius: 1, '&:hover': { bgcolor: '#f5f5f5' } }}>
-                          <Image sx={{ color: '#43a047', fontSize: 20 }} />
-                          <Typography variant="body2">Photo</Typography>
-                        </Box>
-                      </label>
-
-                      <label htmlFor="chat-video-input" style={{ cursor: 'pointer', display: 'block' }}>
-                        <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.75, borderRadius: 1, '&:hover': { bgcolor: '#f5f5f5' } }}>
-                          <Videocam sx={{ color: '#1976d2', fontSize: 20 }} />
-                          <Typography variant="body2">Video</Typography>
-                        </Box>
-                      </label>
-
-                      <label htmlFor="chat-doc-input" style={{ cursor: 'pointer', display: 'block' }}>
-                        <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.75, borderRadius: 1, '&:hover': { bgcolor: '#f5f5f5' } }}>
-                          <InsertDriveFile sx={{ color: '#e65100', fontSize: 20 }} />
-                          <Typography variant="body2">Document</Typography>
-                        </Box>
-                      </label>
+                      {isMe && !chat.isDeleted && (
+                        <IconButton
+                          className="delete-btn"
+                          size="small"
+                          onClick={() => handleDeleteMessage(chat._id || chat.id)}
+                          sx={{
+                            position: 'absolute',
+                            left: -35,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            opacity: 0,
+                            transition: 'opacity 0.2s',
+                            color: '#d32f2f',
+                            bgcolor: 'rgba(211, 47, 47, 0.05)',
+                            '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.15)' }
+                          }}
+                        >
+                          <Delete fontSize="small" />
+                        </IconButton>
+                      )}
+                      <Paper
+                        elevation={1}
+                        sx={{
+                          p: 1.5,
+                          px: 2,
+                          borderRadius: 2,
+                          bgcolor: chat.isDeleted ? "#f0f0f0" : (isMe ? "#0a66c2" : "#fff"),
+                          color: chat.isDeleted ? "#888" : (isMe ? "#fff" : "text.primary"),
+                          borderTopRightRadius: isMe ? 0 : 8,
+                          borderTopLeftRadius: isMe ? 8 : 0,
+                          fontStyle: chat.isDeleted ? "italic" : "normal",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1
+                        }}
+                      >
+                        {chat.isDeleted ? (
+                          <>
+                            <Block sx={{ fontSize: 16, opacity: 0.6 }} />
+                            <Typography variant="body2">This message was deleted</Typography>
+                          </>
+                        ) : (
+                          <Box sx={{ width: "100%" }}>
+                            {/* IMAGE bubble */}
+                            {chat.imageUrl && (
+                              <Box sx={{ mb: (chat.message || chat.text) ? 1 : 0 }}>
+                                <img
+                                  src={chat.imageUrl}
+                                  alt="attachment"
+                                  onClick={() => setViewerImage(chat.imageUrl)}
+                                  style={{ maxWidth: "100%", maxHeight: 250, borderRadius: 8, objectFit: "cover", cursor: "pointer" }}
+                                />
+                              </Box>
+                            )}
+                            {/* VIDEO bubble */}
+                            {chat.fileType === "video" && chat.fileUrl && (
+                              <Box sx={{ mb: (chat.message || chat.text) ? 1 : 0 }}>
+                                <video
+                                  src={chat.fileUrl}
+                                  controls
+                                  style={{ maxWidth: "100%", maxHeight: 250, borderRadius: 8 }}
+                                />
+                              </Box>
+                            )}
+                            {/* DOCUMENT bubble */}
+                            {chat.fileType === "document" && chat.fileUrl && (
+                              <Box
+                                sx={{
+                                  mb: (chat.message || chat.text) ? 1 : 0,
+                                  display: "flex", alignItems: "center", gap: 1,
+                                  bgcolor: isMe ? "rgba(255,255,255,0.15)" : "#f0f0f0",
+                                  borderRadius: 2, p: 1.5, cursor: "pointer",
+                                }}
+                                onClick={() => window.open(chat.fileUrl, "_blank")}
+                              >
+                                <InsertDriveFile sx={{ fontSize: 32, color: isMe ? "#fff" : "#1976d2" }} />
+                                <Box sx={{ overflow: "hidden" }}>
+                                  <Typography variant="body2" fontWeight="bold" noWrap sx={{ maxWidth: 180 }}>
+                                    {chat.fileName || "Document"}
+                                  </Typography>
+                                  <Typography variant="caption" sx={{ opacity: 0.7 }}>
+                                    Tap to open
+                                  </Typography>
+                                </Box>
+                                <Download sx={{ ml: "auto", opacity: 0.7, fontSize: 18, color: isMe ? "#fff" : "inherit" }} />
+                              </Box>
+                            )}
+                            {(chat.message || chat.text) && (
+                              <Typography variant="body2">{chat.message || chat.text}</Typography>
+                            )}
+                          </Box>
+                        )}
+                      </Paper>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ mt: 0.5, alignSelf: isMe ? "flex-end" : "flex-start", display: "flex", alignItems: "center", gap: 0.5 }}
+                      >
+                        {timeStr}
+                        {isMe && !chat.isDeleted && (
+                          <Box component="span" sx={{ display: 'flex', alignItems: 'center' }} title={chat.status === "read" && chat.readAt ? `Seen ${new Date(chat.readAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ""}>
+                            {chat.status === "read" ? (
+                              <DoneAll sx={{ fontSize: 16, color: "#4fc3f7" }} />
+                            ) : chat.status === "delivered" ? (
+                              <DoneAll sx={{ fontSize: 16, color: "text.secondary" }} />
+                            ) : (
+                              <Check sx={{ fontSize: 16, color: "text.secondary" }} />
+                            )}
+                          </Box>
+                        )}
+                      </Typography>
                     </Box>
-                  )}
-                </Box>
-
-                <TextField
-                  fullWidth
-                  placeholder="Write a message..."
-                  variant="outlined"
-                  size="small"
-                  value={message}
-                  onChange={handleTyping}
-                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: "20px",
-                      bgcolor: "#f3f2ef",
-                    }
-                  }}
-                />
-                <IconButton color="primary" onClick={handleSendMessage} sx={{ bgcolor: "#e8f0fe", "&:hover": { bgcolor: "#d3e3fd" } }}>
-                  <Send fontSize="small" />
-                </IconButton>
+                  )
+                })}
+                {typingUsers[selectedFriend.userId] && (
+                  <Box sx={{ alignSelf: "flex-start", ml: 1, p: 1, bgcolor: "#fff", borderRadius: 2, borderBottomLeftRadius: 0, boxShadow: 1, display: "flex", gap: 0.5, alignItems: "center" }}>
+                    <Box sx={{ width: 6, height: 6, bgcolor: "#9e9e9e", borderRadius: "50%", animation: "typingDot 1.4s infinite", animationDelay: "0s" }} />
+                    <Box sx={{ width: 6, height: 6, bgcolor: "#9e9e9e", borderRadius: "50%", animation: "typingDot 1.4s infinite", animationDelay: "0.2s" }} />
+                    <Box sx={{ width: 6, height: 6, bgcolor: "#9e9e9e", borderRadius: "50%", animation: "typingDot 1.4s infinite", animationDelay: "0.4s" }} />
+                  </Box>
+                )}
+                <div ref={messagesEndRef} />
               </Box>
+
+              {/* Message Input Box */}
+              <Box sx={{ p: 2, bgcolor: "#fff", borderTop: "1px solid #e0e0e0", display: "flex", flexDirection: "column", gap: 1 }}>
+
+                {/* Attachment menu */}
+                {imagePreview && (
+                  <Box sx={{ position: "relative", width: "fit-content", mb: 1, p: 1, border: "1px solid #ddd", borderRadius: 2, bgcolor: "#f9f9f9", display: "flex", alignItems: "center", gap: 1 }}>
+                    <IconButton size="small" onClick={clearImage} sx={{ position: "absolute", top: -10, right: -10, bgcolor: "black", color: "white", "&:hover": { bgcolor: "gray" }, width: 22, height: 22 }}>
+                      <Close sx={{ fontSize: 14 }} />
+                    </IconButton>
+                    {selectedImage?.type?.startsWith("image/") ? (
+                      <img src={imagePreview} alt="Preview" style={{ maxHeight: 80, borderRadius: 4 }} />
+                    ) : selectedImage?.type?.startsWith("video/") ? (
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1, px: 1 }}>
+                        <PlayCircle sx={{ color: "#1976d2", fontSize: 28 }} />
+                        <Typography variant="caption" noWrap sx={{ maxWidth: 160 }}>{selectedImage.name}</Typography>
+                      </Box>
+                    ) : (
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1, px: 1 }}>
+                        <InsertDriveFile sx={{ color: "#1976d2", fontSize: 28 }} />
+                        <Typography variant="caption" noWrap sx={{ maxWidth: 160 }}>{selectedImage?.name}</Typography>
+                      </Box>
+                    )}
+                  </Box>
+                )}
+
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+
+                  {/* ── Always-mounted hidden inputs (must stay in DOM) ── */}
+                  <input id="chat-image-input" type="file" accept="image/*" style={{ display: 'none' }} ref={fileInputRef} onChange={(e) => { handleImageSelect(e); setAttachMenuOpen(false); }} />
+                  <input id="chat-video-input" type="file" accept="video/*" style={{ display: 'none' }} ref={videoInputRef} onChange={(e) => { handleImageSelect(e); setAttachMenuOpen(false); }} />
+                  <input id="chat-doc-input" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" style={{ display: 'none' }} ref={docInputRef} onChange={(e) => { handleImageSelect(e); setAttachMenuOpen(false); }} />
+
+                  {/* ── ATTACH BUTTON with popup ── */}
+                  <Box sx={{ position: 'relative' }}>
+                    <IconButton onClick={() => setAttachMenuOpen(o => !o)} sx={{ color: attachMenuOpen ? "#1976d2" : "#555" }}>
+                      <AttachFile />
+                    </IconButton>
+
+                    {attachMenuOpen && (
+                      <Box
+                        sx={{
+                          position: 'absolute', bottom: '110%', left: 0,
+                          bgcolor: '#fff', borderRadius: 2,
+                          boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                          p: 0.5, minWidth: 145, zIndex: 9999,
+                        }}
+                      >
+                        <label htmlFor="chat-image-input" style={{ cursor: 'pointer', display: 'block' }}>
+                          <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.75, borderRadius: 1, '&:hover': { bgcolor: '#f5f5f5' } }}>
+                            <Image sx={{ color: '#43a047', fontSize: 20 }} />
+                            <Typography variant="body2">Photo</Typography>
+                          </Box>
+                        </label>
+
+                        <label htmlFor="chat-video-input" style={{ cursor: 'pointer', display: 'block' }}>
+                          <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.75, borderRadius: 1, '&:hover': { bgcolor: '#f5f5f5' } }}>
+                            <Videocam sx={{ color: '#1976d2', fontSize: 20 }} />
+                            <Typography variant="body2">Video</Typography>
+                          </Box>
+                        </label>
+
+                        <label htmlFor="chat-doc-input" style={{ cursor: 'pointer', display: 'block' }}>
+                          <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 1.5, py: 0.75, borderRadius: 1, '&:hover': { bgcolor: '#f5f5f5' } }}>
+                            <InsertDriveFile sx={{ color: '#e65100', fontSize: 20 }} />
+                            <Typography variant="body2">Document</Typography>
+                          </Box>
+                        </label>
+                      </Box>
+                    )}
+                  </Box>
+
+                  <TextField
+                    fullWidth
+                    placeholder="Write a message..."
+                    variant="outlined"
+                    size="small"
+                    value={message}
+                    onChange={handleTyping}
+                    onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: "20px",
+                        bgcolor: "#f3f2ef",
+                      }
+                    }}
+                  />
+                  <IconButton color="primary" onClick={handleSendMessage} sx={{ bgcolor: "#e8f0fe", "&:hover": { bgcolor: "#d3e3fd" } }}>
+                    <Send fontSize="small" />
+                  </IconButton>
+                </Box>
+              </Box>
+            </>
+          ) : (
+            <Box sx={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", color: "text.secondary" }}>
+              <img src="https://cdni.iconscout.com/illustration/premium/thumb/empty-chat-illustration-download-in-svg-png-gif-file-formats--message-box-logo-no-available-messages-data-states-pack-design-development-illustrations-6405622.png?f=webp" alt="No Chat" width="200" style={{ opacity: 0.6, marginBottom: 16 }} />
+              <Typography variant="h6">Your Messages</Typography>
+              <Typography variant="body2">Select a connected friend to start checking your conversations.</Typography>
             </Box>
-          </>
-        ) : (
-          <Box sx={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", color: "text.secondary" }}>
-            <img src="https://cdni.iconscout.com/illustration/premium/thumb/empty-chat-illustration-download-in-svg-png-gif-file-formats--message-box-logo-no-available-messages-data-states-pack-design-development-illustrations-6405622.png?f=webp" alt="No Chat" width="200" style={{ opacity: 0.6, marginBottom: 16 }} />
-            <Typography variant="h6">Your Messages</Typography>
-            <Typography variant="body2">Select a connected friend to start checking your conversations.</Typography>
-          </Box>
-        )}
-      </Box>
+          )}
+        </Box>
       )}
 
       {/* FULL-SCREEN IMAGE VIEWER MODAL */}
@@ -775,7 +841,6 @@ const UserChat = () => {
                         const file = new File([blob], "shared_image.jpg", { type: blob.type });
 
                         // 2. Prepare FormData to send to internal API
-                        const token = localStorage.getItem("authToken");
                         // Forwarding via API service
                         const formData = new FormData();
                         formData.append("image", file);

@@ -51,6 +51,10 @@ const userSchema = new mongoose.Schema(
       type: String, // URL to profile photo
       default: null
     },
+    publicKey: {
+      type: String,
+      default: ""
+    },
 
     // Languages
     languages: [

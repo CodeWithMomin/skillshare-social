@@ -145,6 +145,7 @@ const completeProfile = async (req, res) => {
     user.location = req.body.location || user.location;
     user.photo = req.body.photo || user.photo;
     user.phone = req.body.phone || user.phone;
+    if (req.body.publicKey) user.publicKey = req.body.publicKey;
     // Update arrays (replace entire arrays)
     if (req.body.education) user.education = req.body.education;
     if (req.body.experience) user.experience = req.body.experience;
@@ -981,11 +982,11 @@ const getAllUsers = async (req, res) => {
   try {
     const keyword = req.query.search
       ? {
-          fullName: {
-            $regex: req.query.search,
-            $options: "i",
-          },
-        }
+        fullName: {
+          $regex: req.query.search,
+          $options: "i",
+        },
+      }
       : {};
     const users = await User.find({ ...keyword }).select('-password').limit(30);
     res.status(200).json({ success: true, users });
