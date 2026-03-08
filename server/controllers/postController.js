@@ -4,7 +4,7 @@ const Post = require('../models/Post');
 // @route   POST /api/posts
 const createPost = async (req, res) => {
     try {
-        const { author, title, avatar, timestamp, content, likes, comments, shares, tags } = req.body;
+        const { author, title, avatar, timestamp, content, likes, comments, shares, tags, mediaUrl, mediaType } = req.body;
 
         const newPost = new Post({
             author,
@@ -15,7 +15,9 @@ const createPost = async (req, res) => {
             likes: Array.isArray(likes) ? likes : [],
             comments: Array.isArray(comments) ? comments : [],
             shares: shares || 0,
-            tags: tags || []
+            tags: tags || [],
+            mediaUrl: mediaUrl || "",
+            mediaType: mediaType || "",
         });
 
         const savedPost = await newPost.save();
@@ -76,9 +78,39 @@ const commentPost = async (req, res) => {
     }
 };
 
+// @desc    Upload media for a post
+// @route   POST /api/posts/upload-media
+const uploadPostMedia = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: "No media file uploaded" });
+        }
+
+        const mediaUrl = req.file.path;
+        let mediaType = "unknown";
+
+        if (req.file.mimetype.startsWith("image/")) {
+            mediaType = "image";
+        } else if (req.file.mimetype.startsWith("video/")) {
+            mediaType = "video";
+        }
+
+        res.status(200).json({
+            success: true,
+            mediaUrl,
+            mediaType,
+            message: "Media uploaded successfully",
+        });
+    } catch (error) {
+        console.error("Upload Post Media Error:", error);
+        res.status(500).json({ success: false, message: "Server error during media upload" });
+    }
+};
+
 module.exports = {
     createPost,
     getPosts,
     likePost,
-    commentPost
+    commentPost,
+    uploadPostMedia
 };

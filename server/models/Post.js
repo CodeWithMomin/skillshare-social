@@ -21,6 +21,14 @@ const postSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    mediaUrl: {
+        type: String,
+        default: "",
+    },
+    mediaType: {
+        type: String,
+        default: "", // "image" or "video"
+    },
     likes: [{ // Array of user names/IDs who liked
         type: String
     }],

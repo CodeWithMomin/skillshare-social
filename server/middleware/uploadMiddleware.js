@@ -46,10 +46,32 @@ const chatStorage = new CloudinaryStorage({
   },
 });
 
+const postMediaStorage = new CloudinaryStorage({
+  cloudinary,
+  params: async (req, file) => {
+    let folder = "post_media";
+    let resource_type = "auto";
+    
+    if (file.mimetype.startsWith("video/")) {
+      resource_type = "video";
+    }
+
+    return {
+      folder,
+      resource_type,
+      allowed_formats: ["jpg", "jpeg", "png", "gif", "webp", "mp4", "mov", "avi", "webm"],
+    };
+  },
+});
+
 const upload = multer({ storage });
 const chatUpload = multer({
   storage: chatStorage,
   limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB limit
 });
+const postUpload = multer({
+  storage: postMediaStorage,
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB limit for posts
+});
 
-module.exports = { upload, chatUpload };
+module.exports = { upload, chatUpload, postUpload };
