@@ -1,4 +1,5 @@
 const Post = require('../models/Post');
+const User = require('../models/User'); // Import User for recommendations
 
 // @desc    Create a new post
 // @route   POST /api/posts
@@ -28,11 +29,56 @@ const createPost = async (req, res) => {
     }
 };
 
-// @desc    Get all posts
+// @desc    Get all posts (with skill-based recommendation)
 // @route   GET /api/posts
 const getPosts = async (req, res) => {
     try {
         const posts = await Post.find().sort({ timestamp: -1 });
+
+        // Feed Recommendation Logic
+        if (req.user && req.user._id) {
+            const user = await User.findById(req.user._id).select('skills');
+            if (user && user.skills && user.skills.length > 0) {
+                const userSkills = user.skills.map(skill => skill.name.toLowerCase());
+
+                // Calculate relevance score
+                const recommendedPosts = posts.map(post => {
+                    let score = 0;
+
+                    // Match tags with skills
+                    if (post.tags && post.tags.length > 0) {
+                        const postTags = post.tags.map(tag => tag.toLowerCase());
+                        const matchCount = postTags.filter(tag => userSkills.includes(tag)).length;
+                        score += matchCount * 10; // 10 points per matching tag
+                    }
+
+                    // Check post content for skill keywords
+                    if (post.content) {
+                        const contentLower = post.content.toLowerCase();
+                        userSkills.forEach(skill => {
+                            if (contentLower.includes(skill)) {
+                                score += 2; // 2 points per skill mentioned in content
+                            }
+                        });
+                    }
+
+                    // Recency weight: newer posts should naturally rank higher even with same score
+                    // Added to make sure recent posts still appear
+                    const ageInHours = (Date.now() - new Date(post.timestamp).getTime()) / (1000 * 60 * 60);
+                    const recencyScore = Math.max(0, 10 - ageInHours);
+                    score += recencyScore;
+
+                    // Convert post to JS object to add score
+                    return { ...(post.toObject ? post.toObject() : post._doc || post), relevanceScore: score };
+                });
+
+                // Sort primarily by relevanceScore, descending
+                recommendedPosts.sort((a, b) => b.relevanceScore - a.relevanceScore);
+
+                return res.status(200).json(recommendedPosts);
+            }
+        }
+
         res.status(200).json(posts);
     } catch (error) {
         res.status(500).json({ error: error.message });

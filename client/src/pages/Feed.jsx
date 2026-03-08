@@ -43,9 +43,8 @@ const Feed = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/posts');
-        const data = await response.json();
-        if (data.length > 0) {
+        const data = await api.get('/posts');
+        if (data && data.length > 0) {
           setPosts(data);
         }
       } catch (err) {
@@ -68,13 +67,8 @@ const Feed = () => {
   const handleLikePost = async (postId) => {
     try {
       const uId = user?._id || user?.id || "anonymous";
-      const response = await fetch(`http://localhost:5000/api/posts/${postId}/like`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: uId })
-      });
-      if (response.ok) {
-        const updatedPost = await response.json();
+      const updatedPost = await api.post(`/posts/${postId}/like`, { userId: uId });
+      if (updatedPost) {
         setPosts(prev => prev.map(p => (p._id === postId || p.id === postId) ? updatedPost : p));
       }
     } catch (err) {
@@ -101,13 +95,8 @@ const Feed = () => {
     setCommentInput((prev) => ({ ...prev, [postId]: "" }));
 
     try {
-      const response = await fetch(`http://localhost:5000/api/posts/${postId}/comment`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user: newCommentUser, text })
-      });
-      if (response.ok) {
-        const updatedPost = await response.json();
+      const updatedPost = await api.post(`/posts/${postId}/comment`, { user: newCommentUser, text });
+      if (updatedPost) {
         setPosts(prev => prev.map(p => (p._id === postId || p.id === postId) ? updatedPost : p));
       }
     } catch (err) {
@@ -119,19 +108,7 @@ const Feed = () => {
     console.log("newPost", newPost);
 
     try {
-      const response = await fetch('http://localhost:5000/api/posts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newPost)
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save post');
-      }
-
-      const savedPost = await response.json();
+      const savedPost = await api.post('/posts', newPost);
       setPosts((prev) => [savedPost, ...prev]);
       setToast({ open: true, message: "Post saved successfully!", severity: "success" });
     } catch (error) {

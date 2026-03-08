@@ -1,5 +1,5 @@
-const express=require('express')
-const alumniRouter=express.Router()
+const express = require('express')
+const alumniRouter = express.Router()
 const { registerUser,
     loginUser,
     getAlumniProfile,
@@ -16,41 +16,55 @@ const { registerUser,
     updateAcheivement,
     addAlumniInfo,
     deleteAlumniInfo,
-    updateAlumniInfo,addSkill,updateSkill,deleteSkill}=require('../controllers/alumniUserController')
- const {alumniProtect}=require('../middleware/alumniAuthMiddleware')
-alumniRouter.post('/register',registerUser)
-alumniRouter.post('/login',loginUser)
- 
-alumniRouter.get('/profile',alumniProtect,getAlumniProfile)
+    updateAlumniInfo,
+    addSkill,
+    updateSkill,
+    deleteSkill,
+    getAllAlumni,
+    searchAlumniByCity,
+    searchAlumniByDomain,
+    searchAlumniBatchmates
+} = require('../controllers/alumniUserController')
+const { alumniProtect } = require('../middleware/alumniAuthMiddleware')
+alumniRouter.post('/register', registerUser)
+alumniRouter.post('/login', loginUser)
+
+alumniRouter.get('/profile', alumniProtect, getAlumniProfile)
 // Basic Info
-alumniRouter.post("/basicinfo",alumniProtect,addAlumniBasicInfo)
-alumniRouter.put("/basicinfo/:basicInfoId",alumniProtect,updateAlumniBasicInfo)
+alumniRouter.post("/basicinfo", alumniProtect, addAlumniBasicInfo)
+alumniRouter.put("/basicinfo/:basicInfoId", alumniProtect, updateAlumniBasicInfo)
 
 //Academics
 
-alumniRouter.post("/academics",alumniProtect,addAcademics)
-alumniRouter.put("/academics/:academicId",alumniProtect,updateAcademics)
-alumniRouter.delete("/academics/:academicId",alumniProtect,deleteAcademics)
+alumniRouter.post("/academics", alumniProtect, addAcademics)
+alumniRouter.put("/academics/:academicId", alumniProtect, updateAcademics)
+alumniRouter.delete("/academics/:academicId", alumniProtect, deleteAcademics)
 
 //language
-alumniRouter.post("/language",alumniProtect,addLanguage)
-alumniRouter.put("/language/:langId",alumniProtect,updateLanguage)
-alumniRouter.delete("/language/:langId",alumniProtect,deleteLanguage)
+alumniRouter.post("/language", alumniProtect, addLanguage)
+alumniRouter.put("/language/:langId", alumniProtect, updateLanguage)
+alumniRouter.delete("/language/:langId", alumniProtect, deleteLanguage)
 
 //skills
-alumniRouter.post("/skill",alumniProtect,addSkill)
-alumniRouter.put("/skill/:skillId",alumniProtect,updateSkill)
-alumniRouter.delete("/skill/:skillId",alumniProtect,deleteSkill)
+alumniRouter.post("/skill", alumniProtect, addSkill)
+alumniRouter.put("/skill/:skillId", alumniProtect, updateSkill)
+alumniRouter.delete("/skill/:skillId", alumniProtect, deleteSkill)
 
 //Acheivement
 
-alumniRouter.post("/acheivement",alumniProtect,addAcheivement)
-alumniRouter.put("/acheivement/:acheivementId",alumniProtect,updateAcheivement)
-alumniRouter.delete("/acheivement/:acheivementId",alumniProtect,deleteAcheivement)
+alumniRouter.post("/acheivement", alumniProtect, addAcheivement)
+alumniRouter.put("/acheivement/:acheivementId", alumniProtect, updateAcheivement)
+alumniRouter.delete("/acheivement/:acheivementId", alumniProtect, deleteAcheivement)
 
 //Alumni Information
-alumniRouter.post("/alumniinfo",alumniProtect,addAlumniInfo)
-alumniRouter.put("/alumniinfo/:alumniId",alumniProtect,updateAlumniInfo)
-alumniRouter.delete("/alumniinfo/:alumniId",alumniProtect,deleteAlumniInfo)
+alumniRouter.post("/alumniinfo", alumniProtect, addAlumniInfo)
+alumniRouter.put("/alumniinfo/:alumniId", alumniProtect, updateAlumniInfo)
+alumniRouter.delete("/alumniinfo/:alumniId", alumniProtect, deleteAlumniInfo)
 
-module.exports=alumniRouter
+// Directory and Search
+alumniRouter.get("/directory", alumniProtect, getAllAlumni)
+alumniRouter.get("/search-city", alumniProtect, searchAlumniByCity)
+alumniRouter.get("/search-domain", alumniProtect, searchAlumniByDomain)
+alumniRouter.get("/search-batchmates", alumniProtect, searchAlumniBatchmates)
+
+module.exports = alumniRouter

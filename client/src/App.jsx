@@ -19,6 +19,8 @@ import Explore from "./pages/Explore";
 import MyNetwork from "./pages/MyNetwork";
 import FriendRequests from "./pages/FriendRequests";
 import AlumniDirectory from "./pages/AlumniConnect/AlumniDirectory";
+import AlumniInCity from "./pages/AlumniConnect/AlumniInCity";
+import Batchmates from "./pages/AlumniConnect/Batchmates";
 
 import AlmuniAuth from "./pages/AlumniConnect/AlmuniAuth";
 import AlumniConnect from "./pages/AlumniConnect/AlumniConnect";
@@ -171,6 +173,14 @@ function App() {
         {
           path: "alumni-directory",
           element: <AlumniDirectory />
+        },
+        {
+          path: "alumni-in-city",
+          element: <AlumniInCity />
+        },
+        {
+          path: "batchmates",
+          element: <Batchmates />
         },
         {
           path: "alumnisettings",

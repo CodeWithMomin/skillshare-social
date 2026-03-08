@@ -24,136 +24,149 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import { useNavigate } from "react-router-dom";
 import { useAlumniAuth } from "../../AlumniConnect/alumniContext/AlumniAuthContext";
 import SettingsIcon from '@mui/icons-material/Settings';
+import { usealumnibasicInfo } from "../../AlumniConnect/alumniContext/AlumniBasicINfoContext";
+import { useAlumniLanguages } from "../../AlumniConnect/alumniContext/AlumniLanguageContext";
+import { useAlumniAcademics } from "../../AlumniConnect/alumniContext/AlumniAcademicContext";
+import { useAlumniAcheivement } from "../../AlumniConnect/alumniContext/AlumniAcheivement.jsx";
+import { useAlumniSkills } from "../../AlumniConnect/alumniContext/AlumniSKillcontext.jsx";
+import { useAlumniInfo } from "../../AlumniConnect/alumniContext/AlumniInfoContext.jsx";
+import toast from "react-hot-toast";
 const AlumniProfile = () => {
- const localTheme = createTheme({
-  palette: {
-    primary: {
-      main: "#f89807", // your orange
-      contrastText: "#ffffff",
-    },
-    secondary: {
-      main: "#222221", // your dark text color
-      contrastText: "#ffffff",
-    },
-    background: {
-      default: "#fafafa",
-      paper: "#ffffff",
-    },
-    text: {
-      primary: "#222221",
-      secondary: "#444444",
-    },
-  },
-
-  typography: {
-    fontFamily: "Poppins, Inter, sans-serif",
-    h5: { fontWeight: 700 },
-    h6: { fontWeight: 700 },
-    
-    button: {
-      fontWeight: 600,
-      textTransform: "none",
-      fontSize: "0.95rem",
-    },
-  },
-
-  shape: {
-    borderRadius: 10, // matches your inputs + CSS
-  },
-
-  components: {
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          borderRadius: 12,
-          boxShadow: "0 0 20px rgba(0,0,0,0.05)",
-        },
+  const localTheme = createTheme({
+    palette: {
+      primary: {
+        main: "#f89807", // your orange
+        contrastText: "#ffffff",
+      },
+      secondary: {
+        main: "#222221", // your dark text color
+        contrastText: "#ffffff",
+      },
+      background: {
+        default: "#fafafa",
+        paper: "#ffffff",
+      },
+      text: {
+        primary: "#222221",
+        secondary: "#444444",
       },
     },
 
-    MuiTextField: {
-      styleOverrides: {
-        root: {
-          "& .MuiOutlinedInput-root": {
-            borderRadius: 10,
-            fontSize: "0.95rem",
-            "& fieldset": {
-              borderColor: "#ccc",
-              borderWidth: "1.8px",
-            },
-            "&:hover fieldset": {
-              borderColor: "#f89807",
-            },
-            "&.Mui-focused fieldset": {
-              borderColor: "#f89807",
-              boxShadow: "0 0 0 3px rgba(248,152,7,0.15)",
+    typography: {
+      fontFamily: "Poppins, Inter, sans-serif",
+      h5: { fontWeight: 700 },
+      h6: { fontWeight: 700 },
+
+      button: {
+        fontWeight: 600,
+        textTransform: "none",
+        fontSize: "0.95rem",
+      },
+    },
+
+    shape: {
+      borderRadius: 10, // matches your inputs + CSS
+    },
+
+    components: {
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            borderRadius: 12,
+            boxShadow: "0 0 20px rgba(0,0,0,0.05)",
+          },
+        },
+      },
+
+      MuiTextField: {
+        styleOverrides: {
+          root: {
+            "& .MuiOutlinedInput-root": {
+              borderRadius: 10,
+              fontSize: "0.95rem",
+              "& fieldset": {
+                borderColor: "#ccc",
+                borderWidth: "1.8px",
+              },
+              "&:hover fieldset": {
+                borderColor: "#f89807",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "#f89807",
+                boxShadow: "0 0 0 3px rgba(248,152,7,0.15)",
+              },
             },
           },
         },
       },
-    },
 
-    MuiButton: {
-      styleOverrides: {
-        containedPrimary: {
-          backgroundColor: "#f89807",
-          boxShadow: "0 4px 10px rgba(248,152,7,0.3)",
-          padding: "10px 18px",
-          "&:hover": {
-            backgroundColor: "#e08706",
-          },
-        },
-        outlinedPrimary: {
-          borderColor: "#f89807",
-          color: "#f89807",
-          "&:hover": {
-            borderColor: "#e08706",
-            backgroundColor: "rgba(248,152,7,0.06)",
-          },
-        },
-      },
-    },
-
-    MuiListItemButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 10,
-          marginBottom: 8,
-          "&.Mui-selected": {
+      MuiButton: {
+        styleOverrides: {
+          containedPrimary: {
             backgroundColor: "#f89807",
-            color: "#fff",
-            fontWeight: 600,
-            boxShadow: "0 2px 8px rgba(248,152,7,0.3)",
+            boxShadow: "0 4px 10px rgba(248,152,7,0.3)",
+            padding: "10px 18px",
+            "&:hover": {
+              backgroundColor: "#e08706",
+            },
           },
-          "&:hover": {
-            backgroundColor: "#fff3e0",
+          outlinedPrimary: {
+            borderColor: "#f89807",
+            color: "#f89807",
+            "&:hover": {
+              borderColor: "#e08706",
+              backgroundColor: "rgba(248,152,7,0.06)",
+            },
           },
         },
       },
-    },
 
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          background: "#fff8f0",
-          border: "1.5px solid #f89807",
-          borderRadius: 20,
-          boxShadow: "0 2px 6px rgba(248,152,7,0.15)",
+      MuiListItemButton: {
+        styleOverrides: {
+          root: {
+            borderRadius: 10,
+            marginBottom: 8,
+            "&.Mui-selected": {
+              backgroundColor: "#f89807",
+              color: "#fff",
+              fontWeight: 600,
+              boxShadow: "0 2px 8px rgba(248,152,7,0.3)",
+            },
+            "&:hover": {
+              backgroundColor: "#fff3e0",
+            },
+          },
+        },
+      },
+
+      MuiCard: {
+        styleOverrides: {
+          root: {
+            background: "#fff8f0",
+            border: "1.5px solid #f89807",
+            borderRadius: 20,
+            boxShadow: "0 2px 6px rgba(248,152,7,0.15)",
+          },
         },
       },
     },
-  },
-});
-const [profilePic, setProfilePic] = useState(null);
-const [profilePicPreview, setProfilePicPreview] = useState(null);
-const {userType,logout,getUserProfile}=useAlumniAuth()
-const handleProfilePicUpload = (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    setProfilePic(file);
-    setProfilePicPreview(URL.createObjectURL(file));
-  }
-};
+  });
+  const [profilePic, setProfilePic] = useState(null);
+  const [profilePicPreview, setProfilePicPreview] = useState(null);
+  const { userType, logout, getUserProfile } = useAlumniAuth()
+  const { addBasicInfo, updateBasicInfo } = usealumnibasicInfo();
+  const { addLanguage, deleteLanguage, updateLanguage } = useAlumniLanguages();
+  const { addAcademics, deleteAcademics, updateAcademics } = useAlumniAcademics();
+  const { addAcheivement, deleteAcheivement, updateAcheivement } = useAlumniAcheivement();
+  const { addSkill: addAlumniSkill, deleteSkill: deleteAlumniSkill, updateSkill: updateAlumniSkill } = useAlumniSkills();
+  const { addAlumniInfo: addAlumniHistory, deleteAlumniInfo: deleteAlumniHistory, updateAlumniInfo: updateAlumniHistory } = useAlumniInfo();
+  const handleProfilePicUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setProfilePic(file);
+      setProfilePicPreview(URL.createObjectURL(file));
+    }
+  };
   const navigate = useNavigate();
 
   const [activeSection, setActiveSection] = useState("basic");
@@ -163,12 +176,12 @@ const handleProfilePicUpload = (e) => {
     { id: "language", name: "Language" },
     { id: "Acadmic", name: "Acadmic" },
     { id: "acheivements", name: "Acheivements" },
-    ...(userType === "student" ? [{id:"skills",name:"Skills"}]:[]),
-    ...(userType !== "student" ? [{id:"alumniInfo",name:"AlumniInfo"}]:[])
+    ...(userType === "student" ? [{ id: "skills", name: "Skills" }] : []),
+    ...(userType !== "student" ? [{ id: "alumniInfo", name: "AlumniInfo" }] : [])
   ];
 
   // ---------------- STATES (Same as yours) ----------------
- 
+
 
   const [basicInfo, setBasicInfo] = useState({
     fullName: "",
@@ -186,158 +199,337 @@ const handleProfilePicUpload = (e) => {
   const handleBasicChange = (e) => {
     setBasicInfo({ ...basicInfo, [e.target.name]: e.target.value });
   };
-  const handleSaveBasicChange=(e)=>{
-
+  const handleSaveBasicChange = async () => {
+    if (basicInfoId) {
+      const result = await updateBasicInfo(basicInfoId, basicInfo);
+      if (result && result.success) {
+        toast.success("Basic Info updated successfully");
+        setBasicInformation(result.data);
+        setBasicInfoIndex(null);
+        setBasicInfoId(null);
+      }
+    }
   }
-  const handleSaveBasicInfo=()=>{
-    console.log(basicInfo)
+  const handleSaveBasicInfo = async () => {
+    const result = await addBasicInfo(basicInfo);
+    if (result && result.success) {
+      toast.success("Basic Info added successfully");
+      setBasicInformation(result.data);
+    }
   }
- 
+  const handleEditBasic = (index, id) => {
+    const selected = basicInformation[index];
+    setBasicInfo({
+      fullName: selected.fullName,
+      phoneNo: selected.phoneNo,
+      location: selected.location,
+      bio: selected.bio,
+      portfolioLink: selected.portfolioLink,
+      linkedInUrl: selected.linkedInUrl,
+    });
+    setBasicInfoIndex(index);
+    setBasicInfoId(id);
+  }
 
 
 
 
 
-const [academicInput, setAcademicInput] = useState({
-  university: "",
-  degree: "",
-  department: "",
-  enrollmentYear: "",
-  graduationYear: "",
-  cgpa: "",
-});
-const [academics, setAcademics] = useState([]);
-const [editAcademicIndex, setEditAcademicIndex] = useState(null);
 
-const [academicInfoId, setAcadmicInfoId] = useState(null);
+  const [academicInput, setAcademicInput] = useState({
+    university: "",
+    degree: "",
+    department: "",
+    enrollmentYear: "",
+    graduationYear: "",
+    cgpa: "",
+  });
+  const [academics, setAcademics] = useState([]);
+  const [editAcademicIndex, setEditAcademicIndex] = useState(null);
 
-const handleSaveAcademicChanges=()=>{
+  const [academicInfoId, setAcadmicInfoId] = useState(null);
 
-}
-const handleAddAcademics=()=>{
-console.log(academicInput);
+  const handleSaveAcademicChanges = async () => {
+    if (academicInfoId) {
+      const result = await updateAcademics(academicInfoId, academicInput);
+      if (result && result.success) {
+        toast.success("Academics updated successfully");
+        setAcademics(result.data);
+        setEditAcademicIndex(null);
+        setAcadmicInfoId(null);
+        setAcademicInput({
+          university: "", degree: "", department: "", enrollmentYear: "", graduationYear: "", cgpa: ""
+        });
+      }
+    }
+  }
+  const handleAddAcademics = async () => {
+    const result = await addAcademics(academicInput);
+    if (result && result.success) {
+      toast.success("Academics added successfully");
+      setAcademics(result.data);
+      setAcademicInput({
+        university: "", degree: "", department: "", enrollmentYear: "", graduationYear: "", cgpa: ""
+      });
+    }
+  }
+  const handleEditAcademics = (index, id) => {
+    const selected = academics[index];
+    setAcademicInput({
+      university: selected.university,
+      degree: selected.degree,
+      department: selected.department,
+      enrollmentYear: selected.enrollmentYear,
+      graduationYear: selected.graduationYear,
+      cgpa: selected.cgpa,
+    });
+    setEditAcademicIndex(index);
+    setAcadmicInfoId(id);
+  }
+  const handleRemoveAcademics = async (index, id) => {
+    const result = await deleteAcademics(id);
+    if (result && result.success) {
+      toast.success("Academics removed successfully");
+      setAcademics(result.data);
+    }
+  }
 
-}
-const handleEditAcademics=()=>{
-
-}
-const handleRemoveAcademics=()=>{
-
-}
-
-const [skills, setskills] = useState([]);
+  const [skills, setskills] = useState([]);
   const [skillInput, setSkillInput] = useState({
     name: "",
     proficiency: "Beginner",
   });
-  const [editSkillIndex,setEditSkillIndex]=useState(null)
-  const [editSkillId,setEditSkillId]=useState(null)
-  const addSkill=async()=>{
-
+  const [editSkillIndex, setEditSkillIndex] = useState(null)
+  const [editSkillId, setEditSkillId] = useState(null)
+  const handleAddAlumniSkill = async () => {
+    const result = await addAlumniSkill(skillInput);
+    if (result && result.success) {
+      toast.success("Skill added successfully");
+      setskills(result.data);
+      setSkillInput({ name: "", proficiency: "Beginner" });
+    }
   }
- const handleEditSkill=async (index, skillId)=>{
-            
-          }
-const handleRemoveSkill=async (skillId)=>{
+  const handleSaveSkillChanges = async () => {
+    if (editSkillId) {
+      const result = await updateAlumniSkill(editSkillId, skillInput);
+      if (result && result.success) {
+        toast.success("Skill updated successfully");
+        setskills(result.data);
+        setEditSkillIndex(null);
+        setEditSkillId(null);
+        setSkillInput({ name: "", proficiency: "Beginner" });
+      }
+    }
+  }
+  const handleEditSkill = (index, skillId) => {
+    const selected = skills[index];
+    setSkillInput({ name: selected.name, proficiency: selected.proficiency });
+    setEditSkillIndex(index);
+    setEditSkillId(skillId);
+  }
+  const handleRemoveSkill = async (skillId) => {
+    const result = await deleteAlumniSkill(skillId);
+    if (result && result.success) {
+      toast.success("Skill removed successfully");
+      setskills(result.data);
+    }
+  }
 
-}
-
-const [languages, setLanguages] = useState([]);
+  const [languages, setLanguages] = useState([]);
   const [languageInput, setLanguageInput] = useState({
     name: "",
     proficiency: "Beginner",
   });
   const [editLangIndex, setEditLangIndex] = useState(null);
   const [editLangId, setEditLangId] = useState(null);
-  const handleSaveLanguageChanges=()=>{
-
-  }
-  const handleAddLanguage=()=>{
-    console.log(languageInput);
-    
-  }
-  const handleEditLanguage=()=>{
-   
-  }
- const handleRemoveLanguage=()=>{
-
+  const handleSaveLanguageChanges = async () => {
+    if (editLangId) {
+      const result = await updateLanguage(editLangId, languageInput);
+      if (result && result.success) {
+        toast.success("Language updated successfully");
+        setLanguages(result.data);
+        setEditLangIndex(null);
+        setEditLangId(null);
+        setLanguageInput({ name: "", proficiency: "Beginner" });
+      }
     }
-
-
-
-
-const [achievements, setAchievements] = useState([]);
-const [achievementInput, setAchievementInput] = useState({
-  title: "",
-  organization: "",
-  issueDate: "",
-  certificateUrl: "",
-  description: ""
-});
-
-const [editAchIndex, setEditAchIndex] = useState(null);
-const [eidtAchId,setEditAchId]=useState(null)
-
-
-
-const handleSaveAchievementChanges=()=>{
-
-}
-const handleAddAchievements=()=>{
-console.log(achievementInput);
-
-}
-const handleEditAchievement=()=>{
-
-}
-const handleRemoveAchievement=()=>{
-
-}
-
-
-
- const [alumniInfo, setAlumniInfo] = useState([]);
-
-const [alumniInput, setAlumniInput] = useState({
-  company: "",
-  position: "",
-  experience: "",
-  startDate: "",
-  additionalInfo: "",
-});
-
-const [editAlumniIndex, setEditAlumniIndex] = useState(null);
-const [editAlumniId,setEditAcademicId]=useState(null)
-
-const handleSaveAlumniChanges=()=>{
-
-}
-const handleAddAlumniInfo=()=>{
-console.log(alumniInput);
-
-}
-const handleEditAlumniInfo=()=>{
-
-}
-const handleRemoveAlumniInfo=()=>{
-
-}
-
-
-
-useEffect(()=>{
-  async function fetchUserProfile(){
-    try {
-    const data=await getUserProfile()
-    console.log(data);
-    
-  } catch (error) {
-    console.log(error);
-    
   }
+  const handleAddLanguage = async () => {
+    const result = await addLanguage(languageInput);
+    if (result && result.success) {
+      toast.success("Language added successfully");
+      setLanguages(result.data);
+      setLanguageInput({ name: "", proficiency: "Beginner" });
+    }
   }
-  fetchUserProfile();
-},[])
+  const handleEditLanguage = (index, id) => {
+    const selected = languages[index];
+    setLanguageInput({ name: selected.name, proficiency: selected.proficiency });
+    setEditLangIndex(index);
+    setEditLangId(id);
+  }
+  const handleRemoveLanguage = async (id) => {
+    const result = await deleteLanguage(id);
+    if (result && result.success) {
+      toast.success("Language removed successfully");
+      setLanguages(result.data);
+    }
+  }
+
+
+
+
+  const [achievements, setAchievements] = useState([]);
+  const [achievementInput, setAchievementInput] = useState({
+    title: "",
+    organization: "",
+    issueDate: "",
+    certificateUrl: "",
+    description: ""
+  });
+
+  const [editAchIndex, setEditAchIndex] = useState(null);
+  const [eidtAchId, setEditAchId] = useState(null)
+
+
+
+  const handleSaveAchievementChanges = async () => {
+    if (eidtAchId) {
+      const result = await updateAcheivement(eidtAchId, achievementInput);
+      if (result && result.success) {
+        toast.success("Achievement updated successfully");
+        setAchievements(result.data);
+        setEditAchIndex(null);
+        setEditAchId(null);
+        setAchievementInput({ title: "", organization: "", issueDate: "", certificateUrl: "", description: "" });
+      }
+    }
+  }
+  const handleAddAchievements = async () => {
+    const result = await addAcheivement(achievementInput);
+    if (result && result.success) {
+      toast.success("Achievement added successfully");
+      setAchievements(result.data);
+      setAchievementInput({ title: "", organization: "", issueDate: "", certificateUrl: "", description: "" });
+    }
+  }
+  const handleEditAchievement = (index, id) => {
+    const selected = achievements[index];
+    setAchievementInput({
+      title: selected.title,
+      organization: selected.organization,
+      issueDate: selected.issueDate,
+      certificateUrl: selected.certificateUrl,
+      description: selected.description,
+    });
+    setEditAchIndex(index);
+    setEditAchId(id);
+  }
+  const handleRemoveAchievement = async (id) => {
+    const result = await deleteAcheivement(id);
+    if (result && result.success) {
+      toast.success("Achievement removed successfully");
+      setAchievements(result.data);
+    }
+  }
+
+
+
+  const [alumniInfo, setAlumniInfo] = useState([]);
+
+  const [alumniInput, setAlumniInput] = useState({
+    company: "",
+    position: "",
+    experience: "",
+    startDate: "",
+    additionalInfo: "",
+  });
+
+  const [editAlumniIndex, setEditAlumniIndex] = useState(null);
+  const [editAlumniId, setEditAcademicId] = useState(null)
+
+  const handleSaveAlumniChanges = async () => {
+    if (editAlumniId) {
+      const result = await updateAlumniHistory(editAlumniId, alumniInput);
+      if (result && result.success) {
+        toast.success("Alumni Info updated successfully");
+        setAlumniInfo(result.data.alumniInfo);
+        setEditAlumniIndex(null);
+        setEditAcademicId(null);
+        setAlumniInput({ company: "", position: "", experience: "", startDate: "", additionalInfo: "" });
+      }
+    }
+  }
+  const handleAddAlumniInfo = async () => {
+    const result = await addAlumniHistory(alumniInput);
+    if (result && result.success) {
+      toast.success("Alumni Info added successfully");
+      setAlumniInfo(result.data.alumniInfo);
+      setAlumniInput({ company: "", position: "", experience: "", startDate: "", additionalInfo: "" });
+    }
+  }
+  const handleEditAlumniInfo = (index, id) => {
+    const selected = alumniInfo[index];
+    setAlumniInput({
+      company: selected.company,
+      position: selected.position,
+      experience: selected.experience,
+      startDate: selected.startDate,
+      additionalInfo: selected.additionalInfo,
+    });
+    setEditAlumniIndex(index);
+    setEditAcademicId(id);
+  }
+  const handleRemoveAlumniInfo = async (id) => {
+    const result = await deleteAlumniHistory(id);
+    if (result && result.success) {
+      toast.success("Alumni Info removed successfully");
+      setAlumniInfo(result.data.alumniInfo);
+    }
+  }
+
+
+
+  useEffect(() => {
+    async function fetchUserProfile() {
+      try {
+        const data = await getUserProfile()
+        if (data) {
+          setBasicInformation(data.basicInfo || []);
+          setLanguages(data.languages || []);
+          setAcademics(data.Academics || []);
+          setAchievements(data.Acheivements || []);
+          setskills(data.skills || []);
+          setAlumniInfo(data.alumniInfo || []);
+
+          // Pre-fill basic info if email exists
+          if (data.email) {
+            setBasicInfo(prev => ({ ...prev, email: data.email }));
+          }
+
+          // If there's already basicInfo, pre-fill the form with the first one or leave as is
+          if (data.basicInfo && data.basicInfo.length > 0) {
+            const mainInfo = data.basicInfo[0];
+            setBasicInfo({
+              fullName: mainInfo.fullName || "",
+              phoneNo: mainInfo.phoneNo || "",
+              location: mainInfo.location || "",
+              bio: mainInfo.bio || "",
+              portfolioLink: mainInfo.portfolioLink || "",
+              linkedInUrl: mainInfo.linkedInUrl || "",
+              email: data.email
+            });
+            setBasicInfoId(mainInfo._id);
+            setBasicInfoIndex(0);
+          }
+        }
+
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    fetchUserProfile();
+  }, [])
 
 
 
@@ -347,296 +539,296 @@ useEffect(()=>{
 
 
   const renderBasicInfo = () => (
-  <>
-    <Box
-      sx={{
-        display: "flex",
-        gap: 4,
-        flexWrap: "wrap",
-        p: 2,
-        borderRadius: 3,
-        // border: "1.5px solid #f89807",
-        boxShadow: "0 2px 10px rgba(248,152,7,0.15)",
-        mb: 3,
-      }}
-    >
-      {/* LEFT: PROFILE PIC UPLOAD BOX */}
-     <Box
-  sx={{
-    width: 240,
-    height:330,
-    border: "1px solid grey",
-    borderRadius: 3,
-    p: 2,
-    textAlign: "center",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: 2,
-    justifyContent: "center",
-  }}
->
-        <Typography sx={{ fontSize: "1.1rem", fontWeight: 600, mb: 2 }}>
-          Upload ProfilePic
-        </Typography>
-
-        <Avatar
-  src={profilePicPreview || ""}
-  alt="Profile"
-  sx={{
-    width: 120,
-    height: 120,
-    border: "3px solid #f89807",
-    marginBottom: "15px",
-    objectFit: "cover",
-    backgroundColor: "#f0f0f0", // shows light BG when no image
-    fontSize: "2rem",
-    color: "#555",
-  }}
->
-  {!profilePicPreview && "?"}  {/* Placeholder icon/letter */}
-</Avatar>
-
-
-        {/* PROFILE PIC UPLOAD */}
-        <Button
-          variant="outlined"
-          component="label"
+    <>
+      <Box
+        sx={{
+          display: "flex",
+          gap: 4,
+          flexWrap: "wrap",
+          p: 2,
+          borderRadius: 3,
+          // border: "1.5px solid #f89807",
+          boxShadow: "0 2px 10px rgba(248,152,7,0.15)",
+          mb: 3,
+        }}
+      >
+        {/* LEFT: PROFILE PIC UPLOAD BOX */}
+        <Box
           sx={{
-            px: 4,
-            py: 1.2,
-            fontWeight: 600,
-            borderColor: "#f89807",
-            color: "#f89807",
+            width: 240,
+            height: 330,
+            border: "1px solid grey",
+            borderRadius: 3,
+            p: 2,
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 2,
+            justifyContent: "center",
           }}
         >
-          Upload
-          <input
-            type="file"
-            hidden
-            onChange={handleProfilePicUpload} // separate state handler
-          />
-        </Button>
+          <Typography sx={{ fontSize: "1.1rem", fontWeight: 600, mb: 2 }}>
+            Upload ProfilePic
+          </Typography>
+
+          <Avatar
+            src={profilePicPreview || ""}
+            alt="Profile"
+            sx={{
+              width: 120,
+              height: 120,
+              border: "3px solid #f89807",
+              marginBottom: "15px",
+              objectFit: "cover",
+              backgroundColor: "#f0f0f0", // shows light BG when no image
+              fontSize: "2rem",
+              color: "#555",
+            }}
+          >
+            {!profilePicPreview && "?"}  {/* Placeholder icon/letter */}
+          </Avatar>
+
+
+          {/* PROFILE PIC UPLOAD */}
+          <Button
+            variant="outlined"
+            component="label"
+            sx={{
+              px: 4,
+              py: 1.2,
+              fontWeight: 600,
+              borderColor: "#f89807",
+              color: "#f89807",
+            }}
+          >
+            Upload
+            <input
+              type="file"
+              hidden
+              onChange={handleProfilePicUpload} // separate state handler
+            />
+          </Button>
+        </Box>
+
+        {/* RIGHT: BASIC INFORMATION FORM */}
+        <Box sx={{ flex: "2 1 350px" }}>
+          <Typography sx={{ fontSize: "1.3rem", fontWeight: 700, mb: 2 }}>
+            Basic Information
+          </Typography>
+
+          <Grid container spacing={2} >
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Full Name"
+                name="fullName"
+                value={basicInfo.fullName}
+                onChange={handleBasicChange}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+
+
+                label="email"
+                name="email"
+                value={basicInfo.email}
+                disabled
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Phone Number"
+                name="phoneNo"
+                value={basicInfo.phoneNo}
+                onChange={handleBasicChange}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Location"
+                name="location"
+                value={basicInfo.location}
+                onChange={handleBasicChange}
+              />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Portfolio Link"
+                name="portfolioLink"
+                value={basicInfo.portfolioLink}
+                onChange={handleBasicChange}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="LinkedIn URL"
+                name="linkedInUrl"
+                value={basicInfo.linkedInUrl}
+                onChange={handleBasicChange}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+
+
+                label="Bio"
+                name="bio"
+                value={basicInfo.bio}
+                onChange={handleBasicChange}
+              />
+            </Grid>
+          </Grid>
+
+          {/* SUBMIT BUTTON */}
+          <Box mt={3} display="flex" justifyContent="end">
+            {basicinfoIndex !== null ? (<Button variant="contained" sx={{ px: 4, py: 1.2 }} onClick={handleSaveBasicChange}>
+              Save Changes
+            </Button>) : (<Button variant="contained" sx={{ px: 4, py: 1.2 }} onClick={handleSaveBasicInfo}>
+              Submit
+            </Button>)}
+          </Box>
+
+
+        </Box>
       </Box>
+    </>
+  );
 
-      {/* RIGHT: BASIC INFORMATION FORM */}
-      <Box sx={{ flex: "2 1 350px" }}>
-        <Typography sx={{ fontSize: "1.3rem", fontWeight: 700, mb: 2 }}>
-          Basic Information
-        </Typography>
+  const renderAcadmics = () => (
+    <>
+      <Grid container spacing={2}>
 
-        <Grid container spacing={2} >
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Full Name"
-              name="fullName"
-              value={basicInfo.fullName}
-              onChange={handleBasicChange}
-            />
-          </Grid>
-             <Grid item xs={12}>
-            <TextField
-              fullWidth
-          
-              
-              label="email"
-              name="email"
-              value={basicInfo.email}
-             disabled
-            />
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Phone Number"
-              name="phoneNo"
-              value={basicInfo.phoneNo}
-              onChange={handleBasicChange}
-            />
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Location"
-              name="location"
-              value={basicInfo.location}
-              onChange={handleBasicChange}
-            />
-          </Grid>
-
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Portfolio Link"
-              name="portfolioLink"
-              value={basicInfo.portfolioLink}
-              onChange={handleBasicChange}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="LinkedIn URL"
-              name="linkedInUrl"
-              value={basicInfo.linkedInUrl}
-              onChange={handleBasicChange}
-            />
-          </Grid>
-           
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-          
-              
-              label="Bio"
-              name="bio"
-              value={basicInfo.bio}
-              onChange={handleBasicChange}
-            />
-          </Grid>
+        {/* UNIVERSITY */}
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            label="University"
+            name="university"
+            value={academicInput.university}
+            onChange={(e) =>
+              setAcademicInput({ ...academicInput, university: e.target.value })
+            }
+          />
         </Grid>
 
-        {/* SUBMIT BUTTON */}
-        <Box mt={3} display="flex" justifyContent="end">
-          {basicinfoIndex !==null?(<Button variant="contained" sx={{ px: 4, py: 1.2 }} onClick={handleSaveBasicChange}>
-            Save Changes
-          </Button>) :(<Button variant="contained" sx={{ px: 4, py: 1.2 }} onClick={handleSaveBasicInfo}>
-            Submit
-          </Button>)}
-        </Box>
-       
+        {/* DEGREE */}
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            label="Degree"
+            name="degree"
+            value={academicInput.degree}
+            onChange={(e) =>
+              setAcademicInput({ ...academicInput, degree: e.target.value })
+            }
+          />
+        </Grid>
 
+        {/* DEPARTMENT */}
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            label="Department"
+            name="department"
+            value={academicInput.fieldOfStudy}
+            onChange={(e) =>
+              setAcademicInput({ ...academicInput, department: e.target.value })
+            }
+          />
+        </Grid>
+
+        {/* ENROLLMENT YEAR */}
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            label="Enrollment Year"
+            type="date"
+            name="startDate"
+            value={academicInput.enrollmentYear}
+            onChange={(e) =>
+              setAcademicInput({ ...academicInput, enrollmentYear: e.target.value })
+            }
+          />
+        </Grid>
+
+        {/* GRADUATION YEAR */}
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            label="Graduation Year"
+            type="text"
+            name="endDate"
+            value={academicInput.graduationYear}
+            onChange={(e) =>
+              setAcademicInput({ ...academicInput, graduationYear: e.target.value })
+            }
+          />
+        </Grid>
+
+        {/* CGPA */}
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            label="CGPA"
+            name="cgpa"
+            type="number"
+            inputProps={{ step: "0.01" }}
+            value={academicInput.cgpa || ""}
+            onChange={(e) =>
+              setAcademicInput({ ...academicInput, cgpa: e.target.value })
+            }
+          />
+        </Grid>
+
+      </Grid>
+
+      {/* ADD / SAVE BUTTON */}
+      <Box mt={2}>
+        {editAcademicIndex !== null ? (
+          <Button variant="contained" onClick={handleSaveAcademicChanges}>Save Changes</Button>) : (<Button variant="contained" onClick={handleAddAcademics}>Add Education</Button>)}
       </Box>
-    </Box>
-  </>
-);
 
-const renderAcadmics = () => (
-  <>
-    <Grid container spacing={2}>
+      {/* LIST OF ADDED ACADEMIC ENTRIES */}
+      {academics.length > 0 &&
+        academics.map((edu, index) => (
+          <Card key={index} sx={{ mt: 2 }}>
+            <CardContent>
+              <Typography variant="h6">{edu.degree} — {edu.university}</Typography>
 
-      {/* UNIVERSITY */}
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="University"
-          name="university"
-          value={academicInput.university}
-          onChange={(e) =>
-            setAcademicInput({ ...academicInput, university: e.target.value })
-          }
-        />
-      </Grid>
+              <Typography>
+                {edu.department}
+              </Typography>
 
-      {/* DEGREE */}
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Degree"
-          name="degree"
-          value={academicInput.degree}
-          onChange={(e) =>
-            setAcademicInput({ ...academicInput, degree: e.target.value })
-          }
-        />
-      </Grid>
+              <Typography>
+                {edu.enrollmentYear} - {edu.graduationYear}
+              </Typography>
 
-      {/* DEPARTMENT */}
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Department"
-          name="department"
-          value={academicInput.fieldOfStudy}
-         onChange={(e) =>
-            setAcademicInput({ ...academicInput, department: e.target.value })
-          }
-        />
-      </Grid>
+              <Typography>CGPA: {edu.cgpa}</Typography>
 
-      {/* ENROLLMENT YEAR */}
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Enrollment Year"
-          type="date"
-          name="startDate"
-          value={academicInput.enrollmentYear}
-          onChange={(e) =>
-            setAcademicInput({ ...academicInput, enrollmentYear: e.target.value })
-          }
-        />
-      </Grid>
+              <IconButton onClick={() => handleEditAcademics(index, edu._id)}>
+                <EditIcon />
+              </IconButton>
 
-      {/* GRADUATION YEAR */}
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Graduation Year"
-          type="text"
-          name="endDate"
-          value={academicInput.graduationYear}
-         onChange={(e) =>
-            setAcademicInput({ ...academicInput, graduationYear: e.target.value })
-          }
-        />
-      </Grid>
-
-      {/* CGPA */}
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="CGPA"
-          name="cgpa"
-          type="number"
-          inputProps={{ step: "0.01" }}
-          value={academicInput.cgpa || ""}
-         onChange={(e) =>
-            setAcademicInput({ ...academicInput, cgpa: e.target.value })
-          }
-        />
-      </Grid>
-
-    </Grid>
-
-    {/* ADD / SAVE BUTTON */}
-    <Box mt={2}>
-      {editAcademicIndex !== null ?(
-       <Button variant="contained" onClick={handleSaveAcademicChanges}>Save Changes</Button>):(<Button variant="contained" onClick={handleAddAcademics}>Add Education</Button>)}
-    </Box>
-
-    {/* LIST OF ADDED ACADEMIC ENTRIES */}
-    {academicInput.length > 0 &&
-      academicInput.map((edu, index) => (
-        <Card key={index} sx={{ mt: 2 }}>
-          <CardContent>
-            <Typography variant="h6">{edu.degree} — {edu.school}</Typography>
-
-            <Typography>
-              {edu.fieldOfStudy}
-            </Typography>
-
-            <Typography>
-              {edu.startDate} - {edu.endDate}
-            </Typography>
-
-            <Typography>CGPA: {edu.cgpa}</Typography>
-
-            <IconButton onClick={() => handleEditAcademics(index, edu._id)}>
-              <EditIcon />
-            </IconButton>
-
-            <IconButton onClick={() => handleRemoveAcademics(index, edu._id)}>
-              <DeleteOutlineIcon color="error" />
-            </IconButton>
-          </CardContent>
-        </Card>
-      ))}
-  </>
-);
+              <IconButton onClick={() => handleRemoveAcademics(index, edu._id)}>
+                <DeleteOutlineIcon color="error" />
+              </IconButton>
+            </CardContent>
+          </Card>
+        ))}
+    </>
+  );
 
 
   const renderLanguages = () => (
@@ -678,7 +870,7 @@ const renderAcadmics = () => (
       </Grid>
 
       <Box mt={2}>
-        {editLangIndex !== null ?(<Button variant="contained" onClick={handleSaveLanguageChanges}>Save Changes</Button>):(<Button variant="contained" onClick={handleAddLanguage}> add Language</Button>)}
+        {editLangIndex !== null ? (<Button variant="contained" onClick={handleSaveLanguageChanges}>Save Changes</Button>) : (<Button variant="contained" onClick={handleAddLanguage}> add Language</Button>)}
       </Box>
 
       {languages.length > 0 &&
@@ -700,280 +892,280 @@ const renderAcadmics = () => (
         ))}
     </>
   );
-const renderAchievements = () => (
-  <>
-    <Grid container spacing={2}>
+  const renderAchievements = () => (
+    <>
+      <Grid container spacing={2}>
 
-      {/* ACHIEVEMENT / CERTIFICATE TITLE */}
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Achievement / Certificate Title"
-          value={achievementInput.title}
-          onChange={(e) =>
-            setAchievementInput({
-              ...achievementInput,
-              title: e.target.value,
-            })
-          }
-        />
+        {/* ACHIEVEMENT / CERTIFICATE TITLE */}
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            label="Achievement / Certificate Title"
+            value={achievementInput.title}
+            onChange={(e) =>
+              setAchievementInput({
+                ...achievementInput,
+                title: e.target.value,
+              })
+            }
+          />
+        </Grid>
+
+        {/* ORGANIZATION */}
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            label="Issuing Organization"
+            value={achievementInput.organization}
+            onChange={(e) =>
+              setAchievementInput({
+                ...achievementInput,
+                organization: e.target.value,
+              })
+            }
+          />
+        </Grid>
+
+        {/* ISSUE DATE */}
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            type="date"
+            label="Issue Date"
+            InputLabelProps={{ shrink: true }}
+            value={achievementInput.issueDate}
+            onChange={(e) =>
+              setAchievementInput({
+                ...achievementInput,
+                issueDate: e.target.value,
+              })
+            }
+          />
+        </Grid>
+
+        {/* CERTIFICATE URL */}
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            label="Certificate URL (Optional)"
+            value={achievementInput.certificateUrl}
+            onChange={(e) =>
+              setAchievementInput({
+                ...achievementInput,
+                certificateUrl: e.target.value,
+              })
+            }
+          />
+        </Grid>
+
+        {/* DESCRIPTION */}
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Description"
+
+            value={achievementInput.description}
+            onChange={(e) =>
+              setAchievementInput({
+                ...achievementInput,
+                description: e.target.value,
+              })
+            }
+          />
+        </Grid>
+
       </Grid>
 
-      {/* ORGANIZATION */}
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Issuing Organization"
-          value={achievementInput.organization}
-          onChange={(e) =>
-            setAchievementInput({
-              ...achievementInput,
-              organization: e.target.value,
-            })
-          }
-        />
-      </Grid>
+      {/* ADD / SAVE BUTTON */}
+      <Box mt={2}>
+        {editAchIndex !== null ? (<Button variant="contained" onClick={handleSaveAchievementChanges}>
+          Save Changes
+        </Button>) : (<Button variant="contained" onClick={handleAddAchievements}> Add Achievement</Button>)}
+      </Box>
 
-      {/* ISSUE DATE */}
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          type="date"
-          label="Issue Date"
-          InputLabelProps={{ shrink: true }}
-          value={achievementInput.issueDate}
-          onChange={(e) =>
-            setAchievementInput({
-              ...achievementInput,
-              issueDate: e.target.value,
-            })
-          }
-        />
-      </Grid>
-
-      {/* CERTIFICATE URL */}
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Certificate URL (Optional)"
-          value={achievementInput.certificateUrl}
-          onChange={(e) =>
-            setAchievementInput({
-              ...achievementInput,
-              certificateUrl: e.target.value,
-            })
-          }
-        />
-      </Grid>
-
-      {/* DESCRIPTION */}
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label="Description"
-          
-          value={achievementInput.description}
-          onChange={(e) =>
-            setAchievementInput({
-              ...achievementInput,
-              description: e.target.value,
-            })
-          }
-        />
-      </Grid>
-
-    </Grid>
-
-    {/* ADD / SAVE BUTTON */}
-    <Box mt={2}>
-      {editAchIndex !== null ?(<Button variant="contained" onClick={handleSaveAchievementChanges}> 
-        Save Changes
-      </Button>):(<Button variant="contained" onClick={handleAddAchievements}> Add Achievement</Button>)}
-    </Box>
-
-    {/* ACHIEVEMENTS LIST */}
-    {achievements.length > 0 &&
-      achievements.map((ach, index) => (
-        <Card key={index} sx={{ mt: 2 }}>
-          <CardContent>
-            <Typography variant="h6">
-              {ach.title}
-            </Typography>
-
-            <Typography sx={{ fontSize: "0.9rem", color: "#555" }}>
-              {ach.organization} — {ach.issueDate}
-            </Typography>
-
-            {ach.certificateUrl && (
-              <Typography
-                sx={{
-                  mt: 1,
-                  wordBreak: "break-word",
-                  color: "#0077b5",
-                  cursor: "pointer",
-                }}
-                component="a"
-                target="_blank"
-                href={ach.certificateUrl}
-              >
-                View Certificate
+      {/* ACHIEVEMENTS LIST */}
+      {achievements.length > 0 &&
+        achievements.map((ach, index) => (
+          <Card key={index} sx={{ mt: 2 }}>
+            <CardContent>
+              <Typography variant="h6">
+                {ach.title}
               </Typography>
-            )}
 
-            {ach.description && (
-              <Typography sx={{ mt: 1, color: "#444" }}>
-                {ach.description}
+              <Typography sx={{ fontSize: "0.9rem", color: "#555" }}>
+                {ach.organization} — {ach.issueDate}
               </Typography>
-            )}
 
-            <Box mt={1}>
-              <IconButton onClick={() => handleEditAchievement(index, ach._id)}>
-                <EditIcon />
-              </IconButton>
+              {ach.certificateUrl && (
+                <Typography
+                  sx={{
+                    mt: 1,
+                    wordBreak: "break-word",
+                    color: "#0077b5",
+                    cursor: "pointer",
+                  }}
+                  component="a"
+                  target="_blank"
+                  href={ach.certificateUrl}
+                >
+                  View Certificate
+                </Typography>
+              )}
 
-              <IconButton onClick={() => handleRemoveAchievement(ach._id)}>
-                <DeleteOutlineIcon color="error" />
-              </IconButton>
-            </Box>
-          </CardContent>
-        </Card>
-      ))}
-  </>
-);
+              {ach.description && (
+                <Typography sx={{ mt: 1, color: "#444" }}>
+                  {ach.description}
+                </Typography>
+              )}
 
-const renderAlumniInfo = () => (
-  <>
-    <Grid container spacing={2}>
+              <Box mt={1}>
+                <IconButton onClick={() => handleEditAchievement(index, ach._id)}>
+                  <EditIcon />
+                </IconButton>
 
-      
+                <IconButton onClick={() => handleRemoveAchievement(ach._id)}>
+                  <DeleteOutlineIcon color="error" />
+                </IconButton>
+              </Box>
+            </CardContent>
+          </Card>
+        ))}
+    </>
+  );
 
-      {/* COMPANY NAME */}
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Company Name"
-          name="company"
-          value={alumniInput.company}
-          onChange={(e) =>
-            setAlumniInput({ ...alumniInput, company: e.target.value })
-          }
-        />
+  const renderAlumniInfo = () => (
+    <>
+      <Grid container spacing={2}>
+
+
+
+        {/* COMPANY NAME */}
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            label="Company Name"
+            name="company"
+            value={alumniInput.company}
+            onChange={(e) =>
+              setAlumniInput({ ...alumniInput, company: e.target.value })
+            }
+          />
+        </Grid>
+
+        {/* POSITION */}
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            label="Position / Role"
+            name="position"
+            value={alumniInput.position}
+            onChange={(e) =>
+              setAlumniInput({ ...alumniInput, position: e.target.value })
+            }
+          />
+        </Grid>
+
+        {/* EXPERIENCE IN YEARS */}
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            label="Experience (Years)"
+            type="number"
+            name="experience"
+            value={alumniInput.experience}
+            onChange={(e) =>
+              setAlumniInput({ ...alumniInput, experience: e.target.value })
+            }
+            inputProps={{ min: 0, step: "0.1" }}
+          />
+        </Grid>
+
+        {/* STARTING DATE */}
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            type="date"
+            label="Starting Date"
+            InputLabelProps={{ shrink: true }}
+            name="startDate"
+            value={alumniInput.startDate}
+            onChange={(e) =>
+              setAlumniInput({ ...alumniInput, startDate: e.target.value })
+            }
+          />
+        </Grid>
+
+        {/* ADDITIONAL INFO */}
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Additional Info (Optional)"
+            name="additionalInfo"
+
+            value={alumniInput.additionalInfo}
+            onChange={(e) =>
+              setAlumniInput({
+                ...alumniInput,
+                additionalInfo: e.target.value,
+              })
+            }
+          />
+        </Grid>
+
       </Grid>
 
-      {/* POSITION */}
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Position / Role"
-          name="position"
-          value={alumniInput.position}
-          onChange={(e) =>
-            setAlumniInput({ ...alumniInput, position: e.target.value })
-          }
-        />
-      </Grid>
+      {/* SUBMIT BUTTON */}
+      <Box mt={2}>
+        {editAlumniIndex !== null ? (<Button variant="contained" onClick={handleSaveAlumniChanges}>Save Changes</Button>) : (<Button variant="contained" onClick={handleAddAlumniInfo}>add Alumni Information</Button>)}
+      </Box>
 
-      {/* EXPERIENCE IN YEARS */}
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          label="Experience (Years)"
-          type="number"
-          name="experience"
-          value={alumniInput.experience}
-          onChange={(e) =>
-            setAlumniInput({ ...alumniInput, experience: e.target.value })
-          }
-          inputProps={{ min: 0, step: "0.1" }}
-        />
-      </Grid>
-
-      {/* STARTING DATE */}
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          type="date"
-          label="Starting Date"
-          InputLabelProps={{ shrink: true }}
-          name="startDate"
-          value={alumniInput.startDate}
-          onChange={(e) =>
-            setAlumniInput({ ...alumniInput, startDate: e.target.value })
-          }
-        />
-      </Grid>
-
-      {/* ADDITIONAL INFO */}
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label="Additional Info (Optional)"
-          name="additionalInfo"
-          
-          value={alumniInput.additionalInfo}
-          onChange={(e) =>
-            setAlumniInput({
-              ...alumniInput,
-              additionalInfo: e.target.value,
-            })
-          }
-        />
-      </Grid>
-
-    </Grid>
-
-    {/* SUBMIT BUTTON */}
-    <Box mt={2}>
-      {editAlumniIndex!== null ?(<Button variant="contained" onClick={handleSaveAlumniChanges}>Save Changes</Button>):(<Button variant="contained" onClick={handleAddAlumniInfo}>add Alumni Information</Button>)}
-    </Box>
-
-    {/* LIST OF ADDED ALUMNI INFO */}
-    {alumniInfo.length > 0 &&
-      alumniInfo.map((info, index) => (
-        <Card key={index} sx={{ mt: 2 }}>
-          <CardContent>
-            <Typography variant="h6">
-              {info.jobTitle} — {info.company}
-            </Typography>
-
-            <Typography>
-              Position: {info.position}
-            </Typography>
-
-            <Typography>
-              Experience: {info.experience} years
-            </Typography>
-
-            <Typography>
-              Started: {info.startDate}
-            </Typography>
-
-            {info.additionalInfo && (
-              <Typography sx={{ mt: 1, color: "#444" }}>
-                {info.additionalInfo}
+      {/* LIST OF ADDED ALUMNI INFO */}
+      {alumniInfo.length > 0 &&
+        alumniInfo.map((info, index) => (
+          <Card key={index} sx={{ mt: 2 }}>
+            <CardContent>
+              <Typography variant="h6">
+                {info.position} — {info.company}
               </Typography>
-            )}
 
-            <Box mt={1}>
-              <IconButton
-                onClick={() => handleEditAlumniInfo(index, info._id)}
-              >
-                <EditIcon />
-              </IconButton>
+              <Typography>
+                Position: {info.position}
+              </Typography>
 
-              <IconButton
-                onClick={() => handleRemoveAlumniInfo(info._id)}
-              >
-                <DeleteOutlineIcon color="error" />
-              </IconButton>
-            </Box>
-          </CardContent>
-        </Card>
-      ))}
-  </>
-);
+              <Typography>
+                Experience: {info.experience} years
+              </Typography>
 
-const renderSkills = () => (
+              <Typography>
+                Started: {info.startDate}
+              </Typography>
+
+              {info.additionalInfo && (
+                <Typography sx={{ mt: 1, color: "#444" }}>
+                  {info.additionalInfo}
+                </Typography>
+              )}
+
+              <Box mt={1}>
+                <IconButton
+                  onClick={() => handleEditAlumniInfo(index, info._id)}
+                >
+                  <EditIcon />
+                </IconButton>
+
+                <IconButton
+                  onClick={() => handleRemoveAlumniInfo(info._id)}
+                >
+                  <DeleteOutlineIcon color="error" />
+                </IconButton>
+              </Box>
+            </CardContent>
+          </Card>
+        ))}
+    </>
+  );
+
+  const renderSkills = () => (
     <>
       <Grid container spacing={2}>
         <Grid item xs={12} sm={6}>
@@ -982,7 +1174,7 @@ const renderSkills = () => (
             label="Skill"
             value={skillInput.name}
             onChange={(e) =>
-              setLanguageInput({ ...skillInput, name: e.target.value })
+              setSkillInput({ ...skillInput, name: e.target.value })
             }
           />
         </Grid>
@@ -994,7 +1186,7 @@ const renderSkills = () => (
             label="Proficiency"
             value={skillInput.proficiency}
             onChange={(e) =>
-              setLanguageInput({
+              setSkillInput({
                 ...skillInput,
                 proficiency: e.target.value,
               })
@@ -1012,7 +1204,7 @@ const renderSkills = () => (
       </Grid>
 
       <Box mt={2}>
-        {editLangIndex !== null ?(<Button variant="contained" onClick={handleSaveLanguageChanges}>Save Changes</Button>):(<Button variant="contained" onClick={handleAddLanguage}> add Skill</Button>)}
+        {editSkillIndex !== null ? (<Button variant="contained" onClick={handleSaveSkillChanges}>Save Changes</Button>) : (<Button variant="contained" onClick={handleAddAlumniSkill}> add Skill</Button>)}
       </Box>
 
       {skills.length > 0 &&
@@ -1020,8 +1212,8 @@ const renderSkills = () => (
           <Card key={index} sx={{ mt: 2 }}>
             <CardContent>
               <Typography variant="h6">{skill.name}</Typography>
-              <Typography>{lang.proficiency}</Typography>
-         
+              <Typography>{skill.proficiency}</Typography>
+
               <IconButton onClick={() => handleEditSkill(index, skill._id)}>
                 <EditIcon />
               </IconButton>
@@ -1036,72 +1228,72 @@ const renderSkills = () => (
   );
 
   return (
-   <ThemeProvider theme={localTheme}>
-     <Box display="flex" p={2} >
+    <ThemeProvider theme={localTheme}>
+      <Box display="flex" p={2} >
 
-      {/* ---------------- SIDEBAR ---------------- */}
-      <Box width="250px" mr={4}>
+        {/* ---------------- SIDEBAR ---------------- */}
+        <Box width="250px" mr={4}>
 
 
 
-        <List>
-          {sections.map((sec) => (
-            <ListItem disablePadding key={sec.id}>
-              <ListItemButton
-                selected={activeSection === sec.id}
-                onClick={() => setActiveSection(sec.id)}
-              >
-                <ListItemText primary={sec.name} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
+          <List>
+            {sections.map((sec) => (
+              <ListItem disablePadding key={sec.id}>
+                <ListItemButton
+                  selected={activeSection === sec.id}
+                  onClick={() => setActiveSection(sec.id)}
+                >
+                  <ListItemText primary={sec.name} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
 
-        <Button
-          variant="outlined"
-          color="primary"
-          fullWidth
-          onClick={() => navigate("/profile")}
-        >
-          Go Back
-        </Button>
-        <Button
-  sx={{
-    minWidth: "auto",
-    p: 1,
-    m: 3,
-    display: "flex",
-    justifyContent: "center",
-  }}
-  onClick={() => navigate("/alumniconnect/alumnisettings")}
->
-  
-  <SettingsIcon
-    sx={{
-      fontSize: 28,
-    }}
-  />
-</Button>
+          <Button
+            variant="outlined"
+            color="primary"
+            fullWidth
+            onClick={() => navigate("/alumniconnect/dashboard")}
+          >
+            Go Back
+          </Button>
+          <Button
+            sx={{
+              minWidth: "auto",
+              p: 1,
+              m: 3,
+              display: "flex",
+              justifyContent: "center",
+            }}
+            onClick={() => navigate("/alumniconnect/alumnisettings")}
+          >
 
+            <SettingsIcon
+              sx={{
+                fontSize: 28,
+              }}
+            />
+          </Button>
+
+        </Box>
+
+        {/* ---------------- RIGHT FORM AREA ---------------- */}
+        <Box flexGrow={1}>
+          <Typography variant="h5" mb={2}>
+            {sections.find((s) => s.id === activeSection)?.name}
+          </Typography>
+
+          {activeSection === "basic" && renderBasicInfo()}
+          {activeSection === "language" && renderLanguages()}
+          {activeSection === "Acadmic" && renderAcadmics()}
+          {activeSection === "acheivements" && renderAchievements()}
+          {activeSection === "alumniInfo" && renderAlumniInfo()}
+          {activeSection === 'skills' && renderSkills()}
+          {/* You can add the rest sections exactly like above */}
+
+        </Box>
       </Box>
-
-      {/* ---------------- RIGHT FORM AREA ---------------- */}
-      <Box flexGrow={1}>
-        <Typography variant="h5" mb={2}>
-          {sections.find((s) => s.id === activeSection)?.name}
-        </Typography>
-
-        {activeSection === "basic" && renderBasicInfo()}
-        {activeSection === "language" && renderLanguages()}
-         {activeSection === "Acadmic" && renderAcadmics()}
-         {activeSection === "acheivements" && renderAchievements()}
-         {activeSection==="alumniInfo" && renderAlumniInfo()}
-         {activeSection ==='skills' && renderSkills()}
-        {/* You can add the rest sections exactly like above */}
-
-      </Box>
-    </Box>
-   </ThemeProvider>
+    </ThemeProvider>
   );
 };
 
