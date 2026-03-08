@@ -22,7 +22,8 @@ const navItems = [
     path: "/aifeatures",
     subItems: [
       { label: "Document Summarizer", path: "/aifeatures" },
-      { label: "Chatbot", path: "/aifeatures/chatbot" }
+      { label: "Chatbot", path: "/aifeatures/chatbot" },
+      { label: "Resume Generator", path: "/aifeatures/resume" }
     ]
   },
 ];

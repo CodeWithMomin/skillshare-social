@@ -12,6 +12,7 @@ import Login from "./pages/Login"; // public
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Toaster } from 'react-hot-toast';
 import UserChat from "./pages/UserChat";
+import ResumeGenerator from "./pages/ResumeGenerator";
 import CompleteProfile from "./pages/CompleteProfile";
 import Settings from "./pages/Settings";
 import Explore from "./pages/Explore";
@@ -93,6 +94,10 @@ function App() {
         {
           path: "aifeatures/chatbot",
           element: <AiChatbot />
+        },
+        {
+          path: "aifeatures/resume",
+          element: <ResumeGenerator />
         },
         {
           path: "projects",
