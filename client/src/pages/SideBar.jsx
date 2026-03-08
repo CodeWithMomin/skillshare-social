@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Box, IconButton, useMediaQuery, useTheme, Avatar, Menu, MenuItem, ListItemIcon, ListItemText, Typography } from "@mui/material";
+import { Box, IconButton, useMediaQuery, useTheme, Avatar } from "@mui/material";
 import FeedIcon from "@mui/icons-material/Home";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import FolderIcon from "@mui/icons-material/Folder";
@@ -9,6 +9,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import PersonIcon from "@mui/icons-material/Person";
 import { Explore, Hub, People, PersonAdd } from "@mui/icons-material";
 import { useAuth } from "../context/AuthContext";
+import { useProfilePicture } from "../context/ProfilePictureContext";
 
 const navItems = [
   { label: "Feed", icon: <FeedIcon />, path: "/feed" },
@@ -22,7 +23,9 @@ const navItems = [
     icon: <SmartToyIcon />,
     path: "/aifeatures",
     subItems: [
-      { label: "Document Summarizer", path: "/aifeatures" }
+      { label: "Document Summarizer", path: "/aifeatures" },
+      { label: "Chatbot", path: "/aifeatures/chatbot" },
+      { label: "Resume Generator", path: "/aifeatures/resume" }
     ]
   },
 ];
@@ -35,9 +38,10 @@ const SideBar = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const handleMenuOpen = (e) => setAnchorEl(e.currentTarget);
-  const handleMenuClose = () => setAnchorEl(null);
+  const { user } = useAuth();
+  const { profilePic } = useProfilePicture();
+  const displayPic = profilePic || user?.profilePic;
+  const initial = user?.fullName ? user.fullName.charAt(0).toUpperCase() : "U";
 
   return (
     <Box
@@ -171,11 +175,19 @@ const SideBar = () => {
                 }
               }}
             >
-              <Avatar 
-                src={user?.profilePic || user?.avatar} 
-                sx={{ width: 34, height: 34, bgcolor: "#ee9917", fontSize: '0.9rem', fontWeight: 'bold' }}
+              <Avatar
+                src={displayPic || ""}
+                alt={user?.fullName || "User"}
+                sx={{
+                  width: 34,
+                  height: 34,
+                  backgroundColor: "#ee9917",
+                  color: "#fff",
+                  fontWeight: "bold",
+                  fontSize: "0.9rem",
+                }}
               >
-                {user?.fullName?.charAt(0) || user?.username?.charAt(0) || "U"}
+                {!displayPic && initial}
               </Avatar>
             </Box>
           </Link>
@@ -185,57 +197,39 @@ const SideBar = () => {
 
       {/* -------- PROFILE + SETTINGS (DESKTOP ONLY ICONS) -------- */}
       {!isMobile && (
-        <>
-          <Box
-            onClick={handleMenuOpen}
-            sx={{
-              display: "flex",
-              justifyContent: "flex-start",
-              alignItems: "center",
-              gap: 1.5,
-              mt: "auto",
-              mb: 0,
-              px: { xs: 1, md: 3 },
-              py: 1,
-              mx: { xs: 1, md: 2 },
-              borderRadius: 3,
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-              "&:hover": {
-                bgcolor: "rgba(0,0,0,0.04)",
-              }
-            }}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            gap: 2.5,
+            mt: 4,
+          }}
+        >
+          <Link
+            to="/profile"
+            style={{ textDecoration: "none" }}
           >
-            <Avatar 
-                src={user?.profilePic || user?.avatar} 
-                sx={{ width: 44, height: 44, bgcolor: "#ee9917", fontSize: '1.1rem', fontWeight: 'bold' }}
+            <Avatar
+              src={displayPic || ""}
+              alt={user?.fullName || "User"}
+              sx={{
+                width: 50,
+                height: 50,
+                backgroundColor: "#ee9917",
+                color: "#fff",
+                fontWeight: "bold",
+                fontSize: "1.2rem",
+                cursor: "pointer",
+              }}
             >
-              {user?.fullName?.charAt(0) || user?.username?.charAt(0) || "U"}
+              {!displayPic && initial}
             </Avatar>
-            <Box sx={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "text.primary", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {user?.fullName || user?.username || "My Profile"}
-              </Typography>
-            </Box>
-            <ExpandMoreIcon sx={{ color: "text.secondary" }} />
-          </Box>
+          </Link>
 
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleMenuClose}
-            disableScrollLock={true}
-            PaperProps={{
-              elevation: 0,
-              sx: {
-                borderRadius: 3,
-                minWidth: 180,
-                mt: -1.5,
-                boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-              }
-            }}
-            transformOrigin={{ horizontal: 'center', vertical: 'bottom' }}
-            anchorOrigin={{ horizontal: 'center', vertical: 'top' }}
+          <IconButton
+            sx={{ color: "#555", "&:hover": { color: "#ee9917" } }}
+            onClick={() => navigate("/settings")}
           >
             <MenuItem onClick={() => { handleMenuClose(); navigate("/profile"); }} sx={{ py: 1.5 }}>
               <ListItemIcon><PersonIcon fontSize="small" /></ListItemIcon>

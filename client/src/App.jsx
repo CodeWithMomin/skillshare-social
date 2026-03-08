@@ -4,6 +4,7 @@ import HomePage from "./pages/HomePage";
 import Feed from "./pages/Feed";
 import Notifications from "./pages/Notifications";
 import AiFeatures from "./pages/AiFeatures";
+import AiChatbot from "./pages/AiChatbot";
 import Projects from "./pages/Projects";
 import Profile from "./pages/Profile";
 import UserProfile from "./pages/UserProfile";
@@ -11,12 +12,15 @@ import Login from "./pages/Login"; // public
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Toaster } from 'react-hot-toast';
 import UserChat from "./pages/UserChat";
+import ResumeGenerator from "./pages/ResumeGenerator";
 import CompleteProfile from "./pages/CompleteProfile";
 import Settings from "./pages/Settings";
 import Explore from "./pages/Explore";
 import MyNetwork from "./pages/MyNetwork";
 import FriendRequests from "./pages/FriendRequests";
 import AlumniDirectory from "./pages/AlumniConnect/AlumniDirectory";
+import AlumniInCity from "./pages/AlumniConnect/AlumniInCity";
+import Batchmates from "./pages/AlumniConnect/Batchmates";
 
 import AlmuniAuth from "./pages/AlumniConnect/AlmuniAuth";
 import AlumniConnect from "./pages/AlumniConnect/AlumniConnect";
@@ -28,6 +32,8 @@ import Dashboard from "./pages/AlumniConnect/Dashboard";
 import { useAuth } from "./context/AuthContext";
 import { useAlumniAuth } from "./AlumniConnect/alumniContext/AlumniAuthContext";
 import AlumniSettings from "./pages/AlumniSettings";
+import BirjuAiLauncher from "./components/BirjuAiLauncher";
+
 function App() {
   // const isAuthenticated = !!localStorage.getItem("authToken");
   const { isAuthenticated } = useAuth()
@@ -86,6 +92,14 @@ function App() {
         {
           path: "aifeatures",
           element: <AiFeatures />
+        },
+        {
+          path: "aifeatures/chatbot",
+          element: <AiChatbot />
+        },
+        {
+          path: "aifeatures/resume",
+          element: <ResumeGenerator />
         },
         {
           path: "projects",
@@ -161,6 +175,14 @@ function App() {
           element: <AlumniDirectory />
         },
         {
+          path: "alumni-in-city",
+          element: <AlumniInCity />
+        },
+        {
+          path: "batchmates",
+          element: <Batchmates />
+        },
+        {
           path: "alumnisettings",
           element: <AlumniSettings />
         },
@@ -172,6 +194,7 @@ function App() {
   return <>
     <RouterProvider router={router} />
     <Toaster />
+    {(isAuthenticated || isAlumniAuthenticated) && <BirjuAiLauncher />}
   </>;
 }
 

@@ -146,6 +146,8 @@ app.use('/api/posts', require('./routes/postRoutes'));
 app.use('/api/messages', require('./routes/messageRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
+app.use('/api/chat-history', require('./routes/chatHistoryRoutes'));
+
 
 // Error handler middleware for Multer errors, etc.
 app.use((err, req, res, next) => {

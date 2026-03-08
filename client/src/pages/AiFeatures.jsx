@@ -10,6 +10,7 @@ import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import CloseIcon from '@mui/icons-material/Close';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const AiFeatures = ({ initialMode = 'text' }) => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -111,11 +112,7 @@ const AiFeatures = ({ initialMode = 'text' }) => {
       const formData = new FormData();
       formData.append('document', selectedFile);
 
-      const res = await axios.post("http://localhost:5000/api/ai/summarize-document", formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      const res = await axios.post("http://localhost:5000/api/ai/summarize-document", formData);
 
       if (res.data?.summary) {
         setSummary(res.data.summary);
@@ -155,127 +152,166 @@ const AiFeatures = ({ initialMode = 'text' }) => {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-140px)] w-full items-start justify-center p-4">
-      <div className="w-full max-w-4xl bg-white shadow-lg rounded-xl border border-gray-100 overflow-hidden mt-4">
-        {/* Card Header */}
-        <div className="text-center p-6 pb-2">
-          <h2 className="flex items-center justify-center gap-2 text-3xl font-bold font-inter text-gray-800">
-            <DescriptionIcon className="text-gray-800" fontSize="large" sx={{ color: '#111827' }} />
-            Document Summarizer
-          </h2>
-          <p className="text-gray-500 mt-2 font-inter text-sm">Paste text or upload a document to generate a concise summary.</p>
-        </div>
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 80px)', background: '#f9fafb', fontFamily: 'Inter, sans-serif' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '40px 24px' }}>
+        <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 32 }}>
 
-        {/* Card Content */}
-        <div className="p-6 space-y-6">
-
-          {/* Tabs UI */}
-          <div className="w-full flex bg-gray-100/80 p-1 rounded-lg">
-            <button onClick={() => { setMode('text'); handleClear(); }} className={`flex-1 py-1.5 text-sm font-semibold rounded-md transition-all ${mode === 'text' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Paste Text</button>
-            <button onClick={() => { setMode('document'); handleClear(); }} className={`flex-1 py-1.5 text-sm font-semibold rounded-md transition-all ${mode === 'document' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Upload Document</button>
+          {/* Header Section */}
+          <div style={{ textAlign: 'center', marginBottom: 8 }}>
+            <h1 style={{ fontSize: 32, fontWeight: 700, color: '#111827', margin: '0 0 12px', letterSpacing: '-0.02em' }}>
+              Document Summarizer
+            </h1>
+            <p style={{ fontSize: 16, color: '#6b7280', maxWidth: 600, margin: '0 auto' }}>
+              Transform long documents or text into clear, concise summaries in seconds.
+            </p>
           </div>
 
-          <div className="mt-4">
-            {mode === 'text' && (
-              <div>
-                <textarea
-                  placeholder="Paste your text here..."
-                  className="w-full min-h-[500px] p-4 text-sm text-gray-800 border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent font-inter resize-none bg-white shadow-sm leading-relaxed"
-                  value={textInput}
-                  onChange={(e) => setTextInput(e.target.value)}
-                />
-                <div className="mt-2 flex gap-4 text-xs text-gray-500 font-inter">
-                  <span>{textInput.trim() ? textInput.trim().split(/\s+/).length : 0} words</span>
-                  <span>{textInput.length} characters</span>
-                </div>
-              </div>
-            )}
-
-            {mode === 'document' && (
-              <div
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={handleDrop}
-                onClick={() => !selectedFile && fileInputRef.current?.click()}
-                className={`flex min-h-[350px] flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed transition-colors ${selectedFile ? 'border-gray-300 bg-gray-50/50' : 'border-gray-300 bg-gray-50/50 hover:border-gray-400 hover:bg-gray-100/50 cursor-pointer shadow-sm'}`}
+          <div style={{ background: '#fff', borderRadius: 24, border: '1px solid #e5e7eb', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', overflow: 'hidden' }}>
+            {/* Custom Tabs */}
+            <div style={{ display: 'flex', borderBottom: '1px solid #e5e7eb', background: '#fdfdfd' }}>
+              <button
+                onClick={() => { setMode('text'); handleClear(); }}
+                style={{
+                  flex: 1, padding: '20px', border: 'none', background: mode === 'text' ? '#fff' : 'transparent',
+                  color: mode === 'text' ? '#111827' : '#9ca3af', fontWeight: 600, fontSize: 15, cursor: 'pointer',
+                  borderBottom: mode === 'text' ? '3px solid #111827' : '3px solid transparent',
+                  transition: 'all 0.2s'
+                }}
               >
-                <CloudUploadIcon sx={{ fontSize: 40, color: '#9ca3af' }} />
-                <p className="text-sm font-inter text-gray-500">
-                  Drag & drop a file here, or <span className="font-medium text-gray-900">browse</span>
-                </p>
-                <p className="text-xs text-gray-400 font-inter">PDF, TXT (Max: 5MB)</p>
-                {selectedFile && (
-                  <div className="mt-2 flex items-center gap-2 rounded-md bg-gray-200/60 px-3 py-1.5 text-sm text-gray-800 font-inter font-medium z-10" onClick={(e) => e.stopPropagation()}>
-                    <DescriptionIcon fontSize="small" sx={{ color: '#4b5563' }} />
-                    {selectedFile.name}
-                    <button onClick={(e) => { e.stopPropagation(); handleClear(); }} className="ml-1 text-gray-500 hover:text-gray-800">
-                      <CloseIcon sx={{ fontSize: 16 }} />
-                    </button>
-                  </div>
-                )}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".pdf,.txt"
-                  className="hidden"
-                  onChange={handleFileSelect}
-                />
-              </div>
-            )}
-          </div>
-
-          <Button
-            variant="contained"
-            onClick={mode === 'text' ? handleSummarizeText : handleSummarizeDocument}
-            disabled={loading || (mode === 'text' ? !textInput.trim() : !selectedFile)}
-            sx={{
-              width: '100%',
-              py: 1.5,
-              borderRadius: '6px',
-              backgroundColor: '#111827',
-              color: 'white',
-              textTransform: 'none',
-              fontSize: '0.9rem',
-              fontWeight: 500,
-              fontFamily: 'Inter',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-              '&:hover': {
-                backgroundColor: '#1f2937',
-                boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-              },
-              '&.Mui-disabled': {
-                backgroundColor: '#f3f4f6',
-                color: '#9ca3af'
-              }
-            }}
-          >
-            {loading ? <CircularProgress size={16} color="inherit" sx={{ mr: 1 }} /> : <AutoAwesomeIcon sx={{ fontSize: 16, mr: 1 }} />}
-            {loading ? "Generating..." : "Generate Summary"}
-          </Button>
-
-          {(summary || loading) && (
-            <div className="space-y-3 rounded-lg border border-gray-200 bg-gray-50/50 p-5 mt-6 transition-all shadow-sm">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-gray-900 font-inter">Summary</h3>
-                {summary && !loading && (
-                  <button
-                    onClick={handleCopy}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs border border-gray-200 rounded hover:bg-gray-100 transition-colors bg-white font-medium text-gray-700 font-inter shadow-sm"
-                  >
-                    <ContentCopyIcon sx={{ fontSize: 14 }} /> Copy
-                  </button>
-                )}
-              </div>
-              {loading ? (
-                <div className="py-4 text-center space-y-2 text-gray-500">
-                  <CircularProgress size={24} sx={{ color: '#111827' }} />
-                  <p className="text-sm font-inter mt-3">Applying AI context to generate a summary...</p>
-                </div>
-              ) : (
-                <p className="text-sm leading-relaxed text-gray-600 font-inter whitespace-pre-line">{summary}</p>
-              )}
+                Paste Text
+              </button>
+              <button
+                onClick={() => { setMode('document'); handleClear(); }}
+                style={{
+                  flex: 1, padding: '20px', border: 'none', background: mode === 'document' ? '#fff' : 'transparent',
+                  color: mode === 'document' ? '#111827' : '#9ca3af', fontWeight: 600, fontSize: 15, cursor: 'pointer',
+                  borderBottom: mode === 'document' ? '3px solid #111827' : '3px solid transparent',
+                  transition: 'all 0.2s'
+                }}
+              >
+                Upload Document
+              </button>
             </div>
-          )}
 
+            <div style={{ padding: '40px' }}>
+              {mode === 'text' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div style={{ position: 'relative' }}>
+                    <textarea
+                      placeholder="Paste your long text here..."
+                      style={{
+                        width: '100%', minHeight: '400px', padding: '24px', borderRadius: 16, border: '1px solid #e5e7eb',
+                        fontSize: '15px', color: '#374151', fontFamily: 'Inter', lineHeight: '1.7', outline: 'none',
+                        resize: 'vertical', background: '#fafafa', boxSizing: 'border-box', transition: 'all 0.2s'
+                      }}
+                      onFocus={(e) => { e.target.style.borderColor = '#111827'; e.target.style.background = '#fff'; e.target.style.boxShadow = '0 0 0 4px rgba(17,24,39,0.05)'; }}
+                      onBlur={(e) => { e.target.style.borderColor = '#e5e7eb'; e.target.style.background = '#fafafa'; e.target.style.boxShadow = 'none'; }}
+                      value={textInput}
+                      onChange={(e) => setTextInput(e.target.value)}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'flex-start', gap: 16, fontSize: '13px', color: '#9ca3af' }}>
+                    <span>{textInput.trim() ? textInput.trim().split(/\s+/).length : 0} words</span>
+                    <span>{textInput.length} characters</span>
+                  </div>
+                </div>
+              )}
+
+              {mode === 'document' && (
+                <div
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={handleDrop}
+                  onClick={() => !selectedFile && fileInputRef.current?.click()}
+                  style={{
+                    minHeight: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    gap: 20, borderRadius: 20, border: '2px dashed #e5e7eb', background: '#fafafa',
+                    cursor: selectedFile ? 'default' : 'pointer', transition: 'all 0.2s', position: 'relative'
+                  }}
+                  onMouseEnter={(e) => { if (!selectedFile) { e.currentTarget.style.borderColor = '#111827'; e.currentTarget.style.background = '#f9fafb'; } }}
+                  onMouseLeave={(e) => { if (!selectedFile) { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.background = '#fafafa'; } }}
+                >
+                  <div style={{ width: 64, height: 64, borderRadius: 20, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                    <CloudUploadIcon sx={{ fontSize: 32, color: '#111827' }} />
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <p style={{ fontSize: 17, fontWeight: 600, color: '#111827', margin: '0 0 4px' }}>
+                      {selectedFile ? 'File ready to summarize' : 'Click to browse or drag and drop'}
+                    </p>
+                    <p style={{ fontSize: 14, color: '#9ca3af', margin: 0 }}>Supports PDF and Text files (Max 25MB)</p>
+                  </div>
+
+                  {selectedFile && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px', background: '#111827', borderRadius: 12, color: '#fff' }}>
+                      <InsertDriveFileIcon fontSize="small" />
+                      <span style={{ fontSize: 14, fontWeight: 500 }}>{selectedFile.name}</span>
+                      <button onClick={(e) => { e.stopPropagation(); handleClear(); }} style={{ border: 'none', background: 'rgba(255,255,255,0.2)', borderRadius: '50%', padding: '2px', cursor: 'pointer', display: 'flex', color: '#fff' }}>
+                        <CloseIcon sx={{ fontSize: 14 }} />
+                      </button>
+                    </div>
+                  )}
+                  <input ref={fileInputRef} type="file" accept=".pdf,.txt" style={{ display: 'none' }} onChange={handleFileSelect} />
+                </div>
+              )}
+
+              <div style={{ marginTop: 32 }}>
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={mode === 'text' ? handleSummarizeText : handleSummarizeDocument}
+                  disabled={loading || (mode === 'text' ? !textInput.trim() : !selectedFile)}
+                  sx={{
+                    py: 2, borderRadius: '14px', backgroundColor: '#111827', color: 'white', textTransform: 'none',
+                    fontSize: '16px', fontWeight: 600, fontFamily: 'Inter', boxShadow: '0 4px 12px rgba(17,24,39,0.15)',
+                    '&:hover': { backgroundColor: '#1f2937' },
+                    '&.Mui-disabled': { backgroundColor: '#f3f4f6', color: '#9ca3af' }
+                  }}
+                >
+                  {loading ? <CircularProgress size={20} color="inherit" sx={{ mr: 1.5 }} /> : <AutoAwesomeIcon sx={{ fontSize: 18, mr: 1.5 }} />}
+                  {loading ? "Processing..." : "Generate Summary"}
+                </Button>
+              </div>
+
+              <AnimatePresence>
+                {(summary || loading) && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+                    style={{ marginTop: 40, borderTop: '1px solid #e5e7eb', paddingTop: 40 }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                      <h3 style={{ fontSize: 18, fontWeight: 700, color: '#111827', margin: 0 }}>Resulting Summary</h3>
+                      {summary && !loading && (
+                        <button
+                          onClick={handleCopy}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 10,
+                            border: '1px solid #e5e7eb', background: '#fff', color: '#374151', fontSize: 13,
+                            fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s'
+                          }}
+                          onMouseEnter={(e) => { e.currentTarget.style.background = '#f9fafb'; e.currentTarget.style.borderColor = '#111827'; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.borderColor = '#e5e7eb'; }}
+                        >
+                          <ContentCopyIcon sx={{ fontSize: 16 }} /> Copy Summary
+                        </button>
+                      )}
+                    </div>
+
+                    <div style={{ background: '#f8fafc', borderRadius: 20, padding: '32px', border: '1px solid #e2e8f0', minHeight: '100px', position: 'relative' }}>
+                      {loading ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '20px 0' }}>
+                          <CircularProgress size={28} sx={{ color: '#111827' }} />
+                          <p style={{ fontSize: 14, color: '#64748b', fontWeight: 500 }}>Analyzing content and distilling key points...</p>
+                        </div>
+                      ) : (
+                        <p style={{ fontSize: 16, lineHeight: 1.8, color: '#334155', margin: 0, whiteSpace: 'pre-line' }}>
+                          {summary}
+                        </p>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
         </div>
       </div>
     </div>

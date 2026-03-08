@@ -4,7 +4,7 @@ import Logo from "../components/Logo";
 import CustomSearchBar from "../components/CustomSearchBar";
 import ChatLauncher from "../components/ChatLauncher";
 import SideBar from "./SideBar";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import RightSideBar from "./RightSideBar";
 import Notificationlogo from "../components/Notificationlogo";
 import MobileBottomNav from "../components/MobileBottomNav";
@@ -14,6 +14,10 @@ import CloseIcon from "@mui/icons-material/Close";
 
 const HomePage = () => {
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
+  const location = useLocation();
+
+  // Hide right sidebar on all AI features pages
+  const isAiPage = location.pathname.startsWith('/aifeatures');
 
   const toggleRightSidebar = () => {
     setIsRightSidebarOpen(!isRightSidebarOpen);
@@ -34,7 +38,7 @@ const HomePage = () => {
             <CustomSearchBar />
           </div>
           <div className="lg:hidden flex items-center">
-            <RequestLauncher onClick={toggleRightSidebar} />
+            {!isAiPage && <RequestLauncher onClick={toggleRightSidebar} />}
           </div>
           <Notificationlogo />
           <ChatLauncher />
@@ -59,12 +63,14 @@ const HomePage = () => {
           <Outlet />
         </section>
 
-        {/* Right Sidebar */}
-        <aside className="hidden lg:block w-[300px] xl:w-[350px] shrink-0 xl:mr-2">
-          <div className="sticky top-[88px]">
-            <RightSideBar />
-          </div>
-        </aside>
+        {/* Right Sidebar — hidden on AI pages */}
+        {!isAiPage && (
+          <aside className="hidden lg:block w-[300px] xl:w-[350px] shrink-0 xl:mr-2">
+            <div className="sticky top-[88px]">
+              <RightSideBar />
+            </div>
+          </aside>
+        )}
 
       </main>
 
@@ -85,17 +91,21 @@ const HomePage = () => {
         }}
         className="lg:hidden"
       >
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h6" fontWeight="bold" color="#27467a">
-            Network
-          </Typography>
-          <IconButton onClick={toggleRightSidebar}>
-            <CloseIcon />
-          </IconButton>
-        </Box>
-        <Box sx={{ overflowY: "auto", pb: 4, "::-webkit-scrollbar": { display: "none" } }}>
-          <RightSideBar />
-        </Box>
+        {!isAiPage && (
+          <>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6" fontWeight="bold" color="#27467a">
+                Network
+              </Typography>
+              <IconButton onClick={toggleRightSidebar}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+            <Box sx={{ overflowY: "auto", pb: 4, "::-webkit-scrollbar": { display: "none" } }}>
+              <RightSideBar />
+            </Box>
+          </>
+        )}
       </Drawer>
     </div>
   );

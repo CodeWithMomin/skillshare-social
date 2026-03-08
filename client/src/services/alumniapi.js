@@ -1,7 +1,7 @@
 import axios from "axios";
 
 
-const BASE_URL ='http://localhost:5000/api';
+const BASE_URL = 'http://localhost:5000/api';
 
 // ✅Create Axios instance
 const alumniapi = axios.create({
@@ -29,7 +29,7 @@ alumniapi.interceptors.response.use(
     if (error.response) {
       if (error.response.status === 401) {  // ✅ use === not ==
         localStorage.removeItem('alumniAuth_Token');
-        window.location.href = '/login';
+        window.location.href = '/alumni-auth';
       }
       return Promise.reject(error.response.data);
     } else if (error.request) {
