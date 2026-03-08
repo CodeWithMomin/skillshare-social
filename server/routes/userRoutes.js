@@ -30,6 +30,7 @@ const {
   updateCurrentPosition,
   deleteCurrentPostion,
   getAllUsers,
+  getUserById,
   uploadProfilePhoto,
   connectUser,
   acceptConnection,
@@ -43,6 +44,7 @@ router.post('/login', loginUser);
 
 // Protected routes - Profile
 router.get('/profile', protect, getUserProfile);
+router.get('/user/:id', protect, getUserById);
 router.post('/:id/connect', protect, connectUser);
 router.post('/:id/accept', protect, acceptConnection);
 router.post('/:id/decline', protect, declineConnection);

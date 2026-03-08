@@ -4,7 +4,8 @@ const profileService = {
   getUserProfile: async () => {
     try {
       const response = await api.get("/users/profile");
-      return response.data; // your backend wraps user in response.data
+      // api interceptor already unwraps response.data
+      return response.user || response; 
     } catch (error) {
       console.error("Error fetching user profile:", error);
       return null;
@@ -12,15 +13,9 @@ const profileService = {
   },
 
   uploadProfilePhoto: async (file) => {
-    // console.log(file);
-    
     try {
       const formData = new FormData();
       formData.append("profile", file); // MUST match multer.single("profile")
-      for (let pair of formData.entries()) {
-  console.log(pair[0], pair[1]);
-}
-
       
       const response = await api.post(
         "/users/upload-profile-picture", // MUST include /api
@@ -32,9 +27,10 @@ const profileService = {
         }
       );
 
-      console.log("UPLOAD RESPONSE:", response.data);
+      console.log("UPLOAD RESPONSE:", response);
 
-      return response.data.imageUrl; // Cloudinary URL
+      // response is already unwrapped by api interceptor
+      return response.imageUrl; // Cloudinary URL
     } catch (error) {
       console.error("Error uploading profile photo:", error);
       throw error.response?.data || error;

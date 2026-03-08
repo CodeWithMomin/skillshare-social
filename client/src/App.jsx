@@ -6,6 +6,7 @@ import Notifications from "./pages/Notifications";
 import AiFeatures from "./pages/AiFeatures";
 import Projects from "./pages/Projects";
 import Profile from "./pages/Profile";
+import UserProfile from "./pages/UserProfile";
 import Login from "./pages/Login"; // public
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Toaster } from 'react-hot-toast';
@@ -93,6 +94,10 @@ function App() {
         {
           path: "profile",
           element: <Profile />,
+        },
+        {
+          path: "profile/:id",
+          element: <UserProfile />
         },
         // {
         //   path:"complete-profile",

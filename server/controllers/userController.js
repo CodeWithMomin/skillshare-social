@@ -42,6 +42,7 @@ const registerUser = async (req, res) => {
           _id: user._id,
           fullName: user.fullName,
           email: user.email,
+          profilePic: user.profilePic,
           token: genrationToken(user._id)
         }
       });
@@ -86,6 +87,7 @@ const loginUser = async (req, res) => {
           _id: user._id,
           fullName: user.fullName,
           email: user.email,
+          profilePic: user.profilePic,
           token: genrationToken(user._id)
         }
       });
@@ -977,8 +979,28 @@ const uploadProfilePhoto = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select('-password').limit(30);
+    const keyword = req.query.search
+      ? {
+          fullName: {
+            $regex: req.query.search,
+            $options: "i",
+          },
+        }
+      : {};
+    const users = await User.find({ ...keyword }).select('-password').limit(30);
     res.status(200).json({ success: true, users });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+const getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password -friendRequests -sentRequests -tokens");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json({ success: true, user });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
@@ -1143,6 +1165,7 @@ module.exports = {
   updateCurrentPosition,
   uploadProfilePhoto,
   getAllUsers,
+  getUserById,
   connectUser,
   acceptConnection,
   declineConnection

@@ -6,12 +6,28 @@ const AuthContext = createContext()
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [globalUnreadCounts, setGlobalUnreadCounts] = useState({})
+
+  const totalUnreadCount = Object.values(globalUnreadCounts).reduce((sum, count) => sum + count, 0);
 
   useEffect(() => {
     const storedUser = authService.getUser()
     if (storedUser) {
       setUser(storedUser)
       setIsAuthenticated(true)
+      
+      // Fetch initial unread counts
+      const token = localStorage.getItem("authToken");
+      if (token) {
+        fetch("http://localhost:5000/api/messages/unread-counts", {
+          headers: { "Authorization": `Bearer ${token}` }
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (!data.error) setGlobalUnreadCounts(data);
+          })
+          .catch(console.error);
+      }
     }
   }, []);
 
@@ -54,13 +70,33 @@ export const AuthProvider = ({ children }) => {
     // console.log("User INfo",res);
     return res
   }
+
+  const updateUser = (updatedFields) => {
+    if (user) {
+      const newUser = { ...user, ...updatedFields };
+      setUser(newUser);
+      localStorage.setItem('user', JSON.stringify(newUser));
+    }
+  };
+
   const logout = () => {
     authService.logout();
     setUser(null)
     setIsAuthenticated(false)
   }
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, register, login, logout, getUserProfile }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      isAuthenticated, 
+      register, 
+      login, 
+      logout,
+      updateUser,
+      getUserProfile,
+      globalUnreadCounts,
+      setGlobalUnreadCounts,
+      totalUnreadCount
+    }}>
       {children}
     </AuthContext.Provider>
   )
