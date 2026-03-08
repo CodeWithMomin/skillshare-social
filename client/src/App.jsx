@@ -4,6 +4,7 @@ import HomePage from "./pages/HomePage";
 import Feed from "./pages/Feed";
 import Notifications from "./pages/Notifications";
 import AiFeatures from "./pages/AiFeatures";
+import AiChatbot from "./pages/AiChatbot";
 import Projects from "./pages/Projects";
 import Profile from "./pages/Profile";
 import UserProfile from "./pages/UserProfile";
@@ -86,6 +87,10 @@ function App() {
         {
           path: "aifeatures",
           element: <AiFeatures />
+        },
+        {
+          path: "aifeatures/chatbot",
+          element: <AiChatbot />
         },
         {
           path: "projects",

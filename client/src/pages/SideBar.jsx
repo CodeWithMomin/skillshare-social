@@ -19,7 +19,8 @@ const navItems = [
     icon: <SmartToyIcon />,
     path: "/aifeatures",
     subItems: [
-      { label: "Document Summarizer", path: "/aifeatures" }
+      { label: "Document Summarizer", path: "/aifeatures" },
+      { label: "Chatbot", path: "/aifeatures/chatbot" }
     ]
   },
 ];

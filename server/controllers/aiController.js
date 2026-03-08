@@ -125,4 +125,141 @@ const summarizeDocument = async (req, res) => {
     }
 };
 
-module.exports = { summarizeText, summarizeDocument };
+const chatbot = async (req, res) => {
+    try {
+        const { message, history = [] } = req.body;
+
+        if (!message || message.trim() === '') {
+            return res.status(400).json({ error: 'Message is required' });
+        }
+
+        const GROQ_API_KEY = process.env.GROQ_API_KEY;
+        if (!GROQ_API_KEY) {
+            return res.status(500).json({ error: 'Groq API key not configured. Please add GROQ_API_KEY to your .env file.' });
+        }
+
+        // Build messages array in OpenAI-compatible format
+        const messages = [
+            {
+                role: 'system',
+                content: 'You are a helpful, friendly AI assistant on a professional skill-sharing social platform called SkillShare Social. Be concise, clear, and helpful. Keep responses under 3 short paragraphs unless more detail is explicitly needed.'
+            }
+        ];
+
+        // Add past conversation turns (last 10 turns for context)
+        history.slice(-10).forEach(turn => {
+            if (turn.role === 'user') messages.push({ role: 'user', content: turn.content });
+            if (turn.role === 'bot') messages.push({ role: 'assistant', content: turn.content });
+        });
+
+        // Add current user message
+        messages.push({ role: 'user', content: message });
+
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${GROQ_API_KEY}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                model: 'llama-3.1-8b-instant',
+                messages,
+                max_tokens: 512,
+                temperature: 0.7,
+            }),
+        });
+
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error?.message || `Groq API error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        const reply = result?.choices?.[0]?.message?.content?.trim();
+
+        if (!reply) {
+            throw new Error('No response generated. Please try again.');
+        }
+
+        res.status(200).json({ reply });
+    } catch (error) {
+        console.error('Chatbot error:', error);
+        res.status(500).json({ error: error.message || 'An error occurred in the chatbot' });
+    }
+};
+
+/* ── Image analysis via Groq vision model ── */
+const analyzeImage = async (req, res) => {
+    try {
+        const { imageBase64, mimeType, question, history = [] } = req.body;
+
+        if (!imageBase64 || !mimeType) {
+            return res.status(400).json({ error: 'Image data is required' });
+        }
+
+        const GROQ_API_KEY = process.env.GROQ_API_KEY;
+        if (!GROQ_API_KEY) {
+            return res.status(500).json({ error: 'Groq API key not configured' });
+        }
+
+        const userQuestion = question?.trim() || 'Describe this image in detail.';
+
+        // Build messages with vision content
+        const messages = [
+            {
+                role: 'system',
+                content: 'You are a helpful AI assistant with vision capabilities. Analyze images clearly and describe what you see. Be concise and helpful.',
+            },
+        ];
+
+        // Add past text turns for context
+        history.slice(-6).forEach((turn) => {
+            if (turn.role === 'user' || turn.role === 'bot') {
+                messages.push({ role: turn.role === 'bot' ? 'assistant' : 'user', content: turn.content });
+            }
+        });
+
+        // Add the vision message (image + question)
+        messages.push({
+            role: 'user',
+            content: [
+                {
+                    type: 'image_url',
+                    image_url: { url: `data:${mimeType};base64,${imageBase64}` },
+                },
+                { type: 'text', text: userQuestion },
+            ],
+        });
+
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${GROQ_API_KEY}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+                messages,
+                max_tokens: 512,
+                temperature: 0.7,
+            }),
+        });
+
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error?.message || `Groq API error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        const reply = result?.choices?.[0]?.message?.content?.trim();
+
+        if (!reply) throw new Error('No response generated.');
+
+        res.status(200).json({ reply });
+    } catch (error) {
+        console.error('Image analysis error:', error);
+        res.status(500).json({ error: error.message || 'Failed to analyze the image' });
+    }
+};
+
+module.exports = { summarizeText, summarizeDocument, chatbot, analyzeImage };
