@@ -38,7 +38,6 @@ const SideBar = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  const { user } = useAuth();
   const { profilePic } = useProfilePicture();
   const displayPic = profilePic || user?.profilePic;
   const initial = user?.fullName ? user.fullName.charAt(0).toUpperCase() : "U";
@@ -79,6 +78,15 @@ const SideBar = () => {
           gap: isMobile ? 0 : 1.2,
           width: "100%",
           justifyContent: isMobile ? "space-around" : "flex-start",
+          flex: 1, // Take up available space
+          overflowY: isMobile ? "hidden" : "auto", // Allow scrolling on desktop
+          "&::-webkit-scrollbar": {
+            width: "4px",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "rgba(0,0,0,0.1)",
+            borderRadius: "10px",
+          },
         }}
       >
         {navItems.map((item, index) => {
@@ -231,16 +239,9 @@ const SideBar = () => {
             sx={{ color: "#555", "&:hover": { color: "#ee9917" } }}
             onClick={() => navigate("/settings")}
           >
-            <MenuItem onClick={() => { handleMenuClose(); navigate("/profile"); }} sx={{ py: 1.5 }}>
-              <ListItemIcon><PersonIcon fontSize="small" /></ListItemIcon>
-              <ListItemText><Typography variant="body2" sx={{ fontWeight: 500 }}>My Profile</Typography></ListItemText>
-            </MenuItem>
-            <MenuItem onClick={() => { handleMenuClose(); navigate("/settings"); }} sx={{ py: 1.5 }}>
-              <ListItemIcon><SettingsIcon fontSize="small" /></ListItemIcon>
-              <ListItemText><Typography variant="body2" sx={{ fontWeight: 500 }}>Settings</Typography></ListItemText>
-            </MenuItem>
-          </Menu>
-        </>
+            <SettingsIcon />
+          </IconButton>
+        </Box>
       )}
     </Box>
   );

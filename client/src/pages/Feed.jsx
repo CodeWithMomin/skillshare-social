@@ -66,6 +66,7 @@ const Feed = () => {
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [selectedPostToShare, setSelectedPostToShare] = useState(null);
   const [isSharing, setIsSharing] = useState(false);
+  const [sharingWith, setSharingWith] = useState(null); // Track specific friend ID being shared with
 
   const handleCloseToast = () => setToast((prev) => ({ ...prev, open: false }));
 
@@ -249,6 +250,7 @@ const Feed = () => {
   const handleShareConfirm = async (friendId) => {
     if (!selectedPostToShare) return;
     setIsSharing(true);
+    setSharingWith(friendId); // Mark this specific friend as loading
     try {
       // Craft the message payload
       let shareMessage = "Check out this post!";
@@ -285,6 +287,7 @@ const Feed = () => {
       setToast({ open: true, message: "Failed to share post.", severity: "error" });
     } finally {
       setIsSharing(false);
+      setSharingWith(null); // Reset
     }
   };
 
@@ -595,53 +598,66 @@ const Feed = () => {
               </Typography>
             ) : (
               <List sx={{ width: '100%', bgcolor: 'background.paper', borderRadius: 2 }}>
-                {friendsList.map((friend) => (
-                  <ListItem
-                    key={friend.userId || friend._id}
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      px: 2,
-                      py: 1.5,
-                      borderRadius: 3,
-                      mb: 0.5,
-                      transition: 'background-color 0.2s ease',
-                      '&:hover': {
-                        bgcolor: 'rgba(238, 153, 23, 0.08)'
-                      }
-                    }}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
-                      <Avatar
-                        src={friend.profilePic || friend.avatar}
-                        sx={{ width: 48, height: 48, boxShadow: '0 2px 8px rgba(0,0,0,0.1)', bgcolor: '#ee9917' }}
-                      >
-                        {friend.name?.charAt(0) || "F"}
-                      </Avatar>
-                      <ListItemText
-                        primary={<Typography variant="subtitle1" fontWeight="600" color="text.primary">{friend.name || friend.username}</Typography>}
-                        secondary={<Typography variant="caption" color="text.secondary">Connected</Typography>}
-                      />
-                    </Box>
-                    <Button
-                      variant="contained"
-                      size="small"
-                      onClick={() => handleShareConfirm(friend.userId || friend._id)}
-                      disabled={isSharing}
-                      disableElevation
+                {friendsList.map((friend, index) => {
+                  const friendId = friend.userId || friend._id;
+                  const isThisOneSharing = isSharing && sharingWith === friendId && friendId !== undefined;
+
+                  return (
+                    <ListItem
+                      key={friendId || index}
                       sx={{
-                        borderRadius: 6,
-                        px: 3,
-                        textTransform: 'none',
-                        fontWeight: 'bold',
-                        bgcolor: '#ee9917',
-                        '&:hover': { bgcolor: '#d88812' }
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        px: 2,
+                        py: 1.5,
+                        borderRadius: 3,
+                        mb: 0.5,
+                        transition: 'background-color 0.2s ease',
+                        '&:hover': {
+                          bgcolor: 'rgba(238, 153, 23, 0.08)'
+                        }
                       }}
                     >
-                      {isSharing ? <CircularProgress size={16} sx={{ color: '#fff' }} /> : "Send"}
-                    </Button>
-                  </ListItem>
-                ))}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
+                        <Avatar
+                          src={friend.profilePic || friend.avatar}
+                          sx={{ width: 48, height: 48, boxShadow: '0 2px 8px rgba(0,0,0,0.1)', bgcolor: '#ee9917' }}
+                        >
+                          {friend.name?.charAt(0) || "F"}
+                        </Avatar>
+                        <ListItemText
+                          primary={<Typography variant="subtitle1" fontWeight="600" color="text.primary">{friend.name || friend.username}</Typography>}
+                          secondary={<Typography variant="caption" color="text.secondary">Connected</Typography>}
+                        />
+                      </Box>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => friendId && handleShareConfirm(friendId)}
+                        disabled={isSharing}
+                        disableElevation
+                        sx={{
+                          borderRadius: 6,
+                          px: 3,
+                          textTransform: 'none',
+                          fontWeight: 'bold',
+                          bgcolor: '#ee9917',
+                          '&:hover': { bgcolor: '#d88812' },
+                          '&.Mui-disabled': {
+                            bgcolor: isThisOneSharing ? '#ee9917' : 'rgba(0, 0, 0, 0.12)',
+                            color: isThisOneSharing ? '#fff' : 'rgba(0, 0, 0, 0.26)'
+                          }
+                        }}
+                      >
+                        {isThisOneSharing ? (
+                          <CircularProgress size={16} sx={{ color: '#fff' }} />
+                        ) : (
+                          "Send"
+                        )}
+                      </Button>
+                    </ListItem>
+                  );
+                })}
               </List>
             )}
           </Box>
