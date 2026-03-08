@@ -22,9 +22,10 @@
     "express-validator": "^7.3.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.2",
-    "multer": "^2.0.2",
+    "multer": "^2.1.1",
     "multer-storage-cloudinary": "^4.0.0",
     "nodemailer": "^7.0.12",
+    "pdf-parse": "^1.1.1",
     "socket.io": "^4.8.3"
   },
   "devDependencies": {

@@ -14,7 +14,14 @@ const navItems = [
   { label: "Network", icon: <Hub />, path: "/mynetwork" },
   { label: "Alumni Connect", icon: <People />, path: "/alumniconnect" },
   { label: "Requests", icon: <PersonAdd />, path: "/friend-requests" },
-  { label: "AI Features", icon: <SmartToyIcon />, path: "/aifeatures" },
+  {
+    label: "AI Features",
+    icon: <SmartToyIcon />,
+    path: "/aifeatures",
+    subItems: [
+      { label: "Document Summarizer", path: "/aifeatures" }
+    ]
+  },
 ];
 
 const SideBar = () => {
@@ -63,39 +70,75 @@ const SideBar = () => {
           justifyContent: isMobile ? "space-around" : "flex-start",
         }}
       >
-        {navItems.map(item => {
-          const active = location.pathname === item.path;
+        {navItems.map((item, index) => {
+          const active = location.pathname.startsWith(item.path) && item.path !== "/";
+          // Also check exact match to cover root path corner cases if needed
+          const isExactActive = location.pathname === item.path;
 
           return (
-            <Link key={item.label} to={item.path} style={{ textDecoration: "none" }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: isMobile ? "column" : "row",
-                  alignItems: "center",
-                  fontWeight: "500",
-                  gap: isMobile ? 0 : 2,
-                  px: isMobile ? 0.7 : 2,
-                  py: isMobile ? 0.7 : 1.4,
-                  borderRadius: "10px",
-                  fontSize: isMobile ? "0.7rem" : "1rem",
-                  color: active ? "#fff" : "#000",
-                  backgroundColor: active ? "#ee9917" : "#fff",
-                  transition: "all 0.2s ease",
-                }}
-              >
-                {React.cloneElement(item.icon, {
-                  fontSize: "medium",
-                  sx: {
-                    color: active ? "#fff" : "#ee9917",
-                    backgroundColor: active ? "#ee9917" : "#fff",
+            <React.Fragment key={item.label + index}>
+              <Link to={item.path} style={{ textDecoration: "none" }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: isMobile ? "column" : "row",
+                    alignItems: "center",
+                    fontWeight: "500",
+                    gap: isMobile ? 0 : 2,
+                    px: isMobile ? 0.7 : 2,
+                    py: isMobile ? 0.7 : 1.4,
+                    borderRadius: "10px",
+                    fontSize: isMobile ? "0.7rem" : "1rem",
+                    color: active || isExactActive ? "#fff" : "#000",
+                    backgroundColor: active || isExactActive ? "#ee9917" : "#fff",
                     transition: "all 0.2s ease",
-                  },
-                })}
+                  }}
+                >
+                  {React.cloneElement(item.icon, {
+                    fontSize: "medium",
+                    sx: {
+                      color: active || isExactActive ? "#fff" : "#ee9917",
+                      transition: "all 0.2s ease",
+                    },
+                  })}
 
-                {!isMobile && <span>{item.label}</span>}
-              </Box>
-            </Link>
+                  {!isMobile && <span>{item.label}</span>}
+                </Box>
+              </Link>
+
+              {/* Render SubItems if they exist and this category is active */}
+              {item.subItems && (active || isExactActive) && !isMobile && (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, ml: 4, mt: 0.5, mb: 1 }}>
+                  {item.subItems.map((sub, subIndex) => {
+                    const subActive = location.pathname === sub.path;
+                    return (
+                      <Link key={subIndex} to={sub.path} style={{ textDecoration: "none" }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            fontSize: "0.85rem",
+                            py: 1,
+                            px: 2,
+                            borderRadius: "8px",
+                            color: subActive ? "#ee9917" : "#666",
+                            backgroundColor: subActive ? "#fff8ed" : "transparent",
+                            fontWeight: subActive ? "600" : "500",
+                            transition: "all 0.2s ease",
+                            "&:hover": {
+                              color: "#ee9917",
+                              backgroundColor: "#fff8ed"
+                            }
+                          }}
+                        >
+                          {sub.label}
+                        </Box>
+                      </Link>
+                    )
+                  })}
+                </Box>
+              )}
+            </React.Fragment>
           );
         })}
         {isMobile && (

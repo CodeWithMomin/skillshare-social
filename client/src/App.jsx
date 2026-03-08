@@ -85,7 +85,7 @@ function App() {
         },
         {
           path: "aifeatures",
-          element: <AiFeatures />,
+          element: <AiFeatures />
         },
         {
           path: "projects",
