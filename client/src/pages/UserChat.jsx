@@ -26,11 +26,12 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { Send, Search, MoreVert, Phone, Videocam, VideocamOff, ArrowBack, Check, DoneAll, AttachFile, Close, Download, Share, Image, InsertDriveFile, PlayCircle } from "@mui/icons-material";
+import { Send, Search, MoreVert, Phone, Videocam, VideocamOff, ArrowBack, Check, DoneAll, AttachFile, Close, Download, Share, Image, InsertDriveFile, PlayCircle, Delete, Block } from "@mui/icons-material";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import socket from "../socket";
 import VideoCall from "./VideoCall";
+import api from "../services/api";
 
 const UserChat = () => {
   const theme = useTheme();
@@ -52,6 +53,8 @@ const UserChat = () => {
   const [forwardDialogOpen, setForwardDialogOpen] = useState(false);
   const [sharingFriendId, setSharingFriendId] = useState(null);
   const [shareSuccess, setShareSuccess] = useState(false);
+  const [typingUsers, setTypingUsers] = useState({}); // { [friendId]: boolean }
+  const typingTimeoutRef = useRef({}); // { [friendId]: timeoutId }
 
   // ── Calling State ──────────────────────────
   const [callState, setCallState] = useState(null);
@@ -75,6 +78,9 @@ const UserChat = () => {
           if (res.friends) {
             setFriends(res.friends);
           }
+          // Fetch initial unread counts via centralized API service
+          const data = await api.get("/messages/unread-counts");
+          if (data && !data.error) setUnreadCounts(data);
         }
       } catch (error) {
         console.error("Failed to load friends for chat", error);
@@ -87,20 +93,26 @@ const UserChat = () => {
   // Fetch own profile for showing caller info
   useEffect(() => {
     if (myUserId) {
-      const token = localStorage.getItem("authToken");
-      fetch("http://localhost:5000/api/users/profile", { headers: { Authorization: `Bearer ${token}` } })
-        .then(r => r.json())
+      api.get("/users/profile")
         .then(data => { myProfileRef.current = data; })
         .catch(console.error);
     }
   }, [myUserId]);
 
-  // Socket Event Listeners (connection managed globally by AuthContext)
+  // Socket Connection & Listener
   useEffect(() => {
     if (myUserId) {
-      // Ensure the socket has the correct userId in case it reconnects
-      socket.io.opts.query = { userId: myUserId };
-      if (!socket.connected) socket.connect();
+      console.log("Connecting socket for user:", myUserId);
+      socket.auth = { userId: myUserId };
+      socket.connect();
+
+      socket.on("connect", () => {
+        console.log("Socket connected with ID:", socket.id);
+      });
+
+      socket.on("connect_error", (err) => {
+        console.error("Socket connection error:", err);
+      });
 
       socket.on("newMessage", (msg) => {
         const currSelected = selectedFriendRef.current;
@@ -115,10 +127,26 @@ const UserChat = () => {
         });
       });
 
-      socket.on("messagesRead", ({ readerId }) => {
+      socket.on("typing", ({ senderId }) => {
+        console.log("Typing from:", senderId);
+        setTypingUsers(prev => ({ ...prev, [senderId]: true }));
+      });
+
+      socket.on("stopTyping", ({ senderId }) => {
+        console.log("Stop typing from:", senderId);
+        setTypingUsers(prev => ({ ...prev, [senderId]: false }));
+      });
+
+      socket.on("messageDeleted", ({ messageId }) => {
+        setChatHistory(prev => prev.map(msg =>
+          msg._id === messageId ? { ...msg, isDeleted: true, message: "", imageUrl: "", fileUrl: "" } : msg
+        ));
+      });
+
+      socket.on("messagesRead", ({ readerId, readAt }) => {
         setChatHistory((prev) =>
           prev.map(msg =>
-            (msg.senderId === myUserId && msg.status !== 'read') ? { ...msg, status: 'read' } : msg
+            (msg.senderId === myUserId && msg.status !== 'read') ? { ...msg, status: 'read', readAt } : msg
           )
         );
       });
@@ -137,11 +165,14 @@ const UserChat = () => {
     }
 
     return () => {
-      // Only remove listeners — do NOT disconnect (AuthContext manages connection)
       socket.off("newMessage");
       socket.off("messagesRead");
       socket.off("getOnlineUsers");
+      socket.off("typing");
+      socket.off("stopTyping");
+      socket.off("messageDeleted");
       socket.off("incomingCall");
+      socket.disconnect();
     };
   }, [myUserId]);
 
@@ -150,11 +181,7 @@ const UserChat = () => {
     const fetchChatHistory = async () => {
       if (!selectedFriend) return;
       try {
-        const token = localStorage.getItem("authToken");
-        const response = await fetch(`http://localhost:5000/api/messages/${selectedFriend.userId}`, {
-          headers: { "Authorization": `Bearer ${token}` }
-        });
-        const data = await response.json();
+        const data = await api.get(`/messages/${selectedFriend.userId}`);
         setChatHistory(data);
 
         // Clear local unread counts for this friend
@@ -187,6 +214,25 @@ const UserChat = () => {
     }
   };
 
+  const handleTyping = (e) => {
+    setMessage(e.target.value);
+
+    if (!selectedFriend) return;
+
+    // Emit typing event
+    socket.emit("typing", { senderId: myUserId, receiverId: selectedFriend.userId });
+
+    // Clear existing timeout
+    if (typingTimeoutRef.current[selectedFriend.userId]) {
+      clearTimeout(typingTimeoutRef.current[selectedFriend.userId]);
+    }
+
+    // Set new timeout to emit stopTyping
+    typingTimeoutRef.current[selectedFriend.userId] = setTimeout(() => {
+      socket.emit("stopTyping", { senderId: myUserId, receiverId: selectedFriend.userId });
+    }, 2000);
+  };
+
   const clearImage = () => {
     setSelectedImage(null);
     setImagePreview(null);
@@ -203,23 +249,23 @@ const UserChat = () => {
     setMessage("");
     clearImage();
 
-    try {
-      const token = localStorage.getItem("authToken");
+    // Immediately stop typing when message is sent
+    if (selectedFriend) {
+      socket.emit("stopTyping", { senderId: myUserId, receiverId: selectedFriend.userId });
+      if (typingTimeoutRef.current[selectedFriend.userId]) {
+        clearTimeout(typingTimeoutRef.current[selectedFriend.userId]);
+      }
+    }
 
+    try {
       const formData = new FormData();
       if (msgText) formData.append("message", msgText);
       if (imgFile) formData.append("image", imgFile);
 
-      const response = await fetch(`http://localhost:5000/api/messages/send/${selectedFriend.userId}`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        },
-        body: formData
-      });
+      // Using our centralized api instance
+      const data = await api.post(`/messages/send/${selectedFriend.userId}`, formData);
 
-      const data = await response.json();
-      if (response.ok) {
+      if (data) {
         setChatHistory((prev) => [...prev, data]);
       } else {
         setMessage(msgText);
@@ -231,6 +277,19 @@ const UserChat = () => {
       setMessage(msgText);
       setSelectedImage(imgFile);
       setImagePreview(previewBackup);
+    }
+  };
+
+  const handleDeleteMessage = async (messageId) => {
+    try {
+      const res = await api.delete(`/messages/${messageId}`);
+      if (res.success) {
+        setChatHistory(prev => prev.map(msg =>
+          msg._id === messageId ? { ...msg, isDeleted: true, message: "", imageUrl: "", fileUrl: "" } : msg
+        ));
+      }
+    } catch (error) {
+      console.error("Failed to delete message:", error);
     }
   };
 
@@ -348,8 +407,8 @@ const UserChat = () => {
                   <Typography variant="subtitle1" fontWeight="bold">
                     {selectedFriend.name}
                   </Typography>
-                  <Typography variant="caption" color={onlineUsers.includes(selectedFriend.userId) ? "green" : "text.secondary"}>
-                    {onlineUsers.includes(selectedFriend.userId) ? "Online" : "Offline"}
+                  <Typography variant="caption" sx={{ color: typingUsers[selectedFriend.userId] ? "#0a66c2" : onlineUsers.includes(selectedFriend.userId) ? "green" : "text.secondary", fontWeight: typingUsers[selectedFriend.userId] ? "bold" : "normal" }}>
+                    {typingUsers[selectedFriend.userId] ? "typing..." : (onlineUsers.includes(selectedFriend.userId) ? "Online" : "Offline")}
                   </Typography>
                 </Box>
               </Box>
@@ -390,66 +449,101 @@ const UserChat = () => {
                       flexDirection: "column",
                       alignSelf: isMe ? "flex-end" : "flex-start",
                       maxWidth: "70%",
+                      position: 'relative',
+                      '&:hover .delete-btn': { opacity: 1 }
                     }}
                   >
+                    {isMe && !chat.isDeleted && (
+                      <IconButton
+                        className="delete-btn"
+                        size="small"
+                        onClick={() => handleDeleteMessage(chat._id || chat.id)}
+                        sx={{
+                          position: 'absolute',
+                          left: -35,
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          opacity: 0,
+                          transition: 'opacity 0.2s',
+                          color: '#d32f2f',
+                          bgcolor: 'rgba(211, 47, 47, 0.05)',
+                          '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.15)' }
+                        }}
+                      >
+                        <Delete fontSize="small" />
+                      </IconButton>
+                    )}
                     <Paper
                       elevation={1}
                       sx={{
                         p: 1.5,
                         px: 2,
                         borderRadius: 2,
-                        bgcolor: isMe ? "#0a66c2" : "#fff",
-                        color: isMe ? "#fff" : "text.primary",
+                        bgcolor: chat.isDeleted ? "#f0f0f0" : (isMe ? "#0a66c2" : "#fff"),
+                        color: chat.isDeleted ? "#888" : (isMe ? "#fff" : "text.primary"),
                         borderTopRightRadius: isMe ? 0 : 8,
                         borderTopLeftRadius: isMe ? 8 : 0,
+                        fontStyle: chat.isDeleted ? "italic" : "normal",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1
                       }}
                     >
-                      {/* IMAGE bubble */}
-                      {chat.imageUrl && (
-                        <Box sx={{ mb: (chat.message || chat.text) ? 1 : 0 }}>
-                          <img
-                            src={chat.imageUrl}
-                            alt="attachment"
-                            onClick={() => setViewerImage(chat.imageUrl)}
-                            style={{ maxWidth: "100%", maxHeight: 250, borderRadius: 8, objectFit: "cover", cursor: "pointer" }}
-                          />
+                      {chat.isDeleted ? (
+                        <>
+                          <Block sx={{ fontSize: 16, opacity: 0.6 }} />
+                          <Typography variant="body2">This message was deleted</Typography>
+                        </>
+                      ) : (
+                        <Box sx={{ width: "100%" }}>
+                          {/* IMAGE bubble */}
+                          {chat.imageUrl && (
+                            <Box sx={{ mb: (chat.message || chat.text) ? 1 : 0 }}>
+                              <img
+                                src={chat.imageUrl}
+                                alt="attachment"
+                                onClick={() => setViewerImage(chat.imageUrl)}
+                                style={{ maxWidth: "100%", maxHeight: 250, borderRadius: 8, objectFit: "cover", cursor: "pointer" }}
+                              />
+                            </Box>
+                          )}
+                          {/* VIDEO bubble */}
+                          {chat.fileType === "video" && chat.fileUrl && (
+                            <Box sx={{ mb: (chat.message || chat.text) ? 1 : 0 }}>
+                              <video
+                                src={chat.fileUrl}
+                                controls
+                                style={{ maxWidth: "100%", maxHeight: 250, borderRadius: 8 }}
+                              />
+                            </Box>
+                          )}
+                          {/* DOCUMENT bubble */}
+                          {chat.fileType === "document" && chat.fileUrl && (
+                            <Box
+                              sx={{
+                                mb: (chat.message || chat.text) ? 1 : 0,
+                                display: "flex", alignItems: "center", gap: 1,
+                                bgcolor: isMe ? "rgba(255,255,255,0.15)" : "#f0f0f0",
+                                borderRadius: 2, p: 1.5, cursor: "pointer",
+                              }}
+                              onClick={() => window.open(chat.fileUrl, "_blank")}
+                            >
+                              <InsertDriveFile sx={{ fontSize: 32, color: isMe ? "#fff" : "#1976d2" }} />
+                              <Box sx={{ overflow: "hidden" }}>
+                                <Typography variant="body2" fontWeight="bold" noWrap sx={{ maxWidth: 180 }}>
+                                  {chat.fileName || "Document"}
+                                </Typography>
+                                <Typography variant="caption" sx={{ opacity: 0.7 }}>
+                                  Tap to open
+                                </Typography>
+                              </Box>
+                              <Download sx={{ ml: "auto", opacity: 0.7, fontSize: 18, color: isMe ? "#fff" : "inherit" }} />
+                            </Box>
+                          )}
+                          {(chat.message || chat.text) && (
+                            <Typography variant="body2">{chat.message || chat.text}</Typography>
+                          )}
                         </Box>
-                      )}
-                      {/* VIDEO bubble */}
-                      {chat.fileType === "video" && chat.fileUrl && (
-                        <Box sx={{ mb: (chat.message || chat.text) ? 1 : 0 }}>
-                          <video
-                            src={chat.fileUrl}
-                            controls
-                            style={{ maxWidth: "100%", maxHeight: 250, borderRadius: 8 }}
-                          />
-                        </Box>
-                      )}
-                      {/* DOCUMENT bubble */}
-                      {chat.fileType === "document" && chat.fileUrl && (
-                        <Box
-                          sx={{
-                            mb: (chat.message || chat.text) ? 1 : 0,
-                            display: "flex", alignItems: "center", gap: 1,
-                            bgcolor: isMe ? "rgba(255,255,255,0.15)" : "#f0f0f0",
-                            borderRadius: 2, p: 1.5, cursor: "pointer",
-                          }}
-                          onClick={() => window.open(chat.fileUrl, "_blank")}
-                        >
-                          <InsertDriveFile sx={{ fontSize: 32, color: isMe ? "#fff" : "#1976d2" }} />
-                          <Box sx={{ overflow: "hidden" }}>
-                            <Typography variant="body2" fontWeight="bold" noWrap sx={{ maxWidth: 180 }}>
-                              {chat.fileName || "Document"}
-                            </Typography>
-                            <Typography variant="caption" sx={{ opacity: 0.7 }}>
-                              Tap to open
-                            </Typography>
-                          </Box>
-                          <Download sx={{ ml: "auto", opacity: 0.7, fontSize: 18, color: isMe ? "#fff" : "inherit" }} />
-                        </Box>
-                      )}
-                      {(chat.message || chat.text) && (
-                        <Typography variant="body2">{chat.message || chat.text}</Typography>
                       )}
                     </Paper>
                     <Typography
@@ -458,15 +552,28 @@ const UserChat = () => {
                       sx={{ mt: 0.5, alignSelf: isMe ? "flex-end" : "flex-start", display: "flex", alignItems: "center", gap: 0.5 }}
                     >
                       {timeStr}
-                      {isMe && (
-                        chat.status === "read" ? <DoneAll sx={{ fontSize: 16, color: "#4fc3f7" }} /> :
-                          chat.status === "delivered" ? <DoneAll sx={{ fontSize: 16 }} /> :
-                            <Check sx={{ fontSize: 16 }} />
+                      {isMe && !chat.isDeleted && (
+                        <Box component="span" sx={{ display: 'flex', alignItems: 'center' }} title={chat.status === "read" && chat.readAt ? `Seen ${new Date(chat.readAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ""}>
+                          {chat.status === "read" ? (
+                            <DoneAll sx={{ fontSize: 16, color: "#4fc3f7" }} />
+                          ) : chat.status === "delivered" ? (
+                            <DoneAll sx={{ fontSize: 16, color: "text.secondary" }} />
+                          ) : (
+                            <Check sx={{ fontSize: 16, color: "text.secondary" }} />
+                          )}
+                        </Box>
                       )}
                     </Typography>
                   </Box>
                 )
               })}
+              {typingUsers[selectedFriend.userId] && (
+                <Box sx={{ alignSelf: "flex-start", ml: 1, p: 1, bgcolor: "#fff", borderRadius: 2, borderBottomLeftRadius: 0, boxShadow: 1, display: "flex", gap: 0.5, alignItems: "center" }}>
+                  <Box sx={{ width: 6, height: 6, bgcolor: "#9e9e9e", borderRadius: "50%", animation: "typingDot 1.4s infinite", animationDelay: "0s" }} />
+                  <Box sx={{ width: 6, height: 6, bgcolor: "#9e9e9e", borderRadius: "50%", animation: "typingDot 1.4s infinite", animationDelay: "0.2s" }} />
+                  <Box sx={{ width: 6, height: 6, bgcolor: "#9e9e9e", borderRadius: "50%", animation: "typingDot 1.4s infinite", animationDelay: "0.4s" }} />
+                </Box>
+              )}
               <div ref={messagesEndRef} />
             </Box>
 
@@ -547,7 +654,7 @@ const UserChat = () => {
                   variant="outlined"
                   size="small"
                   value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  onChange={handleTyping}
                   onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                   sx={{
                     "& .MuiOutlinedInput-root": {
@@ -668,17 +775,14 @@ const UserChat = () => {
                         const file = new File([blob], "shared_image.jpg", { type: blob.type });
 
                         // 2. Prepare FormData to send to internal API
+                        const token = localStorage.getItem("authToken");
+                        // Forwarding via API service
                         const formData = new FormData();
                         formData.append("image", file);
 
-                        const token = localStorage.getItem("authToken");
-                        const shareRes = await fetch(`http://localhost:5000/api/messages/send/${friend.userId}`, {
-                          method: "POST",
-                          headers: { "Authorization": `Bearer ${token}` },
-                          body: formData
-                        });
+                        const data = await api.post(`/messages/send/${friend.userId}`, formData);
 
-                        if (shareRes.ok) {
+                        if (data) {
                           setShareSuccess(true);
                           setForwardDialogOpen(false);
                           setViewerImage(null);
@@ -725,6 +829,12 @@ const UserChat = () => {
         />
       )}
 
+      <style>{`
+        @keyframes typingDot {
+          0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+          30% { transform: translateY(-4px); opacity: 1; }
+        }
+      `}</style>
     </Box>
   );
 };

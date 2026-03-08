@@ -1,7 +1,6 @@
-import React, { Children } from 'react'
+import React from 'react'
 import { createContext, useState, useEffect, useContext } from 'react'
 import authService from '../services/authService'
-import socket from '../socket'
 const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
@@ -31,33 +30,6 @@ export const AuthProvider = ({ children }) => {
       }
     }
   }, []);
-
-  // ── Global socket connection: keep user registered as Online on the server
-  // This must run whenever the user object is available (not just on /chat page)
-  useEffect(() => {
-    if (user && user._id) {
-      // Set userId query before connecting
-      socket.io.opts.query = { userId: user._id };
-      if (!socket.connected) socket.connect();
-      
-      const handleNewMessage = (msg) => {
-        // We only increment if we are not actively viewing this user's chat.
-        // UserChat handles clearing it if actively viewed.
-        setGlobalUnreadCounts(prev => ({
-          ...prev,
-          [msg.senderId]: (prev[msg.senderId] || 0) + 1
-        }));
-      };
-      
-      socket.on("newMessage", handleNewMessage);
-      
-      return () => {
-        socket.off("newMessage", handleNewMessage);
-        // Do NOT disconnect here — socket stays alive across page navigation
-      }
-    }
-    return () => {};
-  }, [user]);
 
   const register = async (userInfo) => {
     const res = await authService.register(userInfo);
@@ -109,7 +81,6 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     authService.logout();
-    socket.disconnect(); // unregister from online list
     setUser(null)
     setIsAuthenticated(false)
   }
