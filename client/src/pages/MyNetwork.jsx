@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Box, Card, Typography, Avatar, Button, CircularProgress } from "@mui/material";
-import { Message } from "@mui/icons-material";
+import { Message, PersonRemove } from "@mui/icons-material";
+import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -33,6 +34,17 @@ const MyNetwork = () => {
   const handleMessage = (friendId) => {
     // Navigate to chat or open messenger
     navigate("/chat");
+  };
+
+  const handleRemoveConnection = async (friendId) => {
+    try {
+      await api.delete(`/users/connections/remove/${friendId}`);
+      setFriends(prev => prev.filter(f => f.userId !== friendId)); // Instant UI update
+      toast.success("Connection removed successfully");
+    } catch (error) {
+      console.error("Error removing connection:", error);
+      toast.error("Failed to remove connection");
+    }
   };
 
   if (loading) {
@@ -84,10 +96,19 @@ const MyNetwork = () => {
               <Box sx={{ display: "flex", gap: 1 }}>
                 <Button
                   variant="outlined"
+                  color="error"
+                  onClick={() => handleRemoveConnection(friend.userId)}
+                  startIcon={<PersonRemove />}
+                  sx={{ textTransform: "none", borderRadius: "8px", fontWeight: "bold" }}
+                >
+                  Remove
+                </Button>
+                <Button
+                  variant="contained"
                   color="primary"
                   onClick={() => handleMessage(friend.userId)}
                   startIcon={<Message />}
-                  sx={{ textTransform: "none", borderRadius: "8px", fontWeight: "bold" }}
+                  sx={{ textTransform: "none", borderRadius: "8px", fontWeight: "bold", boxShadow: "none" }}
                 >
                   Message
                 </Button>

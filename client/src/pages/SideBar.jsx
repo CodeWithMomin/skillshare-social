@@ -5,6 +5,8 @@ import FeedIcon from "@mui/icons-material/Home";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import FolderIcon from "@mui/icons-material/Folder";
 import SettingsIcon from "@mui/icons-material/Settings";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import PersonIcon from "@mui/icons-material/Person";
 import { Explore, Hub, People, PersonAdd } from "@mui/icons-material";
 import { useAuth } from "../context/AuthContext";
 import { useProfilePicture } from "../context/ProfilePictureContext";
@@ -31,6 +33,7 @@ const navItems = [
 const SideBar = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -59,8 +62,7 @@ const SideBar = () => {
         left: 0,
 
         width: isMobile ? "100%" : 235,
-        height: isMobile ? 64 : "auto",
-        minHeight: isMobile ? "auto" : "calc(100vh - 85px)",
+        height: isMobile ? 64 : "calc(100vh - 85px)",
 
         boxShadow: isMobile
           ? "0px -2px 10px rgba(0,0,0,0.1)"
@@ -152,13 +154,25 @@ const SideBar = () => {
         })}
         {isMobile && (
           <Link to="/profile" style={{ textDecoration: "none" }}>
+            {/* Profile Button Instead of Setup Profile when in mobile */}
             <Box
+              onClick={() => navigate("/profile")}
               sx={{
+                width: 44,
+                height: 44,
+                borderRadius: "50%",
+                backgroundColor: "#fff",
+                border: "2px solid #ccc",
                 display: "flex",
-                flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
                 color: "#555",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  borderColor: "#ee9917",
+                  transform: "scale(1.05)",
+                }
               }}
             >
               <Avatar
@@ -181,7 +195,7 @@ const SideBar = () => {
 
       </Box>
 
-      {/* -------- PROFILE + SETTINGS (MOBILE ONLY ICONS) -------- */}
+      {/* -------- PROFILE + SETTINGS (DESKTOP ONLY ICONS) -------- */}
       {!isMobile && (
         <Box
           sx={{
@@ -217,9 +231,16 @@ const SideBar = () => {
             sx={{ color: "#555", "&:hover": { color: "#ee9917" } }}
             onClick={() => navigate("/settings")}
           >
-            <SettingsIcon sx={{ fontSize: 30 }} />
-          </IconButton>
-        </Box>
+            <MenuItem onClick={() => { handleMenuClose(); navigate("/profile"); }} sx={{ py: 1.5 }}>
+              <ListItemIcon><PersonIcon fontSize="small" /></ListItemIcon>
+              <ListItemText><Typography variant="body2" sx={{ fontWeight: 500 }}>My Profile</Typography></ListItemText>
+            </MenuItem>
+            <MenuItem onClick={() => { handleMenuClose(); navigate("/settings"); }} sx={{ py: 1.5 }}>
+              <ListItemIcon><SettingsIcon fontSize="small" /></ListItemIcon>
+              <ListItemText><Typography variant="body2" sx={{ fontWeight: 500 }}>Settings</Typography></ListItemText>
+            </MenuItem>
+          </Menu>
+        </>
       )}
     </Box>
   );

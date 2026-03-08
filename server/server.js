@@ -144,6 +144,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/alumni', require('./routes/alumniRoutes'));
 app.use('/api/posts', require('./routes/postRoutes'));
 app.use('/api/messages', require('./routes/messageRoutes'));
+app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
 app.use('/api/chat-history', require('./routes/chatHistoryRoutes'));
 

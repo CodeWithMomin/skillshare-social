@@ -34,7 +34,8 @@ const {
   uploadProfilePhoto,
   connectUser,
   acceptConnection,
-  declineConnection
+  declineConnection,
+  removeConnection
 } = require('../controllers/userController');
 const { protect } = require('../middleware/authMiddleware')
 // Public routes
@@ -48,6 +49,7 @@ router.get('/user/:id', protect, getUserById);
 router.post('/:id/connect', protect, connectUser);
 router.post('/:id/accept', protect, acceptConnection);
 router.post('/:id/decline', protect, declineConnection);
+router.delete('/connections/remove/:id', protect, removeConnection);
 router.put('/profile/complete', protect, completeProfile);
 
 // Protected routes - Education
