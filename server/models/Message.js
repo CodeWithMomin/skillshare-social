@@ -44,6 +44,11 @@ const messageSchema = new mongoose.Schema(
         readAt: {
             type: Date,
             default: null
+        },
+        sharedPost: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Post',
+            default: null
         }
     },
     { timestamps: true }

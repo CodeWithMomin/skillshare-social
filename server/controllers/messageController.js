@@ -2,7 +2,7 @@ const Message = require('../models/Message');
 
 const sendMessage = async (req, res) => {
     try {
-        const { message } = req.body;
+        const { message, sharedPost } = req.body;
         const { id: receiverId } = req.params;
         const senderId = req.user.id;
 
@@ -44,10 +44,16 @@ const sendMessage = async (req, res) => {
             fileUrl,
             fileType,
             fileName,
+            sharedPost: sharedPost || null,
             status
         });
 
         await newMessage.save();
+        
+        // Populate the shared post so the recipient's UI receives the full interactive card immediately
+        if (sharedPost) {
+            await newMessage.populate('sharedPost');
+        }
 
         if (receiverSocketId) {
             req.io.to(receiverSocketId).emit("newMessage", newMessage);
@@ -72,7 +78,7 @@ const getMessages = async (req, res) => {
                 { senderId: senderId, receiverId: userToChatId },
                 { senderId: userToChatId, receiverId: senderId }
             ]
-        }).sort({ createdAt: 1 }); // Sort by creation time (ascending)
+        }).sort({ createdAt: 1 }).populate('sharedPost'); // Sort by creation time (ascending) and populate post
 
         // Mark unread messages as read
         const unreadMessages = messages.filter(m => m.receiverId.toString() === senderId && m.status !== 'read');

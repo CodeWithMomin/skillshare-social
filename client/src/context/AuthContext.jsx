@@ -1,15 +1,24 @@
 import React from 'react'
-import { createContext, useState, useEffect, useContext } from 'react'
+import { createContext, useState, useEffect, useContext, useRef } from 'react'
 import authService from '../services/authService'
+import socket from '../socket'
 const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [globalUnreadCounts, setGlobalUnreadCounts] = useState({})
+  
+  const [activeChatId, setActiveChatId] = useState(null);
+  const activeChatIdRef = useRef(null);
+
+  useEffect(() => {
+    activeChatIdRef.current = activeChatId;
+  }, [activeChatId]);
 
   const totalUnreadCount = Object.values(globalUnreadCounts).reduce((sum, count) => sum + count, 0);
 
+  // Initial user fetch
   useEffect(() => {
     const storedUser = authService.getUser()
     if (storedUser) {
@@ -36,6 +45,35 @@ export const AuthProvider = ({ children }) => {
       }
     }
   }, []);
+
+  // Persistent Socket Connection & Global Listeners
+  useEffect(() => {
+    if (user && user._id) {
+      socket.auth = { userId: user._id };
+      if (!socket.connected) {
+        socket.connect();
+      }
+
+      const handleNewMessage = (msg) => {
+        // If we're actively chatting with this user, don't increment the badge
+        if (activeChatIdRef.current && activeChatIdRef.current === msg.senderId) {
+          return;
+        }
+        setGlobalUnreadCounts(prev => ({
+          ...prev,
+          [msg.senderId]: (prev[msg.senderId] || 0) + 1
+        }));
+      };
+
+      socket.on("newMessage", handleNewMessage);
+
+      return () => {
+        socket.off("newMessage", handleNewMessage);
+      };
+    } else {
+      socket.disconnect();
+    }
+  }, [user]);
 
   const register = async (userInfo) => {
     const res = await authService.register(userInfo);
@@ -101,7 +139,8 @@ export const AuthProvider = ({ children }) => {
       getUserProfile,
       globalUnreadCounts,
       setGlobalUnreadCounts,
-      totalUnreadCount
+      totalUnreadCount,
+      setActiveChatId
     }}>
       {children}
     </AuthContext.Provider>

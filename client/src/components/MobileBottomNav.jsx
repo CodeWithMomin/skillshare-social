@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, MenuItem, IconButton, Box } from "@mui/material";
+import { Menu, MenuItem, IconButton, Box, Avatar } from "@mui/material";
+import { useAuth } from "../context/AuthContext";
 
 import HomeIcon from "@mui/icons-material/Home";
 import ExploreIcon from "@mui/icons-material/Explore";
@@ -16,6 +17,7 @@ import PersonIcon from "@mui/icons-material/Person";
 const MobileBottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [moreAnchorEl, setMoreAnchorEl] = useState(null);
   const [profileAnchorEl, setProfileAnchorEl] = useState(null);
@@ -128,18 +130,20 @@ const MobileBottomNav = () => {
             height: 28,
             borderRadius: "50%",
             backgroundColor: isProfileOpen ? "#d98a15" : "#ee9917",
-            color: "#fff",
-            fontWeight: "bold",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "0.85rem",
             border: isProfileOpen ? "2px solid #fff" : "none",
             boxShadow: isProfileOpen ? "0 0 0 2px #ee9917" : "none",
             transition: "all 0.2s ease"
           }}
         >
-          M
+          <Avatar 
+            src={user?.profilePic} 
+            sx={{ width: 24, height: 24, fontSize: '0.85rem', bgcolor: 'transparent', color: '#fff', fontWeight: 'bold' }}
+          >
+            {user?.fullName?.charAt(0)?.toUpperCase()}
+          </Avatar>
         </Box>
       </IconButton>
       <Menu

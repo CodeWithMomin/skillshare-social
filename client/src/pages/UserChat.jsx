@@ -38,7 +38,7 @@ const UserChat = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  const { getUserProfile, globalUnreadCounts, setGlobalUnreadCounts } = useAuth();
+  const { getUserProfile, globalUnreadCounts, setGlobalUnreadCounts, setActiveChatId } = useAuth();
   const navigate = useNavigate();
   const [friends, setFriends] = useState([]);
   const [selectedFriend, setSelectedFriend] = useState(null);
@@ -120,9 +120,7 @@ const UserChat = () => {
   // Socket Connection & Listener
   useEffect(() => {
     if (myUserId) {
-      console.log("Connecting socket for user:", myUserId);
-      socket.auth = { userId: myUserId };
-      socket.connect();
+      console.log("Setting up socket listeners for chat page");
 
       socket.on("connect", () => {
         console.log("Socket connected with ID:", socket.id);
@@ -195,14 +193,14 @@ const UserChat = () => {
       socket.off("getOnlineUsers");
       socket.off("typing");
       socket.off("stopTyping");
-      socket.off("messageDeleted");
       socket.off("incomingCall");
-      socket.disconnect();
     };
   }, [myUserId]);
 
   // Fetch Chat History when a friend is selected
   useEffect(() => {
+    setActiveChatId(selectedFriend?.userId || null);
+
     const fetchChatHistory = async () => {
       if (!selectedFriend) return;
       try {
@@ -252,7 +250,9 @@ const UserChat = () => {
     };
 
     fetchChatHistory();
-  }, [selectedFriend, setGlobalUnreadCounts]);
+
+    return () => setActiveChatId(null);
+  }, [selectedFriend, setGlobalUnreadCounts, setActiveChatId]);
 
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
@@ -430,7 +430,9 @@ const UserChat = () => {
                           }
                         }}
                       >
-                        <Avatar src={friend.profilePic} />
+                        <Avatar src={friend.profilePic || ""}>
+                          {friend.name?.charAt(0)?.toUpperCase() || "U"}
+                        </Avatar>
                       </Badge>
                     </ListItemAvatar>
                     <ListItemText
@@ -465,7 +467,9 @@ const UserChat = () => {
                       <ArrowBack />
                     </IconButton>
                   )}
-                  <Avatar src={selectedFriend.profilePic} />
+                  <Avatar src={selectedFriend.profilePic || ""}>
+                    {selectedFriend.name?.charAt(0)?.toUpperCase() || "U"}
+                  </Avatar>
                   <Box>
                     <Typography variant="subtitle1" fontWeight="bold">
                       {selectedFriend.name}
@@ -603,10 +607,53 @@ const UserChat = () => {
                                     Tap to open
                                   </Typography>
                                 </Box>
-                                <Download sx={{ ml: "auto", opacity: 0.7, fontSize: 18, color: isMe ? "#fff" : "inherit" }} />
-                              </Box>
-                            )}
-                            {(chat.message || chat.text) && (
+                                  <Download sx={{ ml: "auto", opacity: 0.7, fontSize: 18, color: isMe ? "#fff" : "inherit" }} />
+                                </Box>
+                              )}
+                              {/* SHARED POST bubble */}
+                              {chat.sharedPost && (
+                                <Box
+                                  sx={{
+                                    mt: (chat.imageUrl || chat.fileUrl) ? 1 : 0,
+                                    mb: (chat.message || chat.text) ? 1 : 0,
+                                    border: "1px solid",
+                                    borderColor: isMe ? "rgba(255,255,255,0.3)" : "#e0e0e0",
+                                    borderRadius: 3,
+                                    overflow: "hidden",
+                                    bgcolor: isMe ? "rgba(255,255,255,0.15)" : "#f9f9f9",
+                                    maxWidth: 320,
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                                  }}
+                                >
+                                  <Box sx={{ p: 1.5, display: 'flex', alignItems: 'center', gap: 1, borderBottom: '1px solid', borderColor: isMe ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.08)" }}>
+                                    <Avatar src={chat.sharedPost.userProfilePic} sx={{ width: 24, height: 24, fontSize: '0.8rem' }}>{chat.sharedPost.author?.charAt(0) || "U"}</Avatar>
+                                    <Typography variant="subtitle2" sx={{ fontWeight: "700", color: isMe ? "#fff" : "text.primary", fontSize: '0.85rem' }}>
+                                      {chat.sharedPost.author || "User"}'s Post
+                                    </Typography>
+                                  </Box>
+                                  <Box sx={{ p: 1.5, pb: chat.sharedPost.mediaUrl ? 1.5 : 2 }}>
+                                    <Typography variant="body2" sx={{ 
+                                      color: isMe ? "rgba(255,255,255,0.9)" : "text.secondary", 
+                                      overflow: "hidden", 
+                                      textOverflow: "ellipsis", 
+                                      display: "-webkit-box", 
+                                      WebkitLineClamp: 3, 
+                                      WebkitBoxOrient: "vertical",
+                                      lineHeight: 1.5
+                                    }}>
+                                      {chat.sharedPost.content || chat.sharedPost.title || ""}
+                                    </Typography>
+                                  </Box>
+                                  {chat.sharedPost.mediaUrl && (
+                                    chat.sharedPost.mediaType === "video" ? (
+                                      <video src={chat.sharedPost.mediaUrl} controls style={{ width: "100%", maxHeight: 200, objectFit: "cover", display: "block" }} />
+                                    ) : (
+                                      <img src={chat.sharedPost.mediaUrl} alt="Post media" style={{ width: "100%", maxHeight: 200, objectFit: "cover", display: "block" }} />
+                                    )
+                                  )}
+                                </Box>
+                              )}
+                              {(chat.message || chat.text) && (
                               <Typography variant="body2">{chat.message || chat.text}</Typography>
                             )}
                           </Box>

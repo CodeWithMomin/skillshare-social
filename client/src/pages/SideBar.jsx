@@ -1,11 +1,14 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Box, IconButton, useMediaQuery, useTheme } from "@mui/material";
+import { Box, IconButton, useMediaQuery, useTheme, Avatar, Menu, MenuItem, ListItemIcon, ListItemText, Typography } from "@mui/material";
 import FeedIcon from "@mui/icons-material/Home";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import FolderIcon from "@mui/icons-material/Folder";
 import SettingsIcon from "@mui/icons-material/Settings";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import PersonIcon from "@mui/icons-material/Person";
 import { Explore, Hub, People, PersonAdd } from "@mui/icons-material";
+import { useAuth } from "../context/AuthContext";
 
 const navItems = [
   { label: "Feed", icon: <FeedIcon />, path: "/feed" },
@@ -27,9 +30,14 @@ const navItems = [
 const SideBar = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const handleMenuOpen = (e) => setAnchorEl(e.currentTarget);
+  const handleMenuClose = () => setAnchorEl(null);
 
   return (
     <Box
@@ -50,8 +58,7 @@ const SideBar = () => {
         left: 0,
 
         width: isMobile ? "100%" : 235,
-        height: isMobile ? 64 : "auto",
-        minHeight: isMobile ? "auto" : "calc(100vh - 85px)",
+        height: isMobile ? 64 : "calc(100vh - 85px)",
 
         boxShadow: isMobile
           ? "0px -2px 10px rgba(0,0,0,0.1)"
@@ -143,74 +150,103 @@ const SideBar = () => {
         })}
         {isMobile && (
           <Link to="/profile" style={{ textDecoration: "none" }}>
+            {/* Profile Button Instead of Setup Profile when in mobile */}
             <Box
+              onClick={() => navigate("/profile")}
               sx={{
+                width: 44,
+                height: 44,
+                borderRadius: "50%",
+                backgroundColor: "#fff",
+                border: "2px solid #ccc",
                 display: "flex",
-                flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
                 color: "#555",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  borderColor: "#ee9917",
+                  transform: "scale(1.05)",
+                }
               }}
             >
-              <Box
-                sx={{
-                  width: 34,
-                  height: 34,
-                  borderRadius: "50%",
-                  backgroundColor: "#ee9917",
-                  color: "#fff",
-                  fontWeight: "bold",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "0.9rem",
-                }}
+              <Avatar 
+                src={user?.profilePic || user?.avatar} 
+                sx={{ width: 34, height: 34, bgcolor: "#ee9917", fontSize: '0.9rem', fontWeight: 'bold' }}
               >
-                M
-              </Box>
+                {user?.fullName?.charAt(0) || user?.username?.charAt(0) || "U"}
+              </Avatar>
             </Box>
           </Link>
         )}
 
       </Box>
 
-      {/* -------- PROFILE + SETTINGS (MOBILE ONLY ICONS) -------- */}
+      {/* -------- PROFILE + SETTINGS (DESKTOP ONLY ICONS) -------- */}
       {!isMobile && (
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: 2.5,
-            mt: 4,
-          }}
-        >
-          <Link
-            to="/profile"
-            style={{
+        <>
+          <Box
+            onClick={handleMenuOpen}
+            sx={{
               display: "flex",
-              justifyContent: "center",
+              justifyContent: "flex-start",
               alignItems: "center",
-              width: 50,
-              height: 50,
-              backgroundColor: "#ee9917",
-              color: "#fff",
-              borderRadius: "50%",
-              fontWeight: "bold",
-              fontSize: "1.2rem",
-              textDecoration: "none",
+              gap: 1.5,
+              mt: "auto",
+              mb: 0,
+              px: { xs: 1, md: 3 },
+              py: 1,
+              mx: { xs: 1, md: 2 },
+              borderRadius: 3,
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+              "&:hover": {
+                bgcolor: "rgba(0,0,0,0.04)",
+              }
             }}
           >
-            M
-          </Link>
+            <Avatar 
+                src={user?.profilePic || user?.avatar} 
+                sx={{ width: 44, height: 44, bgcolor: "#ee9917", fontSize: '1.1rem', fontWeight: 'bold' }}
+            >
+              {user?.fullName?.charAt(0) || user?.username?.charAt(0) || "U"}
+            </Avatar>
+            <Box sx={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "text.primary", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {user?.fullName || user?.username || "My Profile"}
+              </Typography>
+            </Box>
+            <ExpandMoreIcon sx={{ color: "text.secondary" }} />
+          </Box>
 
-          <IconButton
-            sx={{ color: "#555", "&:hover": { color: "#ee9917" } }}
-            onClick={() => navigate("/settings")}
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose}
+            disableScrollLock={true}
+            PaperProps={{
+              elevation: 0,
+              sx: {
+                borderRadius: 3,
+                minWidth: 180,
+                mt: -1.5,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+              }
+            }}
+            transformOrigin={{ horizontal: 'center', vertical: 'bottom' }}
+            anchorOrigin={{ horizontal: 'center', vertical: 'top' }}
           >
-            <SettingsIcon sx={{ fontSize: 30 }} />
-          </IconButton>
-        </Box>
+            <MenuItem onClick={() => { handleMenuClose(); navigate("/profile"); }} sx={{ py: 1.5 }}>
+              <ListItemIcon><PersonIcon fontSize="small" /></ListItemIcon>
+              <ListItemText><Typography variant="body2" sx={{ fontWeight: 500 }}>My Profile</Typography></ListItemText>
+            </MenuItem>
+            <MenuItem onClick={() => { handleMenuClose(); navigate("/settings"); }} sx={{ py: 1.5 }}>
+              <ListItemIcon><SettingsIcon fontSize="small" /></ListItemIcon>
+              <ListItemText><Typography variant="body2" sx={{ fontWeight: 500 }}>Settings</Typography></ListItemText>
+            </MenuItem>
+          </Menu>
+        </>
       )}
     </Box>
   );

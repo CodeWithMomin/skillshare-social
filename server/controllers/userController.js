@@ -2,6 +2,7 @@
 const User = require('../models/User')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const Notification = require('../models/Notification');
 const { sendWelcomeEmail } = require('../utilis/mailer')
 const genrationToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
@@ -108,13 +109,31 @@ const loginUser = async (req, res) => {
 
 const getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password')
-
+    const user = await User.findById(req.user.id)
+      .select('-password')
+      .populate('friends.userId', 'profilePic fullName');
 
     if (user) {
+      const userObj = user.toObject();
+      
+      // Keep API response backward-compatible while injecting fresh database profile pictures
+      if (userObj.friends && userObj.friends.length > 0) {
+        userObj.friends = userObj.friends.map(friend => {
+          if (friend.userId && friend.userId._id) {
+            return {
+              ...friend,
+              userId: friend.userId._id, // Reset back to raw string/ObjectId
+              name: friend.userId.fullName || friend.name,
+              profilePic: friend.userId.profilePic || friend.profilePic
+            };
+          }
+          return friend;
+        });
+      }
+
       res.json({
         success: true,
-        user
+        user: userObj
       });
     } else {
       res.status(404).json({ message: 'User not found' });
@@ -1046,6 +1065,23 @@ const connectUser = async (req, res) => {
     });
     await targetUser.save();
 
+    // Create Notification Document
+    const notification = await Notification.create({
+      recipient: targetUser._id,
+      sender: currentUser._id,
+      type: 'connection',
+      message: `${currentUser.fullName} sent you a connection request`
+    });
+
+    const populatedNotification = await Notification.findById(notification._id)
+      .populate('sender', 'fullName profilePic');
+
+    // Emit real-time socket event
+    const receiverSocketId = req.app.locals.userSocketMap[targetUserId];
+    if (receiverSocketId && req.io) {
+      req.io.to(receiverSocketId).emit('newNotification', populatedNotification);
+    }
+
     res.json({
       success: true,
       message: "Connection request sent successfully",
@@ -1137,6 +1173,36 @@ const declineConnection = async (req, res) => {
   }
 };
 
+const removeConnection = async (req, res) => {
+  try {
+    const targetUserId = req.params.id; // ID of the friend to remove
+    const currentUserId = req.user.id; // You
+
+    const currentUser = await User.findById(currentUserId);
+    const targetUser = await User.findById(targetUserId);
+
+    if (!currentUser || !targetUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Remove from YOUR friends
+    currentUser.friends = currentUser.friends.filter(f => f.userId.toString() !== targetUserId);
+    await currentUser.save();
+
+    // Remove from THEIR friends
+    targetUser.friends = targetUser.friends.filter(f => f.userId.toString() !== currentUserId);
+    await targetUser.save();
+
+    res.json({
+      success: true,
+      message: "Connection removed successfully",
+      friends: currentUser.friends
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -1169,5 +1235,6 @@ module.exports = {
   getUserById,
   connectUser,
   acceptConnection,
-  declineConnection
+  declineConnection,
+  removeConnection
 };
