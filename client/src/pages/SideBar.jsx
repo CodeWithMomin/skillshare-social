@@ -1,11 +1,13 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Box, IconButton, useMediaQuery, useTheme } from "@mui/material";
+import { Box, IconButton, useMediaQuery, useTheme, Avatar } from "@mui/material";
 import FeedIcon from "@mui/icons-material/Home";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
 import FolderIcon from "@mui/icons-material/Folder";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { Explore, Hub, People, PersonAdd } from "@mui/icons-material";
+import { useAuth } from "../context/AuthContext";
+import { useProfilePicture } from "../context/ProfilePictureContext";
 
 const navItems = [
   { label: "Feed", icon: <FeedIcon />, path: "/feed" },
@@ -31,6 +33,11 @@ const SideBar = () => {
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+
+  const { user } = useAuth();
+  const { profilePic } = useProfilePicture();
+  const displayPic = profilePic || user?.profilePic;
+  const initial = user?.fullName ? user.fullName.charAt(0).toUpperCase() : "U";
 
   return (
     <Box
@@ -153,22 +160,20 @@ const SideBar = () => {
                 color: "#555",
               }}
             >
-              <Box
+              <Avatar
+                src={displayPic || ""}
+                alt={user?.fullName || "User"}
                 sx={{
                   width: 34,
                   height: 34,
-                  borderRadius: "50%",
                   backgroundColor: "#ee9917",
                   color: "#fff",
                   fontWeight: "bold",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
                   fontSize: "0.9rem",
                 }}
               >
-                M
-              </Box>
+                {!displayPic && initial}
+              </Avatar>
             </Box>
           </Link>
         )}
@@ -188,21 +193,23 @@ const SideBar = () => {
         >
           <Link
             to="/profile"
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              width: 50,
-              height: 50,
-              backgroundColor: "#ee9917",
-              color: "#fff",
-              borderRadius: "50%",
-              fontWeight: "bold",
-              fontSize: "1.2rem",
-              textDecoration: "none",
-            }}
+            style={{ textDecoration: "none" }}
           >
-            M
+            <Avatar
+              src={displayPic || ""}
+              alt={user?.fullName || "User"}
+              sx={{
+                width: 50,
+                height: 50,
+                backgroundColor: "#ee9917",
+                color: "#fff",
+                fontWeight: "bold",
+                fontSize: "1.2rem",
+                cursor: "pointer",
+              }}
+            >
+              {!displayPic && initial}
+            </Avatar>
           </Link>
 
           <IconButton

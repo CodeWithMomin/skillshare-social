@@ -29,6 +29,8 @@ import Dashboard from "./pages/AlumniConnect/Dashboard";
 import { useAuth } from "./context/AuthContext";
 import { useAlumniAuth } from "./AlumniConnect/alumniContext/AlumniAuthContext";
 import AlumniSettings from "./pages/AlumniSettings";
+import BirjuAiLauncher from "./components/BirjuAiLauncher";
+
 function App() {
   // const isAuthenticated = !!localStorage.getItem("authToken");
   const { isAuthenticated } = useAuth()
@@ -177,6 +179,7 @@ function App() {
   return <>
     <RouterProvider router={router} />
     <Toaster />
+    {(isAuthenticated || isAlumniAuthenticated) && <BirjuAiLauncher />}
   </>;
 }
 

@@ -5,7 +5,7 @@ const profileService = {
     try {
       const response = await api.get("/users/profile");
       // api interceptor already unwraps response.data
-      return response.user || response; 
+      return response.user || response;
     } catch (error) {
       console.error("Error fetching user profile:", error);
       return null;
@@ -16,15 +16,10 @@ const profileService = {
     try {
       const formData = new FormData();
       formData.append("profile", file); // MUST match multer.single("profile")
-      
+
       const response = await api.post(
         "/users/upload-profile-picture", // MUST include /api
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        formData
       );
 
       console.log("UPLOAD RESPONSE:", response);

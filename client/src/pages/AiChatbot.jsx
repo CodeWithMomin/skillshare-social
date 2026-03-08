@@ -153,7 +153,7 @@ export default function AiChatbot() {
             } else if (currentAtt?.type === "text") {
                 const fileCtx = `[File: ${currentAtt.file.name}]\n${currentAtt.textContent.slice(0, 4000)}`;
                 const question = trimmed ? `${fileCtx}\n\nUser question: ${trimmed}` : `${fileCtx}\n\nSummarize or analyze this file.`;
-                const { data } = await axios.post(`${API}/ai/chat`, { message: question, history: histCtx });
+                const { data } = await axios.post(`${API}/ai/chat`, { message: question, history: histCtx }, { headers: authHeader() });
                 botMsg = { id: (Date.now() + 1).toString(), role: "bot", content: data.reply };
             } else if (isImageReq(trimmed)) {
                 const prompt = extractPrompt(trimmed);
@@ -162,7 +162,7 @@ export default function AiChatbot() {
                 await new Promise((res, rej) => { const img = new Image(); img.onload = res; img.onerror = rej; img.src = imageUrl; });
                 botMsg = { id: (Date.now() + 1).toString(), role: "image", content: imageUrl, prompt };
             } else {
-                const { data } = await axios.post(`${API}/ai/chat`, { message: trimmed, history: histCtx });
+                const { data } = await axios.post(`${API}/ai/chat`, { message: trimmed, history: histCtx }, { headers: authHeader() });
                 botMsg = { id: (Date.now() + 1).toString(), role: "bot", content: data.reply };
             }
 

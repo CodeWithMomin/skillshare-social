@@ -112,11 +112,7 @@ const AiFeatures = ({ initialMode = 'text' }) => {
       const formData = new FormData();
       formData.append('document', selectedFile);
 
-      const res = await axios.post("http://localhost:5000/api/ai/summarize-document", formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      const res = await axios.post("http://localhost:5000/api/ai/summarize-document", formData);
 
       if (res.data?.summary) {
         setSummary(res.data.summary);

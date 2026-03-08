@@ -188,6 +188,85 @@ const chatbot = async (req, res) => {
     }
 };
 
+const birjuChat = async (req, res) => {
+    try {
+        const { message, history = [] } = req.body;
+
+        if (!message || message.trim() === '') {
+            return res.status(400).json({ error: 'Message is required' });
+        }
+
+        const GROQ_API_KEY = process.env.GROQ_API_KEY;
+        if (!GROQ_API_KEY) {
+            return res.status(500).json({ error: 'Groq API key not configured. Please add GROQ_API_KEY to your .env file.' });
+        }
+
+        // Fetch the user's data from the database
+        const User = require('../models/User');
+        const user = await User.findById(req.user.id);
+
+        let userContext = "";
+        if (user) {
+            userContext = `
+            You are assisting a user named ${user.fullName}.
+            ${user.headline ? `Their headline is: ${user.headline}.` : ""}
+            ${user.location ? `They are based in ${user.location}.` : ""}
+            ${user.bio ? `Their bio: ${user.bio}.` : ""}
+            ${user.skills && user.skills.length > 0 ? `Their skills include: ${user.skills.map(s => s.name).join(', ')}.` : ""}
+            ${user.experience && user.experience.length > 0 ? `They have worked at: ${user.experience.map(e => e.company).join(', ')}.` : ""}
+            `.trim();
+        }
+
+        // Build messages array in OpenAI-compatible format
+        const messages = [
+            {
+                role: 'system',
+                content: `You are a helpful, friendly AI assistant named "Birju" on a professional skill-sharing social platform called SkillShare Social. Be concise, clear, and helpful. Keep responses under 3 short paragraphs unless more detail is explicitly needed. ${userContext}`
+            }
+        ];
+
+        // Add past conversation turns (last 10 turns for context)
+        history.slice(-10).forEach(turn => {
+            if (turn.role === 'user') messages.push({ role: 'user', content: turn.content });
+            if (turn.role === 'bot') messages.push({ role: 'assistant', content: turn.content });
+        });
+
+        // Add current user message
+        messages.push({ role: 'user', content: message });
+
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${GROQ_API_KEY}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                model: 'llama-3.1-8b-instant',
+                messages,
+                max_tokens: 512,
+                temperature: 0.7,
+            }),
+        });
+
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.error?.message || `Groq API error: ${response.status}`);
+        }
+
+        const result = await response.json();
+        const reply = result?.choices?.[0]?.message?.content?.trim();
+
+        if (!reply) {
+            throw new Error('No response generated. Please try again.');
+        }
+
+        res.status(200).json({ reply });
+    } catch (error) {
+        console.error('Birju Chat error:', error);
+        res.status(500).json({ error: error.message || 'An error occurred in Birju chat' });
+    }
+};
+
 /* ── Image analysis via Groq vision model ── */
 const analyzeImage = async (req, res) => {
     try {
@@ -262,4 +341,4 @@ const analyzeImage = async (req, res) => {
     }
 };
 
-module.exports = { summarizeText, summarizeDocument, chatbot, analyzeImage };
+module.exports = { summarizeText, summarizeDocument, chatbot, analyzeImage, birjuChat };
